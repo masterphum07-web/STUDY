@@ -2486,6 +2486,13 @@ function tick(ts){const dt=Math.min(.05,(ts-last)/1000);last=ts;
  requestAnimationFrame(tick);}
 requestAnimationFrame(tick);
 setTimeout(()=>redraws.forEach(f=>{try{f()}catch(e){}}),150);
+try {
+  const urlParams = new URLSearchParams(window.location.search);
+  const fileParam = urlParams.get('file');
+  if (fileParam === 'gi' || fileParam === 'rs') {
+    showFile(fileParam);
+  }
+} catch(e){}
 </script>
 </body>
 </html>

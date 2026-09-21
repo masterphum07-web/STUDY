@@ -61,6 +61,8 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
     setReloadKey((prev) => prev + 1);
   };
 
+  const effectiveHeight = isExpanded ? Math.max(iframeHeight, 950) : iframeHeight;
+
   return (
     <div
       style={{
@@ -177,70 +179,63 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
       </div>
 
       {/* Frame Container */}
-      {(() => {
-        const effectiveHeight = isExpanded ? Math.max(iframeHeight, 950) : iframeHeight;
-        return (
-          <div style={{ position: 'relative', width: '100%', minHeight: `${effectiveHeight}px` }}>
-            {hasError ? (
-              <div
-                style={{
-                  padding: '40px 20px',
-                  textAlign: 'center',
-                  color: 'var(--danger)',
-                  backgroundColor: 'var(--danger-bg)',
-                }}
-              >
-                <AlertCircle size={32} style={{ marginBottom: '8px' }} />
-                <h4 style={{ margin: '0 0 8px', color: 'var(--danger)' }}>ไม่สามารถโหลดโมดูล HTML ได้</h4>
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                  ไม่พบไฟล์หรือเกิดข้อผิดพลาดที่ตำแหน่ง: <code>{resolvedPath}</code>
-                </p>
-                <button
-                  onClick={handleReload}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--primary)',
-                    color: '#fff',
-                    fontSize: '0.875rem',
-                  }}
-                >
-                  ลองใหม่อีกครั้ง
-                </button>
-              </div>
-            ) : (
-              <iframe
-                key={reloadKey}
-                ref={iframeRef}
-                src={resolvedPath}
-                title={title}
-                // Strict sandbox attributes to isolate styles and prevent global state pollution
-                sandbox="allow-scripts allow-same-origin allow-forms"
-                onLoad={() => {
-                  setIsLoading(false);
-                  // Send handshake or trigger postMessage resize from inside
-                  try {
-                    iframeRef.current?.contentWindow?.postMessage({ type: 'PARENT_READY' }, '*');
-                  } catch {
-                    // Ignore cross-origin error if any
-                  }
-                }}
-                onError={() => {
-                  setIsLoading(false);
-                  setHasError(true);
-                }}
-                style={{
-                  width: '100%',
-                  height: `${effectiveHeight}px`,
-                  border: 'none',
-                  display: 'block',
-                  transition: 'height 200ms ease',
-                }}
-              />
-            )}
+      <div style={{ position: 'relative', width: '100%', minHeight: `${effectiveHeight}px` }}>
+        {hasError ? (
+          <div
+            style={{
+              padding: '40px 20px',
+              textAlign: 'center',
+              color: 'var(--danger)',
+              backgroundColor: 'var(--danger-bg)',
+            }}
+          >
+            <AlertCircle size={32} style={{ marginBottom: '8px' }} />
+            <h4 style={{ margin: '0 0 8px', color: 'var(--danger)' }}>ไม่สามารถโหลดโมดูล HTML ได้</h4>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+              ไม่พบไฟล์หรือเกิดข้อผิดพลาดที่ตำแหน่ง: <code>{resolvedPath}</code>
+            </p>
+            <button
+              onClick={handleReload}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--primary)',
+                color: '#fff',
+                fontSize: '0.875rem',
+              }}
+            >
+              ลองใหม่อีกครั้ง
+            </button>
           </div>
-        );
-      })()}
+        ) : (
+          <iframe
+            key={reloadKey}
+            ref={iframeRef}
+            src={resolvedPath}
+            title={title}
+            sandbox="allow-scripts allow-same-origin allow-forms"
+            onLoad={() => {
+              setIsLoading(false);
+              try {
+                iframeRef.current?.contentWindow?.postMessage({ type: 'PARENT_READY' }, '*');
+              } catch {
+                // Ignore cross-origin error
+              }
+            }}
+            onError={() => {
+              setIsLoading(false);
+              setHasError(true);
+            }}
+            style={{
+              width: '100%',
+              height: `${effectiveHeight}px`,
+              border: 'none',
+              display: 'block',
+              transition: 'height 200ms ease',
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Atom, Calculator, Dna, BookOpen, CheckCircle2, ChevronRight, Sparkles, Clock } from 'lucide-react';
+import { Atom, Calculator, Dna, BookOpen, CheckCircle2, ChevronRight, Sparkles, Clock, Activity, HeartPulse, Stethoscope } from 'lucide-react';
 import { getAllSubjects, getChapterById } from '../../content/registry';
 import { useProgress } from '../../hooks/useProgress';
 import styles from './HomePage.module.css';
@@ -15,6 +15,12 @@ export const HomePage: React.FC = () => {
 
   const getSubjectIcon = (iconName: string) => {
     switch (iconName) {
+      case 'Activity':
+        return <Activity size={24} />;
+      case 'HeartPulse':
+        return <HeartPulse size={24} />;
+      case 'Stethoscope':
+        return <Stethoscope size={24} />;
       case 'Atom':
         return <Atom size={24} />;
       case 'Calculator':

@@ -1,33 +1,23 @@
 import type { Subject, Chapter } from '../types/content';
 import { validateSubject, validateChapter } from './schema';
 
-// Import Subject definitions
-import physicsSubject from './subjects/physics/subject';
-import mathematicsSubject from './subjects/mathematics/subject';
-import biologySubject from './subjects/biology/subject';
+// Import Subject definitions (Real Medical Physiology)
+import physiologySubject from './subjects/physiology/subject';
 
-// Import Chapter definitions
-import projectileMotionChapter from './subjects/physics/chapters/projectile-motion';
-import newtonLawsChapter from './subjects/physics/chapters/newton-laws';
-import quadraticFunctionsChapter from './subjects/mathematics/chapters/quadratic-functions';
-import trigonometryChapter from './subjects/mathematics/chapters/trigonometry';
-import cellStructureChapter from './subjects/biology/chapters/cell-structure';
-import geneticsDnaChapter from './subjects/biology/chapters/genetics-dna';
-import physiologyRespiratoryGiChapter from './subjects/biology/chapters/physiology-respiratory-gi';
+// Import Chapter definitions (Real Physiology content from Qwen / PhysioStudy)
+import respiratoryPhysiologyChapter from './subjects/physiology/chapters/respiratory-physiology';
+import giTractPhysiologyChapter from './subjects/physiology/chapters/gi-tract-physiology';
+import physiologyRespiratoryGiChapter from './subjects/physiology/chapters/physiology-respiratory-gi';
 
 // Internal in-memory registry maps
 const subjectsRegistry = new Map<string, Subject>();
 const chaptersRegistry = new Map<string, Chapter>();
 
 // Register initial data with validation
-const initialSubjects = [physicsSubject, mathematicsSubject, biologySubject];
+const initialSubjects = [physiologySubject];
 const initialChapters = [
-  projectileMotionChapter,
-  newtonLawsChapter,
-  quadraticFunctionsChapter,
-  trigonometryChapter,
-  cellStructureChapter,
-  geneticsDnaChapter,
+  respiratoryPhysiologyChapter,
+  giTractPhysiologyChapter,
   physiologyRespiratoryGiChapter,
 ];
 

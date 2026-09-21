@@ -9,10 +9,10 @@ import {
 } from '../src/content/registry';
 import { validateSubject, validateChapter } from '../src/content/schema';
 
-describe('Content Registry & Data Schema', () => {
-  it('should load all registered subjects and validate their schema', () => {
+describe('Content Registry & Data Schema (Medical Physiology)', () => {
+  it('should load registered physiology subject and validate its schema', () => {
     const subjects = getAllSubjects();
-    expect(subjects.length).toBeGreaterThanOrEqual(3);
+    expect(subjects.length).toBeGreaterThanOrEqual(1);
 
     subjects.forEach((subject) => {
       const validation = validateSubject(subject);
@@ -22,25 +22,20 @@ describe('Content Registry & Data Schema', () => {
     });
   });
 
-  it('should retrieve specific subject by ID', () => {
-    const physics = getSubjectById('physics');
-    expect(physics).toBeDefined();
-    expect(physics?.title).toContain('ฟิสิกส์');
-
-    const math = getSubjectById('mathematics');
-    expect(math).toBeDefined();
-    expect(math?.title).toContain('คณิตศาสตร์');
-
-    const bio = getSubjectById('biology');
-    expect(bio).toBeDefined();
-    expect(bio?.title).toContain('ชีววิทยา');
+  it('should retrieve specific physiology subject by ID', () => {
+    const physio = getSubjectById('physiology');
+    expect(physio).toBeDefined();
+    expect(physio?.title).toContain('สรีรวิทยา');
+    expect(physio?.chapterIds).toContain('respiratory-physiology');
+    expect(physio?.chapterIds).toContain('gi-tract-physiology');
+    expect(physio?.chapterIds).toContain('physiology-respiratory-gi');
   });
 
-  it('should retrieve chapters by subject ID and validate their schema', () => {
-    const physicsChapters = getChaptersBySubjectId('physics');
-    expect(physicsChapters.length).toBe(2);
+  it('should retrieve chapters for physiology and validate their schema', () => {
+    const chapters = getChaptersBySubjectId('physiology');
+    expect(chapters.length).toBe(3);
 
-    physicsChapters.forEach((chapter) => {
+    chapters.forEach((chapter) => {
       const validation = validateChapter(chapter);
       expect(validation.valid).toBe(true);
       expect(validation.errors).toHaveLength(0);
@@ -48,54 +43,65 @@ describe('Content Registry & Data Schema', () => {
     });
   });
 
-  it('should retrieve a specific chapter by ID', () => {
-    const chapter = getChapterById('projectile-motion');
-    expect(chapter).toBeDefined();
-    expect(chapter?.subjectId).toBe('physics');
-    expect(chapter?.title).toContain('โพรเจกไทล์');
+  it('should retrieve specific chapters by ID and verify their properties', () => {
+    const rsChapter = getChapterById('respiratory-physiology');
+    expect(rsChapter).toBeDefined();
+    expect(rsChapter?.subjectId).toBe('physiology');
+    expect(rsChapter?.title).toContain('ระบบทางเดินหายใจ');
+
+    const giChapter = getChapterById('gi-tract-physiology');
+    expect(giChapter).toBeDefined();
+    expect(giChapter?.subjectId).toBe('physiology');
+    expect(giChapter?.title).toContain('ระบบทางเดินอาหาร');
+
+    const suiteChapter = getChapterById('physiology-respiratory-gi');
+    expect(suiteChapter).toBeDefined();
+    expect(suiteChapter?.subjectId).toBe('physiology');
+    expect(suiteChapter?.title).toContain('PhysioStudy');
   });
 
   it('should calculate next and previous chapters correctly', () => {
-    const { prev, next } = getNextAndPrevChapter('physics', 'projectile-motion');
+    const { prev, next } = getNextAndPrevChapter('physiology', 'respiratory-physiology');
     expect(prev).toBeNull();
     expect(next).not.toBeNull();
-    expect(next?.id).toBe('newton-laws');
+    expect(next?.id).toBe('gi-tract-physiology');
 
-    const lastNav = getNextAndPrevChapter('physics', 'newton-laws');
-    expect(lastNav.prev?.id).toBe('projectile-motion');
+    const giNav = getNextAndPrevChapter('physiology', 'gi-tract-physiology');
+    expect(giNav.prev?.id).toBe('respiratory-physiology');
+    expect(giNav.next?.id).toBe('physiology-respiratory-gi');
+
+    const lastNav = getNextAndPrevChapter('physiology', 'physiology-respiratory-gi');
+    expect(lastNav.prev?.id).toBe('gi-tract-physiology');
     expect(lastNav.next).toBeNull();
   });
 
   it('should search subjects and chapters accurately', () => {
-    const resultsPhysics = searchContent('โพรเจกไทล์');
-    expect(resultsPhysics.length).toBeGreaterThan(0);
-    expect(resultsPhysics.some((r) => r.id === 'projectile-motion')).toBe(true);
-
-    const resultsMath = searchContent('พาราโบลา');
-    expect(resultsMath.length).toBeGreaterThan(0);
-    expect(resultsMath.some((r) => r.id === 'quadratic-functions')).toBe(true);
-
-    const resultsBio = searchContent('เซลล์');
-    expect(resultsBio.length).toBeGreaterThan(0);
-
     const resultsPhysio = searchContent('สรีรวิทยา');
     expect(resultsPhysio.length).toBeGreaterThan(0);
-    expect(resultsPhysio.some((r) => r.id === 'physiology-respiratory-gi')).toBe(true);
+    expect(resultsPhysio.some((r) => r.id === 'respiratory-physiology')).toBe(true);
+
+    const resultsRS = searchContent('หายใจ');
+    expect(resultsRS.length).toBeGreaterThan(0);
+    expect(resultsRS.some((r) => r.id === 'respiratory-physiology')).toBe(true);
+
+    const resultsGI = searchContent('ทางเดินอาหาร');
+    expect(resultsGI.length).toBeGreaterThan(0);
+    expect(resultsGI.some((r) => r.id === 'gi-tract-physiology')).toBe(true);
   });
 
-  it('should validate the physiology chapter with Qwen legacy-html section', () => {
-    const physio = getChapterById('physiology-respiratory-gi');
-    expect(physio).toBeDefined();
-    expect(physio?.subjectId).toBe('biology');
-    expect(physio?.sections.length).toBeGreaterThanOrEqual(6);
+  it('should validate Qwen legacy-html modules inside chapters', () => {
+    const rsChapter = getChapterById('respiratory-physiology');
+    const rsSection = rsChapter?.sections.find((s) => s.type === 'legacy-html');
+    expect(rsSection).toBeDefined();
+    if (rsSection && typeof rsSection.content === 'object' && rsSection.content !== null) {
+      expect((rsSection.content as { modulePath: string }).modulePath).toContain('file=rs');
+    }
 
-    const legacySection = physio?.sections.find((s) => s.type === 'legacy-html');
-    expect(legacySection).toBeDefined();
-    if (legacySection && typeof legacySection.content === 'object' && legacySection.content !== null) {
-      expect((legacySection.content as { modulePath: string }).modulePath).toBe(
-        '/qwen-modules/biology/physiostudy/index.html'
-      );
+    const giChapter = getChapterById('gi-tract-physiology');
+    const giSection = giChapter?.sections.find((s) => s.type === 'legacy-html');
+    expect(giSection).toBeDefined();
+    if (giSection && typeof giSection.content === 'object' && giSection.content !== null) {
+      expect((giSection.content as { modulePath: string }).modulePath).toContain('file=gi');
     }
   });
 });
-
