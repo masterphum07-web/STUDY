@@ -1,0 +1,144 @@
+:root {
+  /* Color Palette - Light Theme */
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f1f5f9;
+  --bg-surface-active: #e2e8f0;
+  --bg-subtle: #f1f5f9;
+  
+  --border-color: #e2e8f0;
+  --border-color-strong: #cbd5e1;
+  --border-color-subtle: #f1f5f9;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  /* Brand / Primary Accent */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+  --primary-border: #bfdbfe;
+
+  /* Status Colors */
+  --success: #16a34a;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+  
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+
+  --info: #0284c7;
+  --info-bg: #f0f9ff;
+  --info-border: #bae6fd;
+
+  /* Subject Colors */
+  --subject-physics: #0284c7;
+  --subject-physics-bg: #f0f9ff;
+  --subject-physics-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+
+  --subject-math: #059669;
+  --subject-math-bg: #ecfdf5;
+  --subject-math-gradient: linear-gradient(135deg, #059669 0%, #047857 100%);
+
+  --subject-biology: #7c3aed;
+  --subject-biology-bg: #f5f3ff;
+  --subject-biology-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+
+  /* Spacing */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+
+  /* Border Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout */
+  --header-height: 64px;
+  --reader-max-width: 860px;
+  --container-max-width: 1200px;
+}
+
+[data-theme='dark'] {
+  --bg-primary: #0b0f19;
+  --bg-surface: #111827;
+  --bg-surface-hover: #1f2937;
+  --bg-surface-active: #374151;
+  --bg-subtle: #1e293b;
+
+  --border-color: #1f2937;
+  --border-color-strong: #374151;
+  --border-color-subtle: #192231;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-inverse: #0f172a;
+
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-light: #1e293b;
+  --primary-border: #2563eb;
+
+  --success: #22c55e;
+  --success-bg: #052e16;
+  --success-border: #15803d;
+
+  --warning: #f59e0b;
+  --warning-bg: #451a03;
+  --warning-border: #b45309;
+
+  --danger: #ef4444;
+  --danger-bg: #450a0a;
+  --danger-border: #b91c1c;
+
+  --info: #38bdf8;
+  --info-bg: #082f49;
+  --info-border: #0369a1;
+
+  /* Subject Colors in Dark Mode */
+  --subject-physics: #38bdf8;
+  --subject-physics-bg: #0c2340;
+  --subject-physics-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+
+  --subject-math: #34d399;
+  --subject-math-bg: #064e3b;
+  --subject-math-gradient: linear-gradient(135deg, #059669 0%, #047857 100%);
+
+  --subject-biology: #a78bfa;
+  --subject-biology-bg: #2e1065;
+  --subject-biology-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+}
+

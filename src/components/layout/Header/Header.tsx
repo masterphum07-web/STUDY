@@ -1,0 +1,73 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { BookOpen, Search, Bookmark, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../../hooks/useTheme';
+import { useBookmarks } from '../../../hooks/useBookmarks';
+import styles from './Header.module.css';
+
+interface HeaderProps {
+  onOpenSearch: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onOpenSearch }) => {
+  const { resolvedTheme, toggleTheme } = useTheme();
+  const { bookmarks } = useBookmarks();
+
+  return (
+    <header className={styles.header}>
+      <div className={styles.container}>
+        {/* Left: Brand logo & Navigation */}
+        <div className={styles.leftSection}>
+          <Link to="/" className={styles.brand}>
+            <div className={styles.brandLogo}>
+              <BookOpen size={18} />
+            </div>
+            <span>ศูนย์รวมสรุปบทเรียน</span>
+          </Link>
+
+          <nav className={styles.navLinks} aria-label="Main Navigation">
+            <Link to="/" className={styles.navLink}>
+              หน้าแรก
+            </Link>
+            <Link to="/bookmarks" className={styles.navLink}>
+              บุ๊กมาร์ก ({bookmarks.length})
+            </Link>
+          </nav>
+        </div>
+
+        {/* Right: Search, Bookmarks, Theme Toggle */}
+        <div className={styles.rightSection}>
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className={styles.searchTrigger}
+            aria-label="ค้นหาบทเรียน"
+          >
+            <Search size={16} />
+            <span>ค้นหาบทเรียน...</span>
+            <kbd className={styles.kbd}>Ctrl K</kbd>
+          </button>
+
+          <Link
+            to="/bookmarks"
+            className={styles.iconBtn}
+            title={`รายการบุ๊กมาร์ก (${bookmarks.length})`}
+            aria-label="ดูรายการที่บันทึกไว้"
+          >
+            <Bookmark size={18} />
+          </Link>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={styles.iconBtn}
+            title={resolvedTheme === 'dark' ? 'เปลี่ยนเป็นธีมสว่าง' : 'เปลี่ยนเป็นธีมมืด'}
+            aria-label="สลับธีมสี"
+          >
+            {resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+};

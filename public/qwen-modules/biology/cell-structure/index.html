@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สำรวจเซลล์พืชและเซลล์สัตว์ (Qwen Single-File HTML Demo)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: #f8fafc;
+      color: #1e293b;
+      padding: 16px;
+      line-height: 1.5;
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #0f172a;
+        color: #f1f5f9;
+      }
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .header h2 {
+      font-size: 1.25rem;
+      color: #7c3aed;
+      margin-bottom: 4px;
+    }
+    .header p {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      padding: 8px 16px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #334155;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: #7c3aed;
+      color: #ffffff;
+      border-color: #7c3aed;
+    }
+    .view-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      margin-bottom: 16px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .tab-btn {
+        background: #1e293b;
+        color: #cbd5e1;
+        border-color: #334155;
+      }
+      .view-card {
+        background: #1e293b;
+        border-color: #334155;
+      }
+    }
+    .cell-stage {
+      position: relative;
+      height: 220px;
+      background: #faf5ff;
+      border-radius: 10px;
+      border: 2px dashed #d8b4fe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .cell-stage {
+        background: #2e1065;
+        border-color: #6b21a8;
+      }
+    }
+    .organelle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+    }
+    .organelle-btn {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      cursor: pointer;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #1e293b;
+      transition: all 0.2s;
+    }
+    .organelle-btn:hover {
+      border-color: #7c3aed;
+      background: #f3e8ff;
+    }
+    .organelle-btn.selected {
+      background: #7c3aed;
+      color: #ffffff;
+      border-color: #7c3aed;
+    }
+    @media (prefers-color-scheme: dark) {
+      .organelle-btn {
+        background: #0f172a;
+        color: #f1f5f9;
+        border-color: #334155;
+      }
+      .organelle-btn:hover {
+        background: #581c87;
+      }
+    }
+    .info-box {
+      padding: 14px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      border-left: 4px solid #7c3aed;
+    }
+    @media (prefers-color-scheme: dark) {
+      .info-box {
+        background: #0f172a;
+      }
+    }
+    .info-title {
+      font-weight: 700;
+      color: #7c3aed;
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+    .info-desc {
+      font-size: 0.85rem;
+      color: #475569;
+    }
+    @media (prefers-color-scheme: dark) {
+      .info-desc {
+        color: #94a3b8;
+      }
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 6px;
+      background: #e0e7ff;
+      color: #4338ca;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="appRoot">
+    <div class="header">
+      <h2>🔬 แบบจำลองเซลล์และออร์แกเนลล์ (Cell Explorer)</h2>
+      <p>โมดูลแบบจำลอง HTML ไฟล์เดียวสร้างโดย Qwen เรนเดอร์แบบ Sandboxed อย่างปลอดภัย</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchCell('plant')">🌿 เซลล์พืช (Plant Cell)</button>
+      <button class="tab-btn" onclick="switchCell('animal')">🐾 เซลล์สัตว์ (Animal Cell)</button>
+    </div>
+
+    <div class="view-card">
+      <div class="cell-stage" id="cellVisual">
+        <div id="visualContent" style="text-align: center;">
+          <div style="font-size: 3rem;">🌿</div>
+          <div style="font-weight: 600; color: #7c3aed;">เซลล์พืช: มีผนังเซลล์และคลอโรพลาสต์</div>
+        </div>
+      </div>
+
+      <div class="organelle-grid" id="organelleButtons">
+        <!-- Buttons injected by JS -->
+      </div>
+    </div>
+
+    <div class="info-box" id="infoBox">
+      <div class="info-title" id="infoTitle">คลิกเลือกออร์แกเนลล์ด้านบน</div>
+      <div class="info-desc" id="infoDesc">เลือกส่วนประกอบเพื่อเรียนรู้โครงสร้างและหน้าที่สำคัญของเซลล์</div>
+      <div id="infoBadge"></div>
+    </div>
+  </div>
+
+  <script>
+    const organelles = {
+      nucleus: {
+        name: "นิวเคลียส (Nucleus)",
+        desc: "ศูนย์กลางควบคุมการทำงานของเซลล์และเก็บสารพันธุกรรม (DNA/RNA) ควบคุมการถ่ายทอดลักษณะ",
+        found: "พบทั้งในพืชและสัตว์",
+        color: "#3b82f6"
+      },
+      mitochondria: {
+        name: "ไมโทคอนเดรีย (Mitochondria)",
+        desc: "โรงงานผลิตพลังงานของเซลล์ ทำหน้าที่สร้างพลังงานในรูป ATP ผ่านกระบวนการหายใจระดับเซลล์",
+        found: "พบทั้งในพืชและสัตว์",
+        color: "#f59e0b"
+      },
+      chloroplast: {
+        name: "คลอโรพลาสต์ (Chloroplast)",
+        desc: "แหล่งสังเคราะห์ด้วยแสง ภายในมีรงควัตถุคลอโรฟิลล์ช่วยจับพลังงานแสงเพื่อสร้างอาหาร (น้ำตาลกลูโคส)",
+        found: "พบเฉพาะในเซลล์พืชและสาหร่าย",
+        color: "#10b981"
+      },
+      cellWall: {
+        name: "ผนังเซลล์ (Cell Wall)",
+        desc: "ชั้นนอกสุดของเซลล์พืช ประกอบด้วยเซลลูโลส ให้ความแข็งแรง คงรูปทรง และปกป้องเซลล์",
+        found: "พบเฉพาะในเซลล์พืช (สัตว์ไม่มี)",
+        color: "#059669"
+      },
+      vacuole: {
+        name: "แวคิวโอล (Central Vacuole)",
+        desc: "ถุงบรรจุสาร ในพืชมีขนาดใหญ่สะสมน้ำและสารอาหาร รักษาแรงดันเต่ง (Turgor pressure)",
+        found: "พืชมีขนาดใหญ่มาก สัตว์มีขนาดเล็ก",
+        color: "#8b5cf6"
+      }
+    };
+
+    let currentType = 'plant';
+
+    function switchCell(type) {
+      currentType = type;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const visual = document.getElementById('visualContent');
+      if (type === 'plant') {
+        visual.innerHTML = '<div style="font-size: 3rem;">🌿</div><div style="font-weight:600; color:#059669;">เซลล์พืช: ทรงเหลี่ยม มีผนังเซลล์และคลอโรพลาสต์</div>';
+      } else {
+        visual.innerHTML = '<div style="font-size: 3rem;">🐾</div><div style="font-weight:600; color:#3b82f6;">เซลล์สัตว์: ทรงกลม/รี ไม่มีผนังเซลล์ มีเซนทริโอล</div>';
+      }
+
+      renderButtons();
+      sendHeightToParent();
+    }
+
+    function renderButtons() {
+      const container = document.getElementById('organelleButtons');
+      container.innerHTML = '';
+
+      Object.keys(organelles).forEach(key => {
+        const item = organelles[key];
+        // Filter chloroplast and cellWall if in animal mode
+        if (currentType === 'animal' && (key === 'chloroplast' || key === 'cellWall')) {
+          return;
+        }
+
+        const btn = document.createElement('button');
+        btn.className = 'organelle-btn';
+        btn.innerText = item.name.split(' ')[0];
+        btn.onclick = () => selectOrganelle(key, btn);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectOrganelle(key, btnElem) {
+      document.querySelectorAll('.organelle-btn').forEach(b => b.classList.remove('selected'));
+      btnElem.classList.add('selected');
+
+      const data = organelles[key];
+      document.getElementById('infoTitle').innerText = data.name;
+      document.getElementById('infoDesc').innerText = data.desc;
+      document.getElementById('infoBadge').innerHTML = `<span class="badge">${data.found}</span>`;
+
+      sendHeightToParent();
+    }
+
+    // Auto-resize communication with parent platform via postMessage
+    function sendHeightToParent() {
+      const height = document.getElementById('appRoot').scrollHeight + 40;
+      window.parent.postMessage({
+        type: 'QWEN_MODULE_RESIZE',
+        height: height
+      }, '*');
+    }
+
+    window.addEventListener('load', () => {
+      renderButtons();
+      selectOrganelle('nucleus', document.querySelector('.organelle-btn'));
+      sendHeightToParent();
+    });
+
+    window.addEventListener('resize', sendHeightToParent);
+  </script>
+</body>
+</html>
+
