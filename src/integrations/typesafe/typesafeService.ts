@@ -146,3 +146,148 @@ function getFallbackEvaluation(studentAnswer: string): JevEvaluationResult {
   };
 }
 
+export interface JevRoutingResult {
+  targetSubjectId: string;
+  targetChapterId: string;
+  isQuestion: boolean;
+  confidence: number;
+  reasoningTh: string;
+}
+
+export async function routeStudentQuery(userQuery: string): Promise<JevRoutingResult> {
+  if (!userQuery || userQuery.trim().length < 2) {
+    return {
+      targetSubjectId: 'physiology',
+      targetChapterId: 'respiratory-physiology',
+      isQuestion: false,
+      confidence: 1.0,
+      reasoningTh: 'แนะนำเริ่มต้นที่บทเรียนสรีรวิทยาระบบหายใจ',
+    };
+  }
+
+  const endpoint = 'https://api.typesafe.ai/v1/systemone';
+
+  const requestBody = {
+    state: `คำค้นหาหรือคำถามของนักเรียน: "${userQuery}"`,
+    model: 'jev-latest',
+    questions: {
+      target_subject: {
+        type: 'choice',
+        instructions: 'Which subject category matches this student query best?',
+        criteria: {
+          physiology: 'Human physiology, respiratory system, GI tract, breathing mechanics, acid secretion',
+          physics: 'Projectile motion, Newton laws of motion, velocity, angles',
+          mathematics: 'Quadratic functions, parabolas, trigonometry, graphs',
+          biology: 'Cell structure, organelle, DNA, genetics',
+        },
+      },
+      target_chapter: {
+        type: 'choice',
+        instructions: 'Which specific chapter should the student study to answer or understand this topic?',
+        criteria: {
+          'respiratory-physiology': 'Lungs, breathing mechanics, Pip, Palv, surfactant, bronchi, gas transport',
+          'gi-tract-physiology': 'Stomach, parietal cells, acid secretion, digestion, GI tract',
+          'physiology-respiratory-gi': 'Complete physio suite with all 27 interactive models',
+          'projectile-motion': 'Projectile trajectory, parabolic motion, range, flight time',
+          'newton-laws': 'Newton laws of motion, forces, inertia, action-reaction',
+          'quadratic-functions': 'Quadratic grapher, vertex, parabola, algebra',
+          'trigonometry': 'Sin, cos, tan, right triangle, trigonometric functions',
+          'cell-structure': 'Cell organelles, cell membrane, mitochondria, nucleus',
+          'genetics-dna': 'DNA structure, replication, genetic inheritance',
+        },
+      },
+      is_question: {
+        type: 'noul',
+        instructions: 'Is the student asking a conceptual question rather than typing simple keywords?',
+        criteria: {
+          true: 'Student is inquiring about a concept or mechanism',
+          false: 'Student just entered keywords or topics',
+        },
+      },
+    },
+  };
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${DEFAULT_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      return getFallbackRouting(userQuery);
+    }
+
+    const data = await response.json();
+    const subChoice = data.answers?.target_subject?.choice || 'physiology';
+    const chapChoice = data.answers?.target_chapter?.choice || 'respiratory-physiology';
+    const isQProb = data.answers?.is_question?.noul || 0.5;
+    const confidence = data.answers?.target_chapter?.confidence || 0.9;
+
+    let reasoningTh = 'JEV AI แนะนำบทเรียนที่ตรงกับหัวข้อนี้มากที่สุด';
+    if (chapChoice === 'respiratory-physiology') {
+      reasoningTh = 'JEV ระบุว่าตรงกับ สรีรวิทยาระบบหายใจ (มีแบบจำลอง 3D และ 12 กราฟ Interactive)';
+    } else if (chapChoice === 'projectile-motion') {
+      reasoningTh = 'JEV ระบุว่าตรงกับ ฟิสิกส์การเคลื่อนที่แบบโพรเจกไทล์ (มีห้องทดลองยิงวัตถุ 2D)';
+    } else if (chapChoice === 'quadratic-functions') {
+      reasoningTh = 'JEV ระบุว่าตรงกับ ฟังก์ชันกำลังสองและพาราโบลา (มีกราฟฟังก์ชันสด)';
+    } else if (chapChoice === 'cell-structure') {
+      reasoningTh = 'JEV ระบุว่าตรงกับ โครงสร้างและหน้าที่ของเซลล์ชีววิทยา';
+    }
+
+    return {
+      targetSubjectId: subChoice,
+      targetChapterId: chapChoice,
+      isQuestion: isQProb >= 0.5,
+      confidence: parseFloat(confidence.toFixed(2)),
+      reasoningTh,
+    };
+  } catch (err) {
+    console.error('[JevService] Routing error:', err);
+    return getFallbackRouting(userQuery);
+  }
+}
+
+function getFallbackRouting(userQuery: string): JevRoutingResult {
+  const q = userQuery.toLowerCase();
+  if (q.includes('โพรเจก') || q.includes('ยิง') || q.includes('มุม') || q.includes('ฟิสิกส์') || q.includes('ความเร็ว')) {
+    return {
+      targetSubjectId: 'physics',
+      targetChapterId: 'projectile-motion',
+      isQuestion: q.includes('ทำไม') || q.includes('อย่างไร') || q.includes('เท่าไร'),
+      confidence: 0.9,
+      reasoningTh: 'ตรงกับฟิสิกส์การเคลื่อนที่แบบโพรเจกไทล์',
+    };
+  }
+  if (q.includes('กราฟ') || q.includes('พารา') || q.includes('กำลังสอง') || q.includes('คณิต')) {
+    return {
+      targetSubjectId: 'mathematics',
+      targetChapterId: 'quadratic-functions',
+      isQuestion: q.includes('ทำไม') || q.includes('อย่างไร'),
+      confidence: 0.9,
+      reasoningTh: 'ตรงกับคณิตศาสตร์ฟังก์ชันกำลังสอง',
+    };
+  }
+  if (q.includes('เซลล์') || q.includes('dna') || q.includes('ยีน')) {
+    return {
+      targetSubjectId: 'biology',
+      targetChapterId: 'cell-structure',
+      isQuestion: q.includes('ทำไม') || q.includes('อย่างไร'),
+      confidence: 0.9,
+      reasoningTh: 'ตรงกับวิชาชีววิทยา',
+    };
+  }
+
+  return {
+    targetSubjectId: 'physiology',
+    targetChapterId: 'respiratory-physiology',
+    isQuestion: q.includes('ทำไม') || q.includes('อย่างไร'),
+    confidence: 0.95,
+    reasoningTh: 'ตรงกับสรีรวิทยาระบบหายใจและแบบจำลอง 3D',
+  };
+}
+
+

@@ -1,9 +1,67 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Atom, Calculator, Dna, BookOpen, CheckCircle2, ChevronRight, Sparkles, Clock, Activity, HeartPulse, Stethoscope } from 'lucide-react';
+import {
+  Atom,
+  Calculator,
+  Dna,
+  BookOpen,
+  CheckCircle2,
+  ChevronRight,
+  Sparkles,
+  Clock,
+  Activity,
+  HeartPulse,
+  Stethoscope,
+  Box,
+  Layers,
+} from 'lucide-react';
 import { getAllSubjects, getChapterById } from '../../content/registry';
 import { useProgress } from '../../hooks/useProgress';
+import { JevAssistantHero } from '../../components/home/JevAssistantHero/JevAssistantHero';
 import styles from './HomePage.module.css';
+
+const FEATURED_SIMULATIONS = [
+  {
+    id: 'sim-3d-lungs',
+    title: 'แบบจำลอง 3D สรีรวิทยาปอดและระบบหายใจ',
+    subtitle: 'Three.js 3D Procedural Studio',
+    desc: 'หมุนสำรวจ 360° ละอองอากาศหายใจเข้า-ออก, แขนงหลอดเลือดแดง/ดำ, กะบังลม, และระบบตรวจคำตอบ JEV AI',
+    path: '/chapter/physiology/respiratory-physiology',
+    tag: '3D WebGL',
+    tagColor: '#0284c7',
+    icon: '🫁',
+  },
+  {
+    id: 'sim-physio-rs',
+    title: 'Physio-RS คลังแบบจำลองทางเดินหายใจ 12 โมเดล',
+    subtitle: 'Qwen Interactive Suite',
+    desc: 'กลศาสตร์ลูกสูบปอดตามกฎบอยล์, การทำงานของ Surfactant, กราฟ Spirometry สด และกราฟ Oxyhemoglobin',
+    path: '/chapter/physiology/respiratory-physiology',
+    tag: 'Qwen Suite',
+    tagColor: '#7c3aed',
+    icon: '🔬',
+  },
+  {
+    id: 'sim-projectile',
+    title: 'ห้องทดลองฟิสิกส์: การเคลื่อนที่แบบโพรเจกไทล์',
+    subtitle: 'Canvas Interactive Simulator',
+    desc: 'ปรับมุมยิง ความเร็วต้น และแรงโน้มถ่วง พร้อมวิเคราะห์ระยะตกไกลสุดและจุดสูงสุดแบบเรียลไทม์',
+    path: '/chapter/physics/projectile-motion',
+    tag: 'Physics Lab',
+    tagColor: '#059669',
+    icon: '🎯',
+  },
+  {
+    id: 'sim-quadratic',
+    title: 'เครื่องมือพลอตกราฟฟังก์ชันกำลังสองและพาราโบลา',
+    subtitle: 'Math Function Studio',
+    desc: 'ปรับสัมประสิทธิ์ a, b, c แบบเรียลไทม์ ค้นหาจุดยอด จุดตัดแกน X และแกนสมมาตรทันที',
+    path: '/chapter/mathematics/quadratic-functions',
+    tag: 'Math Studio',
+    tagColor: '#d97706',
+    icon: '📈',
+  },
+];
 
 export const HomePage: React.FC = () => {
   const subjects = getAllSubjects();
@@ -34,27 +92,36 @@ export const HomePage: React.FC = () => {
 
   return (
     <div>
-      {/* Hero Banner */}
+      {/* Hero Banner with JEV AI Assistant */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <div className={styles.badgeHero}>
             <Sparkles size={16} />
-            <span>Interactive Learning &amp; Summary Hub</span>
+            <span>AI-Driven Interactive Learning Hub • TypeSafe JEV Powered</span>
           </div>
+
           <h1 className={styles.heroTitle}>ศูนย์รวมสรุปบทเรียนและแบบจำลอง</h1>
+
           <p className={styles.heroSubtitle}>
-            อ่านสรุปเนื้อหาเข้มข้น ทำความเข้าใจด้วยแบบจำลอง Interactive เสริมความมั่นใจด้วยแบบทดสอบ
-            และระบบแยกโมดูลรองรับทั้ง React และ Qwen
+            สรุปเนื้อหาเชิงลึก พร้อมแบบจำลอง 3D สมจริง และผู้ช่วยอัจฉริยะ <strong>TypeSafe JEV AI</strong> ช่วยตรวจความเข้าใจและแนะนำบทเรียน
           </p>
 
+          {/* JEV AI Smart Search & Inquiry Box */}
+          <JevAssistantHero />
+
+          {/* Learning Stats */}
           <div className={styles.statsRow}>
             <div className={styles.statItem}>
               <BookOpen size={18} color="var(--primary)" />
-              <span>{subjects.length} หมวดวิชา</span>
+              <span>{subjects.length} หมวดวิชาหลัก</span>
             </div>
             <div className={styles.statItem}>
               <Clock size={18} color="var(--info)" />
               <span>{totalChapters} บทเรียนคุณภาพ</span>
+            </div>
+            <div className={styles.statItem}>
+              <Box size={18} color="#7c3aed" />
+              <span>4+ แบบจำลอง 3D &amp; Interactive</span>
             </div>
             <div className={styles.statItem}>
               <CheckCircle2 size={18} color="var(--success)" />
@@ -66,83 +133,90 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 3D & JEV AI Spotlight Card */}
-      <section style={{ maxWidth: 'var(--container-max-width)', margin: '24px auto 0', padding: '0 16px 16px' }}>
-        <div
-          style={{
-            background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(124, 58, 237, 0.08) 100%)',
-            border: '1px solid rgba(124, 58, 237, 0.25)',
-            borderRadius: 'var(--radius-xl)',
-            padding: '24px 28px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '20px',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          <div style={{ maxWidth: '650px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span
-                style={{
-                  background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                  color: '#fff',
-                  fontSize: '0.725rem',
-                  fontWeight: 700,
-                  padding: '3px 8px',
-                  borderRadius: 'var(--radius-full)',
-                }}
-              >
-                NEW 3D SIMULATION
-              </span>
-              <span
-                style={{
-                  background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
-                  color: '#fff',
-                  fontSize: '0.725rem',
-                  fontWeight: 700,
-                  padding: '3px 8px',
-                  borderRadius: 'var(--radius-full)',
-                }}
-              >
-                TYPESAFE JEV AI
-              </span>
+      {/* Featured 3D & Interactive Labs Section */}
+      <section className={styles.section} style={{ paddingBottom: '12px' }}>
+        <div className={styles.sectionHeader}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Layers size={22} color="var(--primary)" />
+            <div>
+              <h2 className={styles.sectionTitle}>ห้องทดลองจำลองและโมเดล 3D (Interactive Labs)</h2>
+              <p className={styles.sectionDesc}>
+                ทดลองปรับเปลี่ยนพารามิเตอร์ สังเกตผลลัพธ์แบบเรียลไทม์ และหมุนดูมิติกายวิภาคแบบ 360°
+              </p>
             </div>
-            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-              แบบจำลอง 3D สรีรวิทยาปอดสมจริง พร้อมระบบตรวจคำตอบอัจฉริยะ JEV AI
-            </h3>
-            <p style={{ fontSize: '0.925rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
-              หมุนสำรวจกายวิภาคปอด 360° สังเกตการไหลเวียนของละอองอากาศและหลอดเลือดดำ-แดง พร้อมพิมพ์คำอธิบายให้โมเดล JEV AI ประเมินความแม่นยำทางสรีรวิทยาได้แบบเรียลไทม์
-            </p>
           </div>
+        </div>
 
-          <Link
-            to="/chapter/physiology/respiratory-physiology"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 22px',
-              borderRadius: 'var(--radius-md)',
-              background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-              color: '#ffffff',
-              fontWeight: 700,
-              fontSize: '0.9rem',
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
-              textDecoration: 'none',
-              flexShrink: 0,
-            }}
-          >
-            <span>ทดลองใช้งาน 3D & JEV</span>
-            <ChevronRight size={18} />
-          </Link>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+          {FEATURED_SIMULATIONS.map((sim) => (
+            <Link
+              key={sim.id}
+              to={sim.path}
+              style={{
+                backgroundColor: 'var(--bg-surface)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '22px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                textDecoration: 'none',
+                boxShadow: 'var(--shadow-sm)',
+                transition: 'all var(--transition-fast)',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                e.currentTarget.style.borderColor = 'var(--border-color)';
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '1.8rem' }}>{sim.icon}</span>
+                  <span
+                    style={{
+                      fontSize: '0.725rem',
+                      fontWeight: 700,
+                      padding: '3px 8px',
+                      borderRadius: 'var(--radius-full)',
+                      backgroundColor: 'var(--bg-subtle)',
+                      color: sim.tagColor,
+                      border: `1px solid ${sim.tagColor}40`,
+                    }}
+                  >
+                    {sim.tag}
+                  </span>
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '1.05rem', color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1.35 }}>
+                  {sim.title}
+                </h4>
+                <p style={{ margin: '0 0 16px', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                  {sim.desc}
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-color-subtle)', paddingTop: '12px' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{sim.subtitle}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--primary)', fontWeight: 600, fontSize: '0.85rem' }}>
+                  <span>เปิดทดลอง</span>
+                  <ChevronRight size={16} />
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
       {/* Recent Chapters if any */}
       {recentIds.length > 0 && (
-        <section className={styles.section} style={{ marginBottom: '20px' }}>
+        <section className={styles.section} style={{ marginBottom: '12px' }}>
           <div className={styles.sectionHeader}>
             <div>
               <h3 className={styles.sectionTitle} style={{ fontSize: '1.25rem' }}>

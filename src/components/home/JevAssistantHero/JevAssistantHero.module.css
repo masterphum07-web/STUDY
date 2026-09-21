@@ -1,0 +1,206 @@
+.container {
+  max-width: 760px;
+  margin: 0 auto 36px;
+  position: relative;
+  z-index: 10;
+}
+
+.searchBox {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 8px 12px 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all var(--transition-base);
+}
+
+.searchBox:focus-within {
+  border-color: #8b5cf6;
+  box-shadow: 0 12px 30px -5px rgba(139, 92, 246, 0.25), 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.sparkleIcon {
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.askBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.askBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35);
+}
+
+.askBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Quick prompt chips */
+.chipsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chipLabel {
+  font-size: 0.775rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.chipBtn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.775rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.chipBtn:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+  background: var(--bg-surface-hover);
+}
+
+/* JEV Recommendation Card */
+.resultCard {
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border: 1px solid #c4b5fd;
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  animation: slideDown 0.25s ease;
+}
+
+[data-theme='dark'] .resultCard {
+  border-color: rgba(139, 92, 246, 0.4);
+  background: #13192b;
+}
+
+.resultInfo {
+  max-width: 520px;
+}
+
+.resultBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #7c3aed;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  margin-bottom: 6px;
+}
+
+[data-theme='dark'] .resultBadge {
+  background: #2e1065;
+  color: #c4b5fd;
+  border-color: #5b21b6;
+}
+
+.resultTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.resultDesc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.navigateBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.navigateBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .searchBox {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+  .askBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}

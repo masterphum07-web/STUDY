@@ -22,7 +22,23 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch }) => {
             <div className={styles.brandLogo}>
               <BookOpen size={18} />
             </div>
-            <span>ศูนย์รวมสรุปบทเรียน</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>ศูนย์รวมสรุปบทเรียน</span>
+              <span
+                style={{
+                  fontSize: '0.675rem',
+                  fontWeight: 800,
+                  padding: '2px 7px',
+                  borderRadius: 'var(--radius-full)',
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)',
+                  color: '#ffffff',
+                  letterSpacing: '0.5px',
+                  boxShadow: '0 2px 6px rgba(124, 58, 237, 0.3)',
+                }}
+              >
+                JEV AI
+              </span>
+            </div>
           </Link>
 
           <nav className={styles.navLinks} aria-label="Main Navigation">
