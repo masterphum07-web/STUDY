@@ -12,7 +12,12 @@ import {
   X,
   Activity,
   Layers,
+  Wind,
+  Heart,
+  Shield,
+  Sparkles,
 } from 'lucide-react';
+import { JevPhysioExaminer } from '../../../components/typesafe/JevPhysioExaminer';
 import styles from './RealisticLungs3DSim.module.css';
 
 interface LandmarkPin {
@@ -94,6 +99,14 @@ const LANDMARKS: LandmarkPin[] = [
   },
 ];
 
+interface AirParticle {
+  side: 'right' | 'left';
+  progress: number;
+  speed: number;
+  offsetAngle: number;
+  radius: number;
+}
+
 export const RealisticLungs3DSim: React.FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -107,8 +120,15 @@ export const RealisticLungs3DSim: React.FC = () => {
   const rightLungGroupRef = useRef<THREE.Group | null>(null);
   const leftLungGroupRef = useRef<THREE.Group | null>(null);
   const diaphragmMeshRef = useRef<THREE.Mesh | null>(null);
-  const bronchialTreeGroupRef = useRef<THREE.Group | null>(null);
   const lungMaterialsRef = useRef<THREE.MeshPhysicalMaterial[]>([]);
+
+  // Airflow particles references
+  const airflowPointsRef = useRef<THREE.Points | null>(null);
+  const particleMetaRef = useRef<AirParticle[]>([]);
+
+  // Anatomical layer groups
+  const vesselsGroupRef = useRef<THREE.Group | null>(null);
+  const ribCageGroupRef = useRef<THREE.Group | null>(null);
 
   // Interactive UI states
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
@@ -116,6 +136,12 @@ export const RealisticLungs3DSim: React.FC = () => {
   const [tissueOpacity, setTissueOpacity] = useState<number>(0.65);
   const [selectedLandmark, setSelectedLandmark] = useState<LandmarkPin | null>(null);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+  // Visual Enhancement Toggles
+  const [showAirflow, setShowAirflow] = useState<boolean>(true);
+  const [showVessels, setShowVessels] = useState<boolean>(true);
+  const [showRibs, setShowRibs] = useState<boolean>(false);
+  const [showJevExaminer, setShowJevExaminer] = useState<boolean>(false);
 
   // Projected 2D pin screen coordinates
   const [screenPins, setScreenPins] = useState<{ id: string; x: number; y: number; label: string }[]>([]);
@@ -133,13 +159,15 @@ export const RealisticLungs3DSim: React.FC = () => {
 
   // Cycle animation reference time
   const cycleTimeRef = useRef<number>(0);
-  const lastTimeRef = useRef<number>(performance.now());
+  const lastTimeRef = useRef<number>(0);
 
   // Setup Three.js Scene
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
+
+    lastTimeRef.current = performance.now();
 
     // Dimensions
     const width = container.clientWidth;
@@ -151,7 +179,7 @@ export const RealisticLungs3DSim: React.FC = () => {
 
     // Camera
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(0, 0.4, 11);
+    camera.position.set(0, 0.3, 11.2);
     cameraRef.current = camera;
 
     // WebGL Renderer
@@ -164,7 +192,7 @@ export const RealisticLungs3DSim: React.FC = () => {
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.18;
     rendererRef.current = renderer;
 
     // OrbitControls
@@ -174,28 +202,61 @@ export const RealisticLungs3DSim: React.FC = () => {
     controls.minDistance = 4.5;
     controls.maxDistance = 20;
     controls.target.set(0, 0.2, 0);
-    controls.maxPolarAngle = Math.PI * 0.85; // don't go completely under
+    controls.maxPolarAngle = Math.PI * 0.85;
     controlsRef.current = controls;
 
-    // Lighting setup (Medical studio 3-point lighting)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    // Lighting setup (Medical Studio Lighting)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
     keyLight.position.set(5, 8, 8);
     scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0x7dd3fc, 0.8);
+    const fillLight = new THREE.DirectionalLight(0x7dd3fc, 0.85);
     fillLight.position.set(-6, 4, 6);
     scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.9);
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.1);
     rimLight.position.set(0, 6, -8);
     scene.add(rimLight);
 
-    const bottomBounce = new THREE.DirectionalLight(0xf472b6, 0.35);
+    const bottomBounce = new THREE.DirectionalLight(0xf472b6, 0.4);
     bottomBounce.position.set(0, -6, 4);
     scene.add(bottomBounce);
+
+    // ==========================================
+    // MEDICAL PEDESTAL & GRID FLOOR
+    // ==========================================
+    const pedestalGroup = new THREE.Group();
+    pedestalGroup.position.set(0, -3.1, 0);
+
+    // Outer ring
+    const ringGeom = new THREE.RingGeometry(3.6, 3.75, 48);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.45,
+    });
+    const ringMesh = new THREE.Mesh(ringGeom, ringMat);
+    ringMesh.rotation.x = Math.PI / 2;
+    pedestalGroup.add(ringMesh);
+
+    // Inner circular disc
+    const discGeom = new THREE.CircleGeometry(3.5, 40);
+    const discMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      roughness: 0.8,
+      metalness: 0.2,
+      transparent: true,
+      opacity: 0.7,
+    });
+    const discMesh = new THREE.Mesh(discGeom, discMat);
+    discMesh.rotation.x = Math.PI / 2;
+    pedestalGroup.add(discMesh);
+
+    scene.add(pedestalGroup);
 
     // ==========================================
     // PROCEDURAL ANATOMICAL MODELING
@@ -204,7 +265,7 @@ export const RealisticLungs3DSim: React.FC = () => {
 
     // Materials
     const cartilageMat = new THREE.MeshStandardMaterial({
-      color: 0xe2e8f0,
+      color: 0xf1f5f9,
       roughness: 0.3,
       metalness: 0.1,
     });
@@ -223,12 +284,12 @@ export const RealisticLungs3DSim: React.FC = () => {
 
     const lungTissueMat = new THREE.MeshPhysicalMaterial({
       color: 0xf43f5e,
-      roughness: 0.45,
+      roughness: 0.42,
       metalness: 0.05,
       transmission: 0.45,
       transparent: true,
-      opacity: tissueOpacity,
-      clearcoat: 0.25,
+      opacity: 0.65,
+      clearcoat: 0.28,
       clearcoatRoughness: 0.3,
       ior: 1.35,
     });
@@ -240,7 +301,6 @@ export const RealisticLungs3DSim: React.FC = () => {
     const tracheaRadius = 0.35;
     const tracheaCenterY = 2.65;
 
-    // Central inner mucosa cylinder
     const tracheaGeom = new THREE.CylinderGeometry(
       tracheaRadius * 0.95,
       tracheaRadius * 0.95,
@@ -251,14 +311,14 @@ export const RealisticLungs3DSim: React.FC = () => {
     tracheaMesh.position.set(0, tracheaCenterY, 0);
     tracheaGroup.add(tracheaMesh);
 
-    // 10 Anatomical C-shaped Cartilaginous Rings
     const ringCount = 10;
     for (let i = 0; i < ringCount; i++) {
-      const ringY = tracheaCenterY - tracheaHeight / 2 + 0.1 + (i * (tracheaHeight - 0.2)) / (ringCount - 1);
+      const ringY =
+        tracheaCenterY - tracheaHeight / 2 + 0.1 + (i * (tracheaHeight - 0.2)) / (ringCount - 1);
       const ringGeom = new THREE.TorusGeometry(tracheaRadius, 0.065, 12, 32, Math.PI * 1.6);
       const ringMesh = new THREE.Mesh(ringGeom, cartilageMat);
       ringMesh.rotation.x = Math.PI / 2;
-      ringMesh.rotation.z = Math.PI * 0.2; // open posterior side
+      ringMesh.rotation.z = Math.PI * 0.2;
       ringMesh.position.set(0, ringY, 0);
       tracheaGroup.add(ringMesh);
     }
@@ -266,23 +326,22 @@ export const RealisticLungs3DSim: React.FC = () => {
 
     // 2. CARINA & BRONCHIAL TREE
     const bronchialGroup = new THREE.Group();
-    bronchialTreeGroupRef.current = bronchialGroup;
 
-    // Carina junction
+    // Carina
     const carinaGeom = new THREE.SphereGeometry(0.38, 24, 24);
     const carinaMesh = new THREE.Mesh(carinaGeom, cartilageMat);
     carinaMesh.position.set(0, 1.75, 0);
     carinaMesh.scale.set(1, 0.8, 1);
     bronchialGroup.add(carinaMesh);
 
-    // Right Main Bronchus (Shorter, wider, more vertical ~25°)
+    // Right Main Bronchus (Shorter, wider, ~24°)
     const rightBronchusGeom = new THREE.CylinderGeometry(0.26, 0.24, 1.3, 20);
     const rightBronchusMesh = new THREE.Mesh(rightBronchusGeom, bronchusMat);
     rightBronchusMesh.position.set(0.48, 1.3, 0);
-    rightBronchusMesh.rotation.z = -0.42; // ~24 degrees
+    rightBronchusMesh.rotation.z = -0.42;
     bronchialGroup.add(rightBronchusMesh);
 
-    // Right Lobar Bronchi (3 branches: Superior, Middle, Inferior)
+    // Right Lobar Bronchi
     const rLobarSup = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.14, 0.9, 16), bronchusMat);
     rLobarSup.position.set(0.95, 1.3, 0.1);
     rLobarSup.rotation.z = -0.9;
@@ -298,14 +357,14 @@ export const RealisticLungs3DSim: React.FC = () => {
     rLobarInf.rotation.z = -0.15;
     bronchialGroup.add(rLobarInf);
 
-    // Left Main Bronchus (Longer, narrower, more horizontal ~45°)
+    // Left Main Bronchus (Longer, narrower, ~45°)
     const leftBronchusGeom = new THREE.CylinderGeometry(0.22, 0.2, 1.9, 20);
     const leftBronchusMesh = new THREE.Mesh(leftBronchusGeom, bronchusMat);
     leftBronchusMesh.position.set(-0.75, 1.25, 0);
-    leftBronchusMesh.rotation.z = 0.78; // ~45 degrees
+    leftBronchusMesh.rotation.z = 0.78;
     bronchialGroup.add(leftBronchusMesh);
 
-    // Left Lobar Bronchi (2 branches: Superior, Inferior)
+    // Left Lobar Bronchi
     const lLobarSup = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 1.0, 16), bronchusMat);
     lLobarSup.position.set(-1.45, 1.3, 0.1);
     lLobarSup.rotation.z = 0.85;
@@ -318,12 +377,11 @@ export const RealisticLungs3DSim: React.FC = () => {
 
     scene.add(bronchialGroup);
 
-    // 3. RIGHT LUNG (3 distinct anatomical lobes: Superior, Middle, Inferior)
+    // 3. RIGHT LUNG (3 distinct lobes)
     const rightLungGroup = new THREE.Group();
     rightLungGroupRef.current = rightLungGroup;
-    rightLungGroup.position.set(0.6, 0.3, 0); // Hilum anchor
+    rightLungGroup.position.set(0.6, 0.3, 0);
 
-    // Superior Lobe (Upper)
     const rSupGeom = new THREE.SphereGeometry(1.0, 32, 28);
     rSupGeom.scale(1.1, 1.25, 1.0);
     const rSupMesh = new THREE.Mesh(rSupGeom, lungTissueMat);
@@ -331,14 +389,12 @@ export const RealisticLungs3DSim: React.FC = () => {
     rSupMesh.rotation.z = -0.1;
     rightLungGroup.add(rSupMesh);
 
-    // Middle Lobe
     const rMidGeom = new THREE.SphereGeometry(0.9, 32, 28);
     rMidGeom.scale(1.05, 0.85, 0.95);
     const rMidMesh = new THREE.Mesh(rMidGeom, lungTissueMat);
     rMidMesh.position.set(1.15, 0.15, 0.25);
     rightLungGroup.add(rMidMesh);
 
-    // Inferior Lobe (Base)
     const rInfGeom = new THREE.SphereGeometry(1.2, 32, 28);
     rInfGeom.scale(1.2, 1.1, 1.1);
     const rInfMesh = new THREE.Mesh(rInfGeom, lungTissueMat);
@@ -347,21 +403,18 @@ export const RealisticLungs3DSim: React.FC = () => {
 
     scene.add(rightLungGroup);
 
-    // 4. LEFT LUNG (2 lobes + Cardiac Notch + Lingula)
+    // 4. LEFT LUNG (2 lobes + Cardiac Notch)
     const leftLungGroup = new THREE.Group();
     leftLungGroupRef.current = leftLungGroup;
-    leftLungGroup.position.set(-0.6, 0.3, 0); // Hilum anchor
+    leftLungGroup.position.set(-0.6, 0.3, 0);
 
-    // Left Superior Lobe with Cardiac Notch
     const lSupGeom = new THREE.SphereGeometry(1.05, 32, 28);
-    // Vertex deformation to carve out anatomical Cardiac Notch (เว้าหัวใจ)
     const posAttr = lSupGeom.attributes.position;
     for (let i = 0; i < posAttr.count; i++) {
       const vx = posAttr.getX(i);
       const vy = posAttr.getY(i);
       const vz = posAttr.getZ(i);
 
-      // Medial anterior region indentation
       if (vx > -0.1 && vy < 0.2 && vz > -0.1) {
         posAttr.setX(i, vx * 0.55);
         posAttr.setZ(i, vz * 0.7);
@@ -375,7 +428,6 @@ export const RealisticLungs3DSim: React.FC = () => {
     lSupMesh.rotation.z = 0.1;
     leftLungGroup.add(lSupMesh);
 
-    // Left Inferior Lobe
     const lInfGeom = new THREE.SphereGeometry(1.15, 32, 28);
     lInfGeom.scale(1.15, 1.2, 1.05);
     const lInfMesh = new THREE.Mesh(lInfGeom, lungTissueMat);
@@ -384,7 +436,7 @@ export const RealisticLungs3DSim: React.FC = () => {
 
     scene.add(leftLungGroup);
 
-    // Subtle Cardiac silhouette (Heart nestled in Cardiac Notch)
+    // Cardiac Silhouette
     const heartGeom = new THREE.SphereGeometry(0.7, 24, 24);
     heartGeom.scale(0.9, 1.15, 0.85);
     const heartMat = new THREE.MeshStandardMaterial({
@@ -399,7 +451,88 @@ export const RealisticLungs3DSim: React.FC = () => {
     heartMesh.rotation.z = 0.25;
     scene.add(heartMesh);
 
-    // 5. DIAPHRAGM DOME (กะบังลม)
+    // 5. PULMONARY VESSELS (Arteries & Veins)
+    const vesselsGroup = new THREE.Group();
+    vesselsGroupRef.current = vesselsGroup;
+
+    // Pulmonary Artery (Blue)
+    const paMat = new THREE.MeshStandardMaterial({
+      color: 0x2563eb,
+      roughness: 0.3,
+      metalness: 0.15,
+    });
+    // Main trunk
+    const paTrunk = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.22, 1.1, 16), paMat);
+    paTrunk.position.set(-0.15, 1.05, 0.35);
+    paTrunk.rotation.z = -0.2;
+    vesselsGroup.add(paTrunk);
+
+    // Right Pulmonary Artery branch
+    const paRight = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.15, 1.6, 16), paMat);
+    paRight.position.set(0.65, 1.1, 0.25);
+    paRight.rotation.z = -1.2;
+    vesselsGroup.add(paRight);
+
+    // Left Pulmonary Artery branch
+    const paLeft = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.14, 1.4, 16), paMat);
+    paLeft.position.set(-0.75, 1.15, 0.25);
+    paLeft.rotation.z = 1.15;
+    vesselsGroup.add(paLeft);
+
+    // Pulmonary Veins (Oxygenated Red)
+    const pvMat = new THREE.MeshStandardMaterial({
+      color: 0xef4444,
+      roughness: 0.3,
+      metalness: 0.15,
+    });
+
+    const pvRightSup = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.12, 1.2, 16), pvMat);
+    pvRightSup.position.set(0.7, 0.65, 0.35);
+    pvRightSup.rotation.z = -1.0;
+    vesselsGroup.add(pvRightSup);
+
+    const pvRightInf = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.12, 1.1, 16), pvMat);
+    pvRightInf.position.set(0.65, 0.25, 0.3);
+    pvRightInf.rotation.z = -0.7;
+    vesselsGroup.add(pvRightInf);
+
+    const pvLeftSup = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.11, 1.1, 16), pvMat);
+    pvLeftSup.position.set(-0.8, 0.6, 0.35);
+    pvLeftSup.rotation.z = 0.95;
+    vesselsGroup.add(pvLeftSup);
+
+    const pvLeftInf = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.11, 1.0, 16), pvMat);
+    pvLeftInf.position.set(-0.75, 0.2, 0.3);
+    pvLeftInf.rotation.z = 0.65;
+    vesselsGroup.add(pvLeftInf);
+
+    scene.add(vesselsGroup);
+
+    // 6. THORACIC RIB CAGE CONTOUR (Optional layer)
+    const ribGroup = new THREE.Group();
+    ribCageGroupRef.current = ribGroup;
+    const ribMat = new THREE.MeshBasicMaterial({
+      color: 0x94a3b8,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.25,
+    });
+
+    const ribLevels = [1.8, 1.1, 0.4, -0.3, -1.0];
+    ribLevels.forEach((ry, idx) => {
+      const ribRadius = 2.6 + idx * 0.2;
+      const ribGeom = new THREE.TorusGeometry(ribRadius, 0.04, 6, 32, Math.PI * 1.55);
+      const ribMesh = new THREE.Mesh(ribGeom, ribMat);
+      ribMesh.rotation.x = Math.PI / 2 + 0.15;
+      ribMesh.rotation.z = Math.PI * 0.22;
+      ribMesh.position.set(0, ry, 0);
+      ribMesh.scale.set(1.15, 0.85, 1.0);
+      ribGroup.add(ribMesh);
+    });
+    ribGroup.visible = false;
+    scene.add(ribGroup);
+
+    // 7. DIAPHRAGM DOME
     const diaphragmRadius = 3.6;
     const diaphragmGeom = new THREE.SphereGeometry(
       diaphragmRadius,
@@ -410,7 +543,6 @@ export const RealisticLungs3DSim: React.FC = () => {
       0,
       Math.PI * 0.36
     );
-    // Flatten and curve
     diaphragmGeom.scale(1.0, 0.45, 0.85);
     const diaphragmMat = new THREE.MeshStandardMaterial({
       color: 0x881337,
@@ -420,11 +552,10 @@ export const RealisticLungs3DSim: React.FC = () => {
     });
     const diaphragmMesh = new THREE.Mesh(diaphragmGeom, diaphragmMat);
     diaphragmMesh.position.set(0, -2.1, 0);
-    diaphragmMesh.rotation.x = Math.PI; // dome curves upwards toward lungs
+    diaphragmMesh.rotation.x = Math.PI;
     diaphragmMeshRef.current = diaphragmMesh;
     scene.add(diaphragmMesh);
 
-    // Central tendon patch of diaphragm
     const tendonGeom = new THREE.CircleGeometry(1.4, 24);
     const tendonMat = new THREE.MeshStandardMaterial({
       color: 0xf1f5f9,
@@ -439,6 +570,45 @@ export const RealisticLungs3DSim: React.FC = () => {
     tendonMesh.scale.set(1.2, 0.8, 1);
     scene.add(tendonMesh);
 
+    // 8. DYNAMIC AIRFLOW PARTICLES SYSTEM
+    const particleCount = 140;
+    const particlePositions = new Float32Array(particleCount * 3);
+    const particlesMeta: AirParticle[] = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      const side: 'right' | 'left' = Math.random() > 0.48 ? 'right' : 'left';
+      const progress = Math.random(); // 0 (trachea top) -> 1 (deep lung)
+      particlesMeta.push({
+        side,
+        progress,
+        speed: 0.35 + Math.random() * 0.3,
+        offsetAngle: Math.random() * Math.PI * 2,
+        radius: 0.08 + Math.random() * 0.12,
+      });
+
+      // Initial positions
+      particlePositions[i * 3] = 0;
+      particlePositions[i * 3 + 1] = 3.5 - progress * 4.5;
+      particlePositions[i * 3 + 2] = 0;
+    }
+    particleMetaRef.current = particlesMeta;
+
+    const particleGeom = new THREE.BufferGeometry();
+    particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+
+    const particleMat = new THREE.PointsMaterial({
+      color: 0x38bdf8,
+      size: 0.13,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+    });
+
+    const airflowPoints = new THREE.Points(particleGeom, particleMat);
+    airflowPointsRef.current = airflowPoints;
+    airflowPoints.visible = true;
+    scene.add(airflowPoints);
+
     // ==========================================
     // RENDER & ANIMATION LOOP
     // ==========================================
@@ -449,59 +619,45 @@ export const RealisticLungs3DSim: React.FC = () => {
       const deltaSec = (now - lastTimeRef.current) / 1000;
       lastTimeRef.current = now;
 
-      // Update cycle only when playing
+      let isInsp = true;
+      let breathFactor = 0;
+      let cycleProgress = 0;
+
       if (isPlaying) {
-        // Cycle duration: 60s / bpm
         const cycleDuration = 60 / bpm;
         cycleTimeRef.current = (cycleTimeRef.current + deltaSec) % cycleDuration;
+        cycleProgress = cycleTimeRef.current / cycleDuration;
 
-        const cycleProgress = cycleTimeRef.current / cycleDuration; // 0.0 -> 1.0
-
-        // Inhalation is ~40% of cycle, Exhalation is ~60% of cycle
-        let breathFactor = 0; // 0.0 (minimum volume) -> 1.0 (peak volume)
-        let isInsp = true;
         let palv = 0;
         let pip = -4.0;
 
         if (cycleProgress <= 0.4) {
-          // Inspiration phase
           isInsp = true;
-          const phaseT = cycleProgress / 0.4; // 0 -> 1
-          breathFactor = Math.sin((phaseT * Math.PI) / 2); // Smooth ease in
-          // Palv drops to -1 mmHg at midpoint of inspiration, then returns to 0
+          const phaseT = cycleProgress / 0.4;
+          breathFactor = Math.sin((phaseT * Math.PI) / 2);
           palv = -1.0 * Math.sin(phaseT * Math.PI);
-          // Pip drops from -4 mmHg down to -7 mmHg
           pip = -4.0 - 3.0 * breathFactor;
         } else {
-          // Expiration phase
           isInsp = false;
-          const phaseT = (cycleProgress - 0.4) / 0.6; // 0 -> 1
-          breathFactor = Math.cos((phaseT * Math.PI) / 2); // Smooth recoil
-          // Palv rises to +1 mmHg at midpoint of expiration, then returns to 0
+          const phaseT = (cycleProgress - 0.4) / 0.6;
+          breathFactor = Math.cos((phaseT * Math.PI) / 2);
           palv = 1.0 * Math.sin(phaseT * Math.PI);
-          // Pip returns from -7 mmHg back to -4 mmHg
           pip = -7.0 + 3.0 * (1 - breathFactor);
         }
 
-        // Apply 3D biological expansion to lungs
-        // Lateral (X) and Anteroposterior (Z) increase ~14%, vertical (Y) ~8%
+        // Biological expansion
         const scaleX = 1.0 + breathFactor * 0.14;
         const scaleY = 1.0 + breathFactor * 0.08;
         const scaleZ = 1.0 + breathFactor * 0.12;
 
-        if (rightLungGroupRef.current) {
-          rightLungGroupRef.current.scale.set(scaleX, scaleY, scaleZ);
-        }
-        if (leftLungGroupRef.current) {
-          leftLungGroupRef.current.scale.set(scaleX, scaleY, scaleZ);
-        }
+        if (rightLungGroupRef.current) rightLungGroupRef.current.scale.set(scaleX, scaleY, scaleZ);
+        if (leftLungGroupRef.current) leftLungGroupRef.current.scale.set(scaleX, scaleY, scaleZ);
 
-        // Diaphragm descends during inspiration (~0.38 units)
         if (diaphragmMeshRef.current) {
           diaphragmMeshRef.current.position.y = -2.1 - breathFactor * 0.38;
         }
 
-        // Update telemetry data
+        // Update telemetry
         setTelemetry({
           phase: isInsp ? 'Inspiration (หายใจเข้า)' : 'Expiration (หายใจออก)',
           phasePercent: Math.round(cycleProgress * 100),
@@ -513,16 +669,59 @@ export const RealisticLungs3DSim: React.FC = () => {
         });
       }
 
+      // Update Airflow Particles
+      if (airflowPointsRef.current && airflowPointsRef.current.visible) {
+        const positions = airflowPointsRef.current.geometry.attributes.position.array as Float32Array;
+        const metas = particleMetaRef.current;
+
+        for (let i = 0; i < metas.length; i++) {
+          const meta = metas[i];
+          const flowStep = deltaSec * meta.speed;
+
+          if (isInsp) {
+            meta.progress += flowStep;
+            if (meta.progress > 1.0) meta.progress = 0.0;
+          } else {
+            meta.progress -= flowStep;
+            if (meta.progress < 0.0) meta.progress = 1.0;
+          }
+
+          const prog = meta.progress;
+          let px = 0;
+          let py = 3.6 - prog * 4.6;
+          let pz = Math.sin(meta.offsetAngle) * meta.radius;
+
+          if (py > 1.7) {
+            // In Trachea
+            px = Math.cos(meta.offsetAngle) * meta.radius * 0.6;
+          } else {
+            // Below Carina: branch into Left or Right Lung
+            const branchFactor = (1.7 - py) / 2.8;
+            if (meta.side === 'right') {
+              px = 0.2 + branchFactor * 1.6 + Math.cos(meta.offsetAngle) * meta.radius * 2;
+            } else {
+              px = -(0.2 + branchFactor * 1.6 + Math.cos(meta.offsetAngle) * meta.radius * 2);
+            }
+            pz = Math.sin(meta.offsetAngle) * (meta.radius + branchFactor * 0.6);
+          }
+
+          positions[i * 3] = px;
+          positions[i * 3 + 1] = py;
+          positions[i * 3 + 2] = pz;
+        }
+
+        airflowPointsRef.current.geometry.attributes.position.needsUpdate = true;
+      }
+
       controls.update();
       renderer.render(scene, camera);
 
-      // Project 3D landmark pins to 2D viewport coordinates
+      // Project 3D landmark pins
       if (camera && canvas) {
         const rect = canvas.getBoundingClientRect();
         const pins = LANDMARKS.map((landmark) => {
           const v = landmark.position.clone();
           v.project(camera);
-          // Check if behind camera
           if (v.z > 1) {
             return { id: landmark.id, x: -9999, y: -9999, label: landmark.label };
           }
@@ -541,7 +740,6 @@ export const RealisticLungs3DSim: React.FC = () => {
 
     render();
 
-    // Handle container resize
     const handleResize = () => {
       if (!container || !renderer || !camera) return;
       const w = container.clientWidth;
@@ -562,7 +760,7 @@ export const RealisticLungs3DSim: React.FC = () => {
     };
   }, [bpm, isPlaying]);
 
-  // Update tissue opacity
+  // Sync tissue opacity
   useEffect(() => {
     lungMaterialsRef.current.forEach((mat) => {
       mat.opacity = tissueOpacity;
@@ -571,15 +769,35 @@ export const RealisticLungs3DSim: React.FC = () => {
     });
   }, [tissueOpacity]);
 
+  // Sync Airflow visibility
+  useEffect(() => {
+    if (airflowPointsRef.current) {
+      airflowPointsRef.current.visible = showAirflow;
+    }
+  }, [showAirflow]);
+
+  // Sync Vessels visibility
+  useEffect(() => {
+    if (vesselsGroupRef.current) {
+      vesselsGroupRef.current.visible = showVessels;
+    }
+  }, [showVessels]);
+
+  // Sync Ribs visibility
+  useEffect(() => {
+    if (ribCageGroupRef.current) {
+      ribCageGroupRef.current.visible = showRibs;
+    }
+  }, [showRibs]);
+
   // Reset Camera View
   const handleResetCamera = useCallback(() => {
     if (!cameraRef.current || !controlsRef.current) return;
-    cameraRef.current.position.set(0, 0.4, 11);
+    cameraRef.current.position.set(0, 0.3, 11.2);
     controlsRef.current.target.set(0, 0.2, 0);
     controlsRef.current.update();
   }, []);
 
-  // Toggle full width/fullscreen for the simulation viewport
   const handleToggleFullscreen = () => {
     const el = containerRef.current;
     if (!el) return;
@@ -604,7 +822,7 @@ export const RealisticLungs3DSim: React.FC = () => {
       {/* Simulation Header */}
       <div className={styles.simHeader}>
         <div className={styles.headerTitleGroup}>
-          <span className={styles.badge3D}>3D Three.js</span>
+          <span className={styles.badge3D}>3D Medical Studio</span>
           <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--text-primary)', fontWeight: 700 }}>
             แบบจำลอง 3D สรีรวิทยาปอดและระบบหายใจมนุษย์ (Realistic Human Lungs & Respiratory Mechanics)
           </h3>
@@ -629,6 +847,16 @@ export const RealisticLungs3DSim: React.FC = () => {
           >
             <RotateCcw size={15} />
             <span>รีเซ็ตมุมมอง</span>
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.actionBtn} ${styles.jevToggleBtn}`}
+            onClick={() => setShowJevExaminer(!showJevExaminer)}
+            title="เปิดระบบ JEV AI วิเคราะห์และตรวจคำตอบสรีรวิทยา"
+          >
+            <Sparkles size={15} />
+            <span>{showJevExaminer ? 'ซ่อน JEV AI' : '🤖 ถาม-ตอบ JEV AI'}</span>
           </button>
 
           <button
@@ -769,44 +997,78 @@ export const RealisticLungs3DSim: React.FC = () => {
       <div className={styles.controlToolbar}>
         {/* Breathing Rate Selector */}
         <div className={styles.controlGroup}>
-          <span className={styles.controlLabel}>อัตราการหายใจ (Respiratory Rate):</span>
+          <span className={styles.controlLabel}>อัตราการหายใจ (Rate):</span>
           <div className={styles.rateButtons}>
             <button
               type="button"
               className={`${styles.rateBtn} ${bpm === 6 ? styles.rateBtnActive : ''}`}
               onClick={() => setBpm(6)}
             >
-              Bradypnea (6 bpm)
+              Bradypnea (6)
             </button>
             <button
               type="button"
               className={`${styles.rateBtn} ${bpm === 14 ? styles.rateBtnActive : ''}`}
               onClick={() => setBpm(14)}
             >
-              ปกติ (14 bpm)
+              ปกติ (14)
             </button>
             <button
               type="button"
               className={`${styles.rateBtn} ${bpm === 24 ? styles.rateBtnActive : ''}`}
               onClick={() => setBpm(24)}
             >
-              Tachypnea (24 bpm)
+              Tachypnea (24)
             </button>
             <button
               type="button"
               className={`${styles.rateBtn} ${bpm === 36 ? styles.rateBtnActive : ''}`}
               onClick={() => setBpm(36)}
             >
-              ออกกำลัง (36 bpm)
+              ออกกำลัง (36)
             </button>
           </div>
+        </div>
+
+        {/* 3D Visual Layers Toggles: Airflow, Vessels, Ribs */}
+        <div className={styles.controlGroup}>
+          <span className={styles.controlLabel}>เลเยอร์กายวิภาค:</span>
+          <button
+            type="button"
+            className={`${styles.actionBtn} ${showAirflow ? styles.actionBtnActive : ''}`}
+            onClick={() => setShowAirflow(!showAirflow)}
+            title="เปิด/ปิด ละอองการไหลเวียนของอากาศหายใจ"
+          >
+            <Wind size={14} />
+            <span>ละอองอากาศ</span>
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.actionBtn} ${showVessels ? styles.actionBtnActive : ''}`}
+            onClick={() => setShowVessels(!showVessels)}
+            title="เปิด/ปิด หลอดเลือดปอด (แดง/น้ำเงิน)"
+          >
+            <Heart size={14} />
+            <span>หลอดเลือด</span>
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.actionBtn} ${showRibs ? styles.actionBtnActive : ''}`}
+            onClick={() => setShowRibs(!showRibs)}
+            title="เปิด/ปิด ซี่โครงทรวงอกจำลอง"
+          >
+            <Shield size={14} />
+            <span>ซี่โครง</span>
+          </button>
         </div>
 
         {/* X-Ray / Tissue Opacity Slider */}
         <div className={styles.controlGroup}>
           <div className={styles.sliderGroup}>
             <Layers size={16} color="var(--primary)" />
-            <span className={styles.controlLabel}>โหมด X-Ray / ความโปร่งแสงเนื้อปอด:</span>
+            <span className={styles.controlLabel}>โหมด X-Ray:</span>
             <input
               type="range"
               min="0.15"
@@ -829,13 +1091,19 @@ export const RealisticLungs3DSim: React.FC = () => {
             title="สลับโหมดโปร่งแสงเพื่อดูหลอดลมภายใน"
           >
             <Eye size={14} />
-            <span>{tissueOpacity <= 0.25 ? 'ดูเนื้อปอดทึบ' : 'X-Ray ดูหลอดลม'}</span>
+            <span>{tissueOpacity <= 0.25 ? 'เนื้อปอดทึบ' : 'X-Ray'}</span>
           </button>
         </div>
       </div>
+
+      {/* Embedded JEV AI Socratic Examiner Panel */}
+      {showJevExaminer && (
+        <div className={styles.jevEmbedContainer}>
+          <JevPhysioExaminer />
+        </div>
+      )}
     </div>
   );
 };
 
 export default RealisticLungs3DSim;
-

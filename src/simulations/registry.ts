@@ -13,6 +13,7 @@ const registry: Record<string, ComponentType<any>> = {
   'projectile-motion': lazy(() => import('./demos/ProjectileMotionSim/ProjectileMotionSim')),
   'quadratic-grapher': lazy(() => import('./demos/QuadraticGrapherSim/QuadraticGrapherSim')),
   'realistic-lungs-3d': lazy(() => import('./demos/RealisticLungs3DSim/RealisticLungs3DSim')),
+  'jev-physio-examiner': lazy(() => import('../components/typesafe/JevPhysioExaminer')),
 };
 
 /**

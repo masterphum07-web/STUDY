@@ -153,6 +153,15 @@ export const respiratoryPhysiologyChapter: Chapter = {
         ],
       },
     },
+    {
+      id: 'sec-rs-jev-ai',
+      heading: '8. JEV AI Medical Examiner: วิเคราะห์และตรวจคำตอบสรีรวิทยาด้วย AI',
+      type: 'simulation',
+      content: {
+        simulationId: 'jev-physio-examiner',
+        title: 'TypeSafe AI (Jev 1.13) — ตรวจสอบคำอธิบายสรีรวิทยาและคำนวณความแม่นยำทางคลินิก',
+      },
+    },
   ],
   updatedAt: '2026-09-21',
 };

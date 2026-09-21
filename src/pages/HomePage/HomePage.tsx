@@ -66,6 +66,80 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
+      {/* 3D & JEV AI Spotlight Card */}
+      <section style={{ maxWidth: 'var(--container-max-width)', margin: '24px auto 0', padding: '0 16px 16px' }}>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(124, 58, 237, 0.08) 100%)',
+            border: '1px solid rgba(124, 58, 237, 0.25)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '24px 28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '20px',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
+          <div style={{ maxWidth: '650px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                  color: '#fff',
+                  fontSize: '0.725rem',
+                  fontWeight: 700,
+                  padding: '3px 8px',
+                  borderRadius: 'var(--radius-full)',
+                }}
+              >
+                NEW 3D SIMULATION
+              </span>
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
+                  color: '#fff',
+                  fontSize: '0.725rem',
+                  fontWeight: 700,
+                  padding: '3px 8px',
+                  borderRadius: 'var(--radius-full)',
+                }}
+              >
+                TYPESAFE JEV AI
+              </span>
+            </div>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+              แบบจำลอง 3D สรีรวิทยาปอดสมจริง พร้อมระบบตรวจคำตอบอัจฉริยะ JEV AI
+            </h3>
+            <p style={{ fontSize: '0.925rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
+              หมุนสำรวจกายวิภาคปอด 360° สังเกตการไหลเวียนของละอองอากาศและหลอดเลือดดำ-แดง พร้อมพิมพ์คำอธิบายให้โมเดล JEV AI ประเมินความแม่นยำทางสรีรวิทยาได้แบบเรียลไทม์
+            </p>
+          </div>
+
+          <Link
+            to="/chapter/physiology/respiratory-physiology"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 22px',
+              borderRadius: 'var(--radius-md)',
+              background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+              color: '#ffffff',
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+              textDecoration: 'none',
+              flexShrink: 0,
+            }}
+          >
+            <span>ทดลองใช้งาน 3D & JEV</span>
+            <ChevronRight size={18} />
+          </Link>
+        </div>
+      </section>
+
       {/* Recent Chapters if any */}
       {recentIds.length > 0 && (
         <section className={styles.section} style={{ marginBottom: '20px' }}>
