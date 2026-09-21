@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RefreshCw, ExternalLink, ShieldCheck, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
+import { RefreshCw, ExternalLink, ShieldCheck, AlertCircle } from 'lucide-react';
 import type { QwenPostMessagePayload } from './types';
 
 interface LegacyHtmlRendererProps {
@@ -19,7 +19,6 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
   const [reloadKey, setReloadKey] = useState<number>(0);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   // Normalize module path to respect BASE_URL
@@ -41,8 +40,8 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
       if (!data || typeof data !== 'object') return;
 
       if (data.type === 'QWEN_MODULE_RESIZE' && typeof data.height === 'number') {
-        // Clamp height between 250px and 4000px for stability
-        const clampedHeight = Math.max(250, Math.min(data.height, 4000));
+        // Clamp height between 250px and 1200px for stability
+        const clampedHeight = Math.max(250, Math.min(data.height, 1200));
         setIframeHeight(clampedHeight);
       }
     } catch {
@@ -60,8 +59,6 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
     setHasError(false);
     setReloadKey((prev) => prev + 1);
   };
-
-  const effectiveHeight = isExpanded ? Math.max(iframeHeight, 950) : iframeHeight;
 
   return (
     <div
@@ -135,25 +132,6 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
             <RefreshCw size={14} className={isLoading ? 'spin-icon' : ''} />
             รีโหลด
           </button>
-          <button
-            onClick={() => setIsExpanded((prev) => !prev)}
-            title={isExpanded ? 'ย่อมุมมองกล่อง' : 'ขยายมุมมองกล่อง'}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '6px 10px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border-color)',
-              backgroundColor: isExpanded ? 'var(--primary-light, rgba(14, 165, 233, 0.1))' : 'var(--bg-surface)',
-              color: isExpanded ? 'var(--primary)' : 'var(--text-secondary)',
-              fontSize: '0.8rem',
-              fontWeight: 500,
-            }}
-          >
-            {isExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-            {isExpanded ? 'ย่อกล่อง' : 'ขยายกล่อง'}
-          </button>
           <a
             href={resolvedPath}
             target="_blank"
@@ -179,7 +157,7 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
       </div>
 
       {/* Frame Container */}
-      <div style={{ position: 'relative', width: '100%', minHeight: `${effectiveHeight}px` }}>
+      <div style={{ position: 'relative', width: '100%', minHeight: `${iframeHeight}px` }}>
         {hasError ? (
           <div
             style={{
@@ -213,13 +191,15 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
             ref={iframeRef}
             src={resolvedPath}
             title={title}
+            // Strict sandbox attributes to isolate styles and prevent global state pollution
             sandbox="allow-scripts allow-same-origin allow-forms"
             onLoad={() => {
               setIsLoading(false);
+              // Send handshake or trigger postMessage resize from inside
               try {
                 iframeRef.current?.contentWindow?.postMessage({ type: 'PARENT_READY' }, '*');
               } catch {
-                // Ignore cross-origin error
+                // Ignore cross-origin error if any
               }
             }}
             onError={() => {
@@ -228,7 +208,7 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
             }}
             style={{
               width: '100%',
-              height: `${effectiveHeight}px`,
+              height: `${iframeHeight}px`,
               border: 'none',
               display: 'block',
               transition: 'height 200ms ease',

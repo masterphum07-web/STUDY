@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ListOrdered } from 'lucide-react';
 import type { ChapterSection } from '../../../types/content';
 
@@ -9,9 +9,13 @@ interface TableOfContentsProps {
 export const TableOfContents: React.FC<TableOfContentsProps> = ({ sections }) => {
   const [activeId, setActiveId] = useState<string>('');
 
-  const headings = sections
-    .filter((s) => s.heading && s.heading.trim().length > 0)
-    .map((s) => ({ id: s.id, title: s.heading! }));
+  const headings = useMemo(
+    () =>
+      sections
+        .filter((s) => s.heading && s.heading.trim().length > 0)
+        .map((s) => ({ id: s.id, title: s.heading! })),
+    [sections]
+  );
 
   useEffect(() => {
     if (headings.length === 0) return;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { Bookmark, Clock, CheckCircle2, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { getSubjectById, getChapterById, getNextAndPrevChapter } from '../../content/registry';
@@ -12,6 +12,7 @@ import { ChapterRenderer } from '../../components/reader/ChapterRenderer';
 export const ChapterPage: React.FC = () => {
   const { subjectId, chapterId } = useParams<{ subjectId: string; chapterId: string }>();
   const [scrollPercent, setScrollPercent] = useState<number>(0);
+  const lastPercentRef = useRef<number>(0);
 
   const subject = subjectId ? getSubjectById(subjectId) : undefined;
   const chapter = chapterId ? getChapterById(chapterId) : undefined;
@@ -19,24 +20,36 @@ export const ChapterPage: React.FC = () => {
   const { recordVisit, updateScrollProgress, markCompleted, getChapterStatus } = useProgress();
   const { isBookmarked, toggleBookmark } = useBookmarks();
 
-  // Record visit on mount or change of chapter
+  // Scroll to top ONLY when navigating to a new chapter/subject
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    lastPercentRef.current = 0;
+    setScrollPercent(0);
+  }, [chapterId, subjectId]);
+
+  // Record visit only when chapter or subject route changes
   useEffect(() => {
     if (chapterId && subjectId && subject && chapter) {
       recordVisit(chapterId, subjectId);
-      window.scrollTo(0, 0);
     }
-  }, [chapterId, subjectId, subject, chapter, recordVisit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapterId, subjectId]);
 
-  // Track scroll position
+  // Track scroll position smoothly without triggering scroll-to-top re-renders
   const handleScroll = useCallback(() => {
     const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
     if (totalHeight <= 0) return;
     const currentScroll = window.scrollY;
-    const percent = Math.min(100, Math.round((currentScroll / totalHeight) * 100));
-    setScrollPercent(percent);
+    const percent = Math.min(100, Math.max(0, Math.round((currentScroll / totalHeight) * 100)));
 
-    if (chapterId && subjectId) {
-      updateScrollProgress(chapterId, subjectId, percent);
+    // Only update progress state if changed by at least 3% or reached boundaries
+    if (Math.abs(percent - lastPercentRef.current) >= 3 || percent === 100 || percent === 0) {
+      lastPercentRef.current = percent;
+      setScrollPercent(percent);
+
+      if (chapterId && subjectId) {
+        updateScrollProgress(chapterId, subjectId, percent);
+      }
     }
   }, [chapterId, subjectId, updateScrollProgress]);
 
