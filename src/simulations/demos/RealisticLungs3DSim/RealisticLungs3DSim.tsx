@@ -133,15 +133,13 @@ export const RealisticLungs3DSim: React.FC = () => {
 
   // Cycle animation reference time
   const cycleTimeRef = useRef<number>(0);
-  const lastTimeRef = useRef<number>(0);
+  const lastTimeRef = useRef<number>(performance.now());
 
   // Setup Three.js Scene
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
-
-    lastTimeRef.current = performance.now();
 
     // Dimensions
     const width = container.clientWidth;
@@ -229,7 +227,7 @@ export const RealisticLungs3DSim: React.FC = () => {
       metalness: 0.05,
       transmission: 0.45,
       transparent: true,
-      opacity: 0.65,
+      opacity: tissueOpacity,
       clearcoat: 0.25,
       clearcoatRoughness: 0.3,
       ior: 1.35,
@@ -840,3 +838,4 @@ export const RealisticLungs3DSim: React.FC = () => {
 };
 
 export default RealisticLungs3DSim;
+
