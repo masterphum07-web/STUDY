@@ -1,6 +1,17 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { Bookmark, Clock, CheckCircle2, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import {
+  Bookmark,
+  Clock,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  Maximize2,
+  Minimize2,
+  ListOrdered,
+  X,
+} from 'lucide-react';
 import { getSubjectById, getChapterById, getNextAndPrevChapter } from '../../content/registry';
 import { useProgress } from '../../hooks/useProgress';
 import { useBookmarks } from '../../hooks/useBookmarks';
@@ -12,6 +23,10 @@ import { ChapterRenderer } from '../../components/reader/ChapterRenderer';
 export const ChapterPage: React.FC = () => {
   const { subjectId, chapterId } = useParams<{ subjectId: string; chapterId: string }>();
   const [scrollPercent, setScrollPercent] = useState<number>(0);
+  const [isFullWidth, setIsFullWidth] = useState<boolean>(() => {
+    return localStorage.getItem('study_reader_fullwidth') === 'true';
+  });
+  const [isMobileTocOpen, setIsMobileTocOpen] = useState<boolean>(false);
   const lastPercentRef = useRef<number>(0);
 
   const subject = subjectId ? getSubjectById(subjectId) : undefined;
@@ -80,6 +95,12 @@ export const ChapterPage: React.FC = () => {
     markCompleted(chapter.id, subject.id);
   };
 
+  const handleToggleFullWidth = () => {
+    const nextVal = !isFullWidth;
+    setIsFullWidth(nextVal);
+    localStorage.setItem('study_reader_fullwidth', String(nextVal));
+  };
+
   return (
     <div>
       {/* Top Fixed Reading Progress Bar */}
@@ -87,9 +108,10 @@ export const ChapterPage: React.FC = () => {
 
       <div
         style={{
-          maxWidth: 'var(--container-max-width)',
+          maxWidth: isFullWidth ? '100%' : 'var(--container-max-width)',
           margin: '0 auto',
-          padding: '24px 16px 64px',
+          padding: isFullWidth ? '20px 24px 64px' : '24px 16px 64px',
+          transition: 'max-width 0.2s ease, padding 0.2s ease',
         }}
       >
         <Breadcrumb
@@ -102,7 +124,7 @@ export const ChapterPage: React.FC = () => {
         {/* Chapter Header Card */}
         <header
           style={{
-            padding: '32px',
+            padding: '24px 28px',
             borderRadius: 'var(--radius-xl)',
             backgroundColor: 'var(--bg-surface)',
             border: '1px solid var(--border-color)',
@@ -115,7 +137,7 @@ export const ChapterPage: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: '12px',
+              marginBottom: '14px',
               flexWrap: 'wrap',
               gap: '12px',
             }}
@@ -134,8 +156,30 @@ export const ChapterPage: React.FC = () => {
               บทที่ {chapter.order} • {subject.shortTitle}
             </span>
 
-            {/* Bookmark & Read status actions */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Actions: Full Width, Bookmark & Read status */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={handleToggleFullWidth}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  border: isFullWidth ? '1px solid var(--primary-border)' : '1px solid var(--border-color)',
+                  backgroundColor: isFullWidth ? 'var(--primary-light)' : 'var(--bg-subtle)',
+                  color: isFullWidth ? 'var(--primary)' : 'var(--text-secondary)',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  transition: 'all var(--transition-fast)',
+                }}
+                title={isFullWidth ? 'กลับสู่มุมมองปกติ (Standard Mode)' : 'ขยายเต็มหน้าจอ ไร้ขอบข้าง (Full Width / Theater Mode)'}
+              >
+                {isFullWidth ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                <span>{isFullWidth ? 'มุมมองปกติ' : 'ขยายเต็มจอ'}</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handleToggleBookmark}
@@ -182,7 +226,7 @@ export const ChapterPage: React.FC = () => {
 
           <h1
             style={{
-              fontSize: 'clamp(1.75rem, 3.5vw, 2.35rem)',
+              fontSize: 'clamp(1.6rem, 3.2vw, 2.3rem)',
               color: 'var(--text-primary)',
               lineHeight: 1.25,
               marginBottom: '12px',
@@ -267,14 +311,14 @@ export const ChapterPage: React.FC = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) 280px',
-            gap: '36px',
+            gridTemplateColumns: isFullWidth ? '1fr' : 'minmax(0, 1fr) 280px',
+            gap: isFullWidth ? '0' : '36px',
             alignItems: 'start',
           }}
           className="reader-grid"
         >
           {/* Main Content Column */}
-          <main style={{ maxWidth: 'var(--reader-max-width)', width: '100%' }}>
+          <main style={{ maxWidth: isFullWidth ? '100%' : 'var(--reader-max-width)', width: '100%' }}>
             <ChapterRenderer
               sections={chapter.sections}
               subjectId={subject.id}
@@ -307,7 +351,8 @@ export const ChapterPage: React.FC = () => {
                     backgroundColor: 'var(--bg-surface)',
                     color: 'var(--text-primary)',
                     textDecoration: 'none',
-                    maxWidth: '45%',
+                    minWidth: '220px',
+                    flex: '1 1 240px',
                     boxShadow: 'var(--shadow-sm)',
                   }}
                 >
@@ -327,6 +372,7 @@ export const ChapterPage: React.FC = () => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'flex-end',
                     gap: '10px',
                     padding: '14px 20px',
                     borderRadius: 'var(--radius-lg)',
@@ -335,7 +381,8 @@ export const ChapterPage: React.FC = () => {
                     color: 'var(--text-primary)',
                     textDecoration: 'none',
                     textAlign: 'right',
-                    maxWidth: '45%',
+                    minWidth: '220px',
+                    flex: '1 1 240px',
                     boxShadow: 'var(--shadow-sm)',
                   }}
                 >
@@ -351,6 +398,7 @@ export const ChapterPage: React.FC = () => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '8px',
                     padding: '14px 20px',
                     borderRadius: 'var(--radius-lg)',
@@ -359,6 +407,8 @@ export const ChapterPage: React.FC = () => {
                     color: 'var(--success)',
                     fontWeight: 600,
                     textDecoration: 'none',
+                    minWidth: '220px',
+                    flex: '1 1 240px',
                   }}
                 >
                   <Check size={18} />
@@ -368,12 +418,51 @@ export const ChapterPage: React.FC = () => {
             </nav>
           </main>
 
-          {/* Sticky Sidebar: TOC */}
-          <aside className="toc-sidebar">
-            <TableOfContents sections={chapter.sections} />
-          </aside>
+          {/* Sticky Sidebar: TOC (Visible in standard mode on wide screens) */}
+          {!isFullWidth && (
+            <aside className="toc-sidebar">
+              <TableOfContents sections={chapter.sections} />
+            </aside>
+          )}
         </div>
       </div>
+
+      {/* Mobile, Tablet & Full-width Floating TOC button */}
+      <button
+        type="button"
+        onClick={() => setIsMobileTocOpen(true)}
+        className="mobile-toc-fab"
+        style={{ display: isFullWidth ? 'flex' : undefined }}
+        aria-label="เปิดสารบัญบทเรียน"
+      >
+        <ListOrdered size={18} />
+        <span>สารบัญ</span>
+      </button>
+
+      {/* Mobile / Tablet TOC Drawer Modal */}
+      {isMobileTocOpen && (
+        <div className="mobile-toc-backdrop" onClick={() => setIsMobileTocOpen(false)}>
+          <div className="mobile-toc-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-toc-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ListOrdered size={18} color="var(--primary)" />
+                <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>สารบัญบทเรียน</h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileTocOpen(false)}
+                className="mobile-toc-close"
+                aria-label="ปิดสารบัญ"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="mobile-toc-content" onClick={() => setIsMobileTocOpen(false)}>
+              <TableOfContents sections={chapter.sections} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

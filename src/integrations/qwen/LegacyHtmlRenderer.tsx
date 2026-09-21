@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RefreshCw, ExternalLink, ShieldCheck, AlertCircle } from 'lucide-react';
+import { RefreshCw, ExternalLink, ShieldCheck, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
 import type { QwenPostMessagePayload } from './types';
 
 interface LegacyHtmlRendererProps {
@@ -19,6 +19,8 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
   const [reloadKey, setReloadKey] = useState<number>(0);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   // Normalize module path to respect BASE_URL
@@ -40,8 +42,8 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
       if (!data || typeof data !== 'object') return;
 
       if (data.type === 'QWEN_MODULE_RESIZE' && typeof data.height === 'number') {
-        // Clamp height between 250px and 1200px for stability
-        const clampedHeight = Math.max(250, Math.min(data.height, 1200));
+        // Clamp height between 250px and 1400px for stability
+        const clampedHeight = Math.max(250, Math.min(data.height, 1400));
         setIframeHeight(clampedHeight);
       }
     } catch {
@@ -54,21 +56,44 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
     return () => window.removeEventListener('message', handleMessage);
   }, [handleMessage]);
 
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
+
   const handleReload = () => {
     setIsLoading(true);
     setHasError(false);
     setReloadKey((prev) => prev + 1);
   };
 
+  const handleToggleFullscreen = () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (!document.fullscreenElement) {
+      container.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  };
+
   return (
     <div
+      ref={containerRef}
       style={{
         border: '1px solid var(--border-color)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: isFullscreen ? 0 : 'var(--radius-lg)',
         backgroundColor: 'var(--bg-surface)',
-        boxShadow: 'var(--shadow-md)',
+        boxShadow: isFullscreen ? 'none' : 'var(--shadow-md)',
         overflow: 'hidden',
-        margin: '24px 0',
+        margin: isFullscreen ? 0 : '24px 0',
+        height: isFullscreen ? '100vh' : 'auto',
+        display: isFullscreen ? 'flex' : 'block',
+        flexDirection: 'column',
       }}
     >
       {/* Header bar */}
@@ -82,6 +107,7 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
           backgroundColor: 'var(--bg-subtle)',
           flexWrap: 'wrap',
           gap: '8px',
+          flexShrink: 0,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -112,8 +138,31 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <button
+            type="button"
+            onClick={handleToggleFullscreen}
+            title={isFullscreen ? 'ออกจากโหมดเต็มจอ' : 'ขยายเต็มจอในหน้านี้ (In-page Fullscreen)'}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '6px 11px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--primary-border)',
+              backgroundColor: 'var(--primary-light)',
+              color: 'var(--primary)',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            {isFullscreen ? 'ออกเต็มจอ' : 'ขยายเต็มจอ'}
+          </button>
+
+          <button
+            type="button"
             onClick={handleReload}
             title="รีโหลดโมดูล"
             style={{
@@ -127,11 +176,13 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
               color: 'var(--text-secondary)',
               fontSize: '0.8rem',
               fontWeight: 500,
+              cursor: 'pointer',
             }}
           >
             <RefreshCw size={14} className={isLoading ? 'spin-icon' : ''} />
             รีโหลด
           </button>
+
           <a
             href={resolvedPath}
             target="_blank"
@@ -151,13 +202,21 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
             }}
           >
             <ExternalLink size={14} />
-            เปิดเต็มจอ
+            เปิดแท็บใหม่
           </a>
         </div>
       </div>
 
       {/* Frame Container */}
-      <div style={{ position: 'relative', width: '100%', minHeight: `${iframeHeight}px` }}>
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          flex: isFullscreen ? 1 : undefined,
+          minHeight: isFullscreen ? 0 : `${iframeHeight}px`,
+          height: isFullscreen ? 'calc(100vh - 56px)' : undefined,
+        }}
+      >
         {hasError ? (
           <div
             style={{
@@ -173,6 +232,7 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
               ไม่พบไฟล์หรือเกิดข้อผิดพลาดที่ตำแหน่ง: <code>{resolvedPath}</code>
             </p>
             <button
+              type="button"
               onClick={handleReload}
               style={{
                 padding: '8px 16px',
@@ -180,6 +240,7 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
                 backgroundColor: 'var(--primary)',
                 color: '#fff',
                 fontSize: '0.875rem',
+                cursor: 'pointer',
               }}
             >
               ลองใหม่อีกครั้ง
@@ -208,7 +269,7 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
             }}
             style={{
               width: '100%',
-              height: `${iframeHeight}px`,
+              height: isFullscreen ? '100%' : `${iframeHeight}px`,
               border: 'none',
               display: 'block',
               transition: 'height 200ms ease',
@@ -221,4 +282,3 @@ export const LegacyHtmlRenderer: React.FC<LegacyHtmlRendererProps> = ({
 };
 
 export default LegacyHtmlRenderer;
-

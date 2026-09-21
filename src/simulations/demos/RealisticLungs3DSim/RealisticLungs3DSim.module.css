@@ -1,0 +1,388 @@
+.simWrapper {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin: 24px 0;
+  position: relative;
+}
+
+.simHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background-color: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.headerTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge3D {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  font-size: 0.725rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.825rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  user-select: none;
+}
+
+.actionBtn:hover {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-color-strong);
+}
+
+.actionBtnActive {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary-border);
+}
+
+/* 3D Canvas Viewport */
+.viewportContainer {
+  position: relative;
+  width: 100%;
+  height: 540px;
+  min-height: 400px;
+  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+.canvas:active {
+  cursor: grabbing;
+}
+
+/* Interactive Hotspot Pins overlay */
+.hotspotPin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 10;
+  pointer-events: auto;
+  transition: transform 0.15s ease;
+}
+
+.hotspotPin:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.pinDot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #38bdf8;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.8);
+  animation: pulsePin 2s infinite ease-in-out;
+}
+
+.pinDotActive {
+  background-color: #f59e0b;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.9), 0 0 0 3px #ffffff;
+}
+
+@keyframes pulsePin {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.6), 0 0 0 2px rgba(255, 255, 255, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.95), 0 0 0 4px rgba(56, 189, 248, 0.4);
+  }
+}
+
+/* Viewport Info Overlay */
+.touchHint {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  color: #94a3b8;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Physiological Telemetry Panel */
+.telemetryOverlay {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background-color: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  color: #f8fafc;
+  pointer-events: none;
+  min-width: 220px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.telemetryTitle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #38bdf8;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.telemetryGrid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: 6px;
+  column-gap: 12px;
+  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.telemetryLabel {
+  color: #94a3b8;
+  font-family: inherit;
+}
+
+.telemetryValue {
+  color: #34d399;
+  font-weight: 700;
+  text-align: right;
+  font-family: inherit;
+}
+
+.phaseBadge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.phaseInspiration {
+  background-color: rgba(56, 189, 248, 0.25);
+  color: #38bdf8;
+  border: 1px solid #38bdf8;
+}
+
+.phaseExpiration {
+  background-color: rgba(244, 114, 182, 0.25);
+  color: #f472b6;
+  border: 1px solid #f472b6;
+}
+
+/* Hotspot Detail Card Popup */
+.hotspotCard {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 310px;
+  max-width: calc(100% - 28px);
+  background-color: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  color: #f8fafc;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  z-index: 20;
+}
+
+.hotspotCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+
+.hotspotCardTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #38bdf8;
+  margin: 0;
+}
+
+.closeCardBtn {
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.closeCardBtn:hover {
+  color: #ffffff;
+}
+
+.hotspotCardBody {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+
+.hotspotCardClinical {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background-color: rgba(245, 158, 11, 0.15);
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #fef08a;
+}
+
+/* Controls Toolbar below Canvas */
+.controlToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.controlGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.controlLabel {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.rateButtons {
+  display: inline-flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.rateBtn {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  border: none;
+  border-right: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.rateBtn:last-child {
+  border-right: none;
+}
+
+.rateBtn:hover {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.rateBtnActive {
+  background-color: var(--primary);
+  color: #ffffff !important;
+}
+
+.sliderGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rangeInput {
+  width: 110px;
+  accent-color: var(--primary);
+}
+
+/* Tablet & Mobile responsive adjustments */
+@media (max-width: 900px) {
+  .viewportContainer {
+    height: 420px;
+  }
+
+  .telemetryOverlay {
+    position: relative;
+    top: auto;
+    left: auto;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+  }
+
+  .hotspotCard {
+    width: calc(100% - 24px);
+    right: 12px;
+    top: 12px;
+  }
+
+  .controlToolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controlGroup {
+    justify-content: space-between;
+  }
+}

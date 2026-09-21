@@ -32,8 +32,17 @@ export const respiratoryPhysiologyChapter: Chapter = {
         'ระบบทางเดินหายใจแบ่งออกเป็น 2 โซนหลักตามหน้าที่: (1) Conducting Zone ตั้งแต่จมูกจนถึง Terminal bronchioles ทำหน้าที่เป็นทางผ่าน ปรับอุณหภูมิและความชื้น และกรองสิ่งแปลกปลอม (เกิด Anatomic dead space ~150 mL) และ (2) Respiratory Zone ตั้งแต่ Respiratory bronchioles จนถึง Alveoli ซึ่งเป็นบริเวณที่มีการแลกเปลี่ยนก๊าซออกซิเจนและคาร์บอนไดออกไซด์ผ่าน Respiratory membrane',
     },
     {
+      id: 'sec-rs-3d-lungs',
+      heading: '2. แบบจำลอง 3D กายวิภาคและกลศาสตร์การหายใจสมจริง (Procedural 3D Realistic Lungs)',
+      type: 'simulation',
+      content: {
+        simulationId: 'realistic-lungs-3d',
+        title: 'แบบจำลอง 3D สรีรวิทยาปอดและระบบหายใจสมจริง (Three.js 3D Human Lungs & Dynamics)',
+      },
+    },
+    {
       id: 'sec-rs-qwen-sim',
-      heading: '2. คลังแบบจำลอง Interactive ระบบหายใจ (Physio-RS 12 โมเดล)',
+      heading: '3. คลังแบบจำลอง Interactive ระบบหายใจ (Physio-RS 12 โมเดล)',
       type: 'legacy-html',
       content: {
         modulePath: '/qwen-modules/biology/physiostudy/index.html?file=rs',
@@ -45,7 +54,7 @@ export const respiratoryPhysiologyChapter: Chapter = {
     },
     {
       id: 'sec-rs-mechanics',
-      heading: '3. กลศาสตร์การหายใจและการเปลี่ยนแปลงความดัน (Mechanics of Breathing)',
+      heading: '4. กลศาสตร์การหายใจและการเปลี่ยนแปลงความดัน (Mechanics of Breathing)',
       type: 'key-points',
       content: {
         title: 'สรุปหัวใจสำคัญของกลศาสตร์การหายใจ',
@@ -60,7 +69,7 @@ export const respiratoryPhysiologyChapter: Chapter = {
     },
     {
       id: 'sec-rs-formula',
-      heading: '4. สูตรและสมการคำนวณทางสรีรวิทยาระบบหายใจ',
+      heading: '5. สูตรและสมการคำนวณทางสรีรวิทยาระบบหายใจ',
       type: 'formula',
       content: {
         latex: 'P_{tp} = P_{alv} - P_{ip} \\quad , \\quad V_A = RR \\times (V_T - V_D)',
@@ -80,7 +89,7 @@ export const respiratoryPhysiologyChapter: Chapter = {
     },
     {
       id: 'sec-rs-oxy-curve',
-      heading: '5. กราฟการแตกตัวของออกซีฮีโมโกลบิน และ Bohr Effect (Gas Transport)',
+      heading: '6. กราฟการแตกตัวของออกซีฮีโมโกลบิน และ Bohr Effect (Gas Transport)',
       type: 'key-points',
       content: {
         title: 'พฤติกรรมของกราฟ Oxyhemoglobin Dissociation Curve (Sigmoidal Curve)',
@@ -93,7 +102,7 @@ export const respiratoryPhysiologyChapter: Chapter = {
     },
     {
       id: 'sec-rs-quiz',
-      heading: '6. แบบทดสอบสรีรวิทยาระบบหายใจ (Physio-RS Quiz)',
+      heading: '7. แบบทดสอบสรีรวิทยาระบบหายใจ (Physio-RS Quiz)',
       type: 'quiz',
       content: {
         title: 'ทดสอบความรู้: สรีรวิทยาระบบทางเดินหายใจ',
