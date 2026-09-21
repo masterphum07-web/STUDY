@@ -4,11 +4,25 @@
   z-index: 50;
   width: 100%;
   height: var(--header-height);
-  background-color: var(--bg-surface);
+  background-color: var(--glass-bg);
   border-bottom: 1px solid var(--border-color);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
   display: flex;
   align-items: center;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+/* Subtle gradient hairline under the glass bar */
+.header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 45%, transparent), color-mix(in srgb, var(--accent-violet) 45%, transparent), transparent);
+  opacity: 0.7;
 }
 
 .container {
@@ -33,40 +47,68 @@
   gap: 10px;
   text-decoration: none;
   color: var(--text-primary);
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
 }
 
 .brandLogo {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+  background: var(--gradient-brand);
+  background-size: 160% 160%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  box-shadow: var(--shadow-glow);
+  transition: transform var(--transition-spring), box-shadow var(--transition-base);
+}
+
+.brand:hover .brandLogo {
+  transform: rotate(-8deg) scale(1.06);
+  box-shadow: var(--shadow-glow-violet);
 }
 
 .navLinks {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 6px;
 }
 
 .navLink {
+  position: relative;
   color: var(--text-secondary);
   font-size: 0.925rem;
   font-weight: 500;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
   transition: all var(--transition-fast);
+}
+
+.navLink::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 3px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-base);
 }
 
 .navLink:hover {
   color: var(--text-primary);
-  background-color: var(--bg-subtle);
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.navLink:hover::after {
+  transform: scaleX(1);
 }
 
 .rightSection {
@@ -79,10 +121,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 14px;
+  padding: 8px 14px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-color);
-  background-color: var(--bg-subtle);
+  background-color: color-mix(in srgb, var(--bg-subtle) 70%, transparent);
   color: var(--text-muted);
   font-size: 0.85rem;
   cursor: pointer;
@@ -90,17 +132,20 @@
 }
 
 .searchTrigger:hover {
-  border-color: var(--border-color-strong);
+  border-color: color-mix(in srgb, var(--primary) 50%, transparent);
   background-color: var(--bg-surface-hover);
   color: var(--text-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .kbd {
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid var(--border-color);
   background-color: var(--bg-surface);
+  color: var(--text-muted);
 }
 
 .iconBtn {
@@ -108,7 +153,7 @@
   height: 38px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  background-color: var(--bg-surface);
+  background-color: color-mix(in srgb, var(--bg-surface) 75%, transparent);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
@@ -119,7 +164,9 @@
 
 .iconBtn:hover {
   background-color: var(--bg-surface-hover);
-  color: var(--text-primary);
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
@@ -130,4 +177,3 @@
     display: none;
   }
 }
-

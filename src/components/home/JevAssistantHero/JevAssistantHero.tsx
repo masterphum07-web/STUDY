@@ -127,3 +127,4 @@ export const JevAssistantHero: React.FC = () => {
 };
 
 export default JevAssistantHero;
+

@@ -100,7 +100,9 @@ export const HomePage: React.FC = () => {
             <span>AI-Driven Interactive Learning Hub • TypeSafe JEV Powered</span>
           </div>
 
-          <h1 className={styles.heroTitle}>ศูนย์รวมสรุปบทเรียนและแบบจำลอง</h1>
+          <h1 className={styles.heroTitle}>
+            ศูนย์รวม<span className="gradient-text">สรุปบทเรียน</span>และแบบจำลอง
+          </h1>
 
           <p className={styles.heroSubtitle}>
             สรุปเนื้อหาเชิงลึก พร้อมแบบจำลอง 3D สมจริง และผู้ช่วยอัจฉริยะ <strong>TypeSafe JEV AI</strong> ช่วยตรวจความเข้าใจและแนะนำบทเรียน
@@ -147,64 +149,26 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+        <div className={styles.simGrid}>
           {FEATURED_SIMULATIONS.map((sim) => (
             <Link
               key={sim.id}
               to={sim.path}
-              style={{
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '22px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                textDecoration: 'none',
-                boxShadow: 'var(--shadow-sm)',
-                transition: 'all var(--transition-fast)',
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-                e.currentTarget.style.borderColor = 'var(--primary)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-                e.currentTarget.style.borderColor = 'var(--border-color)';
-              }}
+              className={styles.simCard}
+              style={{ '--tag-color': sim.tagColor } as React.CSSProperties}
             >
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '1.8rem' }}>{sim.icon}</span>
-                  <span
-                    style={{
-                      fontSize: '0.725rem',
-                      fontWeight: 700,
-                      padding: '3px 8px',
-                      borderRadius: 'var(--radius-full)',
-                      backgroundColor: 'var(--bg-subtle)',
-                      color: sim.tagColor,
-                      border: `1px solid ${sim.tagColor}40`,
-                    }}
-                  >
-                    {sim.tag}
-                  </span>
+                <div className={styles.simCardTop}>
+                  <span className={styles.simIcon}>{sim.icon}</span>
+                  <span className={styles.simTag}>{sim.tag}</span>
                 </div>
-                <h4 style={{ margin: '0 0 6px', fontSize: '1.05rem', color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1.35 }}>
-                  {sim.title}
-                </h4>
-                <p style={{ margin: '0 0 16px', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                  {sim.desc}
-                </p>
+                <h4 className={styles.simTitle}>{sim.title}</h4>
+                <p className={styles.simDesc}>{sim.desc}</p>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-color-subtle)', paddingTop: '12px' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{sim.subtitle}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--primary)', fontWeight: 600, fontSize: '0.85rem' }}>
+              <div className={styles.simFooter}>
+                <span className={styles.simSubtitle}>{sim.subtitle}</span>
+                <span className={styles.simCta}>
                   <span>เปิดทดลอง</span>
                   <ChevronRight size={16} />
                 </span>
@@ -226,7 +190,7 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+          <div className={styles.recentGrid}>
             {recentIds.map((cId) => {
               const chap = getChapterById(cId);
               if (!chap) return null;
@@ -234,30 +198,11 @@ export const HomePage: React.FC = () => {
                 <Link
                   key={cId}
                   to={`/chapter/${chap.subjectId}/${chap.id}`}
-                  style={{
-                    padding: '16px 20px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-color)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    textDecoration: 'none',
-                    transition: 'all var(--transition-fast)',
-                    boxShadow: 'var(--shadow-sm)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--primary)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border-color)';
-                  }}
+                  className={styles.recentCard}
                 >
                   <div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>อ่านค้างไว้</div>
-                    <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-primary)', marginTop: '2px' }}>
-                      {chap.title}
-                    </div>
+                    <div className={styles.recentLabel}>อ่านค้างไว้</div>
+                    <div className={styles.recentTitle}>{chap.title}</div>
                   </div>
                   <ChevronRight size={18} color="var(--primary)" />
                 </Link>
@@ -285,6 +230,7 @@ export const HomePage: React.FC = () => {
                 key={subject.id}
                 to={`/subject/${subject.id}`}
                 className={styles.subjectCard}
+                style={{ '--card-accent': subject.bgGradient } as React.CSSProperties}
               >
                 <div className={styles.cardTop}>
                   <div className={styles.iconWrapper} style={{ background: subject.bgGradient }}>
@@ -294,7 +240,7 @@ export const HomePage: React.FC = () => {
                   <p className={styles.cardDesc}>{subject.description}</p>
 
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    <div className={styles.progressMeta}>
                       <span>ความคืบหน้า</span>
                       <span>{completed}/{total} บท ({percent}%)</span>
                     </div>
@@ -304,6 +250,7 @@ export const HomePage: React.FC = () => {
                         style={{
                           width: `${percent}%`,
                           backgroundColor: subject.color,
+                          color: subject.color,
                         }}
                       />
                     </div>
