@@ -77,6 +77,25 @@ describe('Content Registry & Data Schema', () => {
 
     const resultsBio = searchContent('เซลล์');
     expect(resultsBio.length).toBeGreaterThan(0);
+
+    const resultsPhysio = searchContent('สรีรวิทยา');
+    expect(resultsPhysio.length).toBeGreaterThan(0);
+    expect(resultsPhysio.some((r) => r.id === 'physiology-respiratory-gi')).toBe(true);
+  });
+
+  it('should validate the physiology chapter with Qwen legacy-html section', () => {
+    const physio = getChapterById('physiology-respiratory-gi');
+    expect(physio).toBeDefined();
+    expect(physio?.subjectId).toBe('biology');
+    expect(physio?.sections.length).toBeGreaterThanOrEqual(6);
+
+    const legacySection = physio?.sections.find((s) => s.type === 'legacy-html');
+    expect(legacySection).toBeDefined();
+    if (legacySection && typeof legacySection.content === 'object' && legacySection.content !== null) {
+      expect((legacySection.content as { modulePath: string }).modulePath).toBe(
+        '/qwen-modules/biology/physiostudy/index.html'
+      );
+    }
   });
 });
 

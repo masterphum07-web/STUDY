@@ -9,7 +9,7 @@ export const biologySubject: Subject = {
   color: 'var(--subject-biology)',
   bgGradient: 'var(--subject-biology-gradient)',
   order: 3,
-  chapterIds: ['cell-structure', 'genetics-dna'],
+  chapterIds: ['cell-structure', 'genetics-dna', 'physiology-respiratory-gi'],
 };
 
 export default biologySubject;

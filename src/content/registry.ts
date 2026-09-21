@@ -13,6 +13,7 @@ import quadraticFunctionsChapter from './subjects/mathematics/chapters/quadratic
 import trigonometryChapter from './subjects/mathematics/chapters/trigonometry';
 import cellStructureChapter from './subjects/biology/chapters/cell-structure';
 import geneticsDnaChapter from './subjects/biology/chapters/genetics-dna';
+import physiologyRespiratoryGiChapter from './subjects/biology/chapters/physiology-respiratory-gi';
 
 // Internal in-memory registry maps
 const subjectsRegistry = new Map<string, Subject>();
@@ -27,6 +28,7 @@ const initialChapters = [
   trigonometryChapter,
   cellStructureChapter,
   geneticsDnaChapter,
+  physiologyRespiratoryGiChapter,
 ];
 
 initialSubjects.forEach((sub) => {
