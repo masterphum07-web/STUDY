@@ -8,10 +8,8 @@ import {
   Stethoscope,
   Clock,
 } from 'lucide-react';
-import {
-  evaluatePathologyDiagnosis,
-  type JevPathologyEvaluationResult,
-} from '../../integrations/typesafe/typesafeService';
+import { evaluatePathologyDiagnosis } from '../../integrations/typesafe/typesafeService';
+import type { JevPathologyEvaluationResult } from '../../integrations/typesafe/typesafeService';
 import styles from './JevPathologyExaminer.module.css';
 
 interface ClinicalCase {

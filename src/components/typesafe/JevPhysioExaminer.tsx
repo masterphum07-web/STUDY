@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, CheckCircle2, AlertTriangle, Send, Loader2, Award, Zap } from 'lucide-react';
-import { evaluatePhysiologyAnswer, type JevEvaluationResult } from '../../integrations/typesafe/typesafeService';
+import { evaluatePhysiologyAnswer } from '../../integrations/typesafe/typesafeService';
+import type { JevEvaluationResult } from '../../integrations/typesafe/typesafeService';
 import styles from './JevPhysioExaminer.module.css';
 
 interface PresetQuestion {
