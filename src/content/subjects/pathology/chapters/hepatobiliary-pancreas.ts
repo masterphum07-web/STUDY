@@ -22,6 +22,7 @@ export const hepatobiliaryPancreasChapter: Chapter = {
     'Cholelithiasis',
     'Pancreatitis',
   ],
+  simulationIds: ['realistic-hepatobiliary-3d'],
   objectives: [
     'จำแนกกลไกการเกิดและผลการตรวจทางห้องปฏิบัติการของดีซ่านทั้ง 3 กลุ่ม (Hemolytic, Hepatocellular, Obstructive jaundice)',
     'เข้าใจพยาธิสภาพของโรคไวรัสตับอักเสบ (HBsAg, HBeAg, Dane particle, Ground-glass hepatocytes) และโรคตับจากแอลกอฮอล์ (Mallory-Denk bodies)',
@@ -39,8 +40,19 @@ export const hepatobiliaryPancreasChapter: Chapter = {
         'ตับเป็นอวัยวะภายในที่ใหญ่ที่สุดในร่างกาย มีน้ำหนักประมาณ 1.2–1.6 กิโลกรัม แบ่งเป็นกลีบขวา (Right lobe ซึ่งมีขนาดใหญ่กว่ากลีบซ้ายประมาณ 6 เท่า) และกลีบซ้าย หน่วยทำงานย่อยระดับจุลภาคคือ Classical Hepatic Lobule ซึ่งมีลักษณะเป็นรูปหกเหลี่ยม (Hexagonal structure) ตรงกลางมี Central Vein และที่มุมแต่ละมุมมี Portal Triad ประกอบด้วย 3 โครงสร้างสำคัญ:\n1. แขนงของหลอดเลือดดำพอร์ทัล (Portal Venule): ลำเลียงเลือดที่มีสารอาหารจากทางเดินอาหารเข้าสู่ตับ\n2. แขนงของหลอดเลือดแดงตับ (Hepatic Arteriole): ลำเลียงเลือดที่มีออกซิเจนสูงมาหล่อเลี้ยงเซลล์ตับ\n3. ท่อน้ำดี (Bile Ductule): รับน้ำดีที่สร้างจากเซลล์ตับส่งออกไปยังถุงน้ำดีและลำไส้เล็ก\n\nเลือดจาก Portal venule และ Hepatic arteriole จะไหลผ่านโพรงหลอดเลือดฝอย Sinusoids สัมผัสกับเซลล์ตับ (Hepatocytes) และเซลล์จับกิน Kupffer cells ก่อนไหลไปรวมกันที่ Central vein แล้วออกสู่ Hepatic veins กลับเข้าหัวใจ',
     },
     {
+      id: 'sec-hbp-3d-model',
+      heading: '2. แบบจำลอง 3D ระบบตับ ถุงน้ำดี และตับอ่อน (Interactive 3D Hepatobiliary & Pancreas Simulator)',
+      type: 'simulation',
+      content: {
+        simulationId: 'realistic-hepatobiliary-3d',
+        title: '3D Procedural Hepatobiliary & Pancreas Simulator — ตับ ถุงน้ำดี ตับอ่อน และรอยโรคดีซ่าน/ตับแข็ง/มะเร็ง',
+        description:
+          'หมุนสำรวจ 360° ตรวจดูกลีบตับขวา-ซ้าย, เส้นเอ็น Falciform ligament, ถุงน้ำดีและท่อน้ำดี Common bile duct, ตับอ่อน, รอยโรคตับแข็ง Micronodular cirrhosis, นิ่วในถุงน้ำดี Cholelithiasis, ก้อนมะเร็งตับ HCC, และเนื้อตายตับอ่อน Fat necrosis พร้อม HUD ควบคุมการอุดตันท่อน้ำดีและวัดระดับ Bilirubin แบบเรียลไทม์',
+      },
+    },
+    {
       id: 'sec-hbp-jaundice-table',
-      heading: '2. ตารางเปรียบเทียบกลไกและผลตรวจของภาวะดีซ่าน (Differential Diagnosis of Jaundice)',
+      heading: '3. ตารางเปรียบเทียบกลไกและผลตรวจของภาวะดีซ่าน (Differential Diagnosis of Jaundice)',
       type: 'table',
       content: {
         caption: 'การเปรียบเทียบพยาธิสรีรวิทยาของดีซ่าน 3 ชนิดสำคัญ',
@@ -78,7 +90,7 @@ export const hepatobiliaryPancreasChapter: Chapter = {
     },
     {
       id: 'sec-hbp-hepatitis',
-      heading: '3. โรคไวรัสตับอักเสบและโรคตับจากแอลกอฮอล์ (Hepatitis & Alcoholic Liver Disease)',
+      heading: '4. โรคไวรัสตับอักเสบและโรคตับจากแอลกอฮอล์ (Hepatitis & Alcoholic Liver Disease)',
       type: 'key-points',
       content: {
         title: 'สรุปลักษณะเด่นของไวรัสตับอักเสบและพยาธิสภาพตับจากแอลกอฮอล์',
@@ -93,7 +105,7 @@ export const hepatobiliaryPancreasChapter: Chapter = {
     },
     {
       id: 'sec-hbp-cirrhosis-portal-htn',
-      heading: '4. โรคตับแข็งและผลสืบเนื่องจากความดันพอร์ทัลสูง (Cirrhosis & Portal Hypertension)',
+      heading: '5. โรคตับแข็งและผลสืบเนื่องจากความดันพอร์ทัลสูง (Cirrhosis & Portal Hypertension)',
       type: 'callout',
       content: {
         variant: 'danger',
@@ -103,7 +115,7 @@ export const hepatobiliaryPancreasChapter: Chapter = {
     },
     {
       id: 'sec-hbp-tumors-table',
-      heading: '5. ตารางเปรียบเทียบเนื้องอกและมะเร็งของตับ (Hepatic Neoplasms)',
+      heading: '6. ตารางเปรียบเทียบเนื้องอกและมะเร็งของตับ (Hepatic Neoplasms)',
       type: 'table',
       content: {
         caption: 'การเปรียบเทียบพยาธิสภาพของเนื้องอกและมะเร็งตับที่พบบ่อย',
@@ -143,7 +155,7 @@ export const hepatobiliaryPancreasChapter: Chapter = {
     },
     {
       id: 'sec-hbp-gallbladder-pancreas',
-      heading: '6. พยาธิสภาพของถุงน้ำดีและตับอ่อน (Gallbladder & Pancreatic Pathology)',
+      heading: '7. พยาธิสภาพของถุงน้ำดีและตับอ่อน (Gallbladder & Pancreatic Pathology)',
       type: 'key-points',
       content: {
         title: 'สรุปพยาธิสภาพนิ่วถุงน้ำดี ตับอ่อนอักเสบ และมะเร็งหัวตับอ่อน',
@@ -158,7 +170,7 @@ export const hepatobiliaryPancreasChapter: Chapter = {
     },
     {
       id: 'sec-hbp-qwen-reader',
-      heading: '7. สไลด์และห้องทดลองจำลองฉบับเต็ม: Hepatobiliary & Pancreas Interactive Labs',
+      heading: '8. สไลด์และห้องทดลองจำลองฉบับเต็ม: Hepatobiliary & Pancreas Interactive Labs',
       type: 'legacy-html',
       content: {
         modulePath: '/qwen-modules/pathology/neuro-msk-hbp/index.html',

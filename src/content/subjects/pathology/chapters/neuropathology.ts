@@ -202,6 +202,7 @@ export const neuropathologyChapter: Chapter = {
         'หากมีความผิดปกติของกล้ามเนื้อใบหน้าทั้งส่วนบน (หน้าผาก ยักคิ้ว) และส่วนล่าง (มุมปาก) จะเป็นพยาธิสภาพแบบ Lower Motor Neuron (LMN) ของ Facial nerve (CN VII) เรียกว่า Bell’s Palsy ในขณะที่ Stroke (UMN lesion) ผู้ป่วยจะยังยักคิ้วได้เนื่องจากหน้าผากได้รับสัญญาณประสาทจากสมองทั้งสองข้าง',
     },
   ],
+  simulationIds: ['realistic-neuropathology-3d'],
   updatedAt: '2026-09-23',
 };
 

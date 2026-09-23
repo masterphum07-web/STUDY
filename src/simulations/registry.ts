@@ -16,6 +16,8 @@ const registry: Record<string, ComponentType<any>> = {
   'jev-physio-examiner': lazy(() => import('../components/typesafe/JevPhysioExaminer')),
   'realistic-pathology-3d': lazy(() => import('./demos/RealisticPathology3DSim/RealisticPathology3DSim')),
   'realistic-neuropathology-3d': lazy(() => import('./demos/RealisticNeuropathology3DSim/RealisticNeuropathology3DSim')),
+  'realistic-hepatobiliary-3d': lazy(() => import('./demos/RealisticHepatobiliary3DSim/RealisticHepatobiliary3DSim')),
+  'realistic-bone-joint-3d': lazy(() => import('./demos/RealisticBoneJoint3DSim/RealisticBoneJoint3DSim')),
 };
 
 /**

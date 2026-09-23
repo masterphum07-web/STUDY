@@ -1,0 +1,402 @@
+.simContainer {
+  position: relative;
+  width: 100%;
+  height: 650px;
+  background: radial-gradient(circle at 50% 30%, #0f172a 0%, #020617 100%);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  font-family: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.simContainer.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  border-radius: 0;
+  border: none;
+}
+
+.canvasWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.canvasWrapper canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Control Toolbar */
+.topBar {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.titleBadge {
+  pointer-events: auto;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 0.75rem;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.titleBadge h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.titleBadge span {
+  font-size: 0.75rem;
+  color: #34d399;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.12);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.toolActions {
+  pointer-events: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btnAction {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btnAction:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #34d399;
+  color: #34d399;
+  transform: translateY(-1px);
+}
+
+.btnAction.active {
+  background: #059669;
+  color: #ffffff;
+  border-color: #34d399;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+}
+
+/* Filter selector tabs */
+.filterBar {
+  position: absolute;
+  top: 4.8rem;
+  left: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  z-index: 10;
+  pointer-events: auto;
+  max-width: calc(100% - 2rem);
+}
+
+.filterBtn {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 0.35rem 0.7rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.filterBtn:hover {
+  color: #f8fafc;
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.filterBtn.active {
+  background: #059669;
+  color: #ffffff;
+  border-color: #34d399;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+/* Jaundice / Bilirubin Telemetry HUD */
+.hudPanel {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  z-index: 10;
+  max-width: 330px;
+  width: calc(100% - 2rem);
+  color: #f1f5f9;
+  font-size: 0.8rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.hudHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.35rem;
+}
+
+.hudHeader h4 {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hudStatusBadge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.3rem;
+  text-transform: uppercase;
+}
+
+.statusNormal {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.statusWarning {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.statusCritical {
+  background: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  animation: pulseAlert 1.5s infinite;
+}
+
+@keyframes pulseAlert {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.metricBox {
+  background: rgba(2, 6, 23, 0.6);
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.metricLabel {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  display: block;
+}
+
+.metricValue {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fbbf24;
+  font-family: monospace;
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.sliderRow label {
+  font-size: 0.7rem;
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+
+.sliderRow input[type="range"] {
+  flex: 1;
+  accent-color: #fbbf24;
+  height: 4px;
+}
+
+/* Detail Card Modal */
+.detailCard {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  width: 360px;
+  max-width: calc(100% - 2rem);
+  max-height: 420px;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 0.85rem;
+  padding: 1.1rem;
+  z-index: 20;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+  color: #f1f5f9;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.6rem;
+}
+
+.cardTitle h4 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.3;
+}
+
+.cardTitle p {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.75rem;
+  color: #34d399;
+  font-style: italic;
+}
+
+.btnClose {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.btnClose:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sectionBlock {
+  margin-top: 0.65rem;
+  background: rgba(2, 6, 23, 0.5);
+  border-radius: 0.5rem;
+  padding: 0.65rem;
+  border-left: 3px solid #34d399;
+}
+
+.sectionBlock.emergency {
+  border-left-color: #ef4444;
+}
+
+.sectionBlock.warning {
+  border-left-color: #f59e0b;
+}
+
+.sectionBlock h5 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sectionBlock p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #e2e8f0;
+  line-height: 1.45;
+}
+
+@media (max-width: 768px) {
+  .simContainer {
+    height: 520px;
+  }
+  .filterBar {
+    top: 4.5rem;
+  }
+  .detailCard {
+    right: 0.5rem;
+    left: 0.5rem;
+    bottom: 0.5rem;
+    width: auto;
+    max-height: 260px;
+  }
+  .hudPanel {
+    max-width: 250px;
+    font-size: 0.72rem;
+    padding: 0.5rem 0.7rem;
+    bottom: 0.5rem;
+  }
+}

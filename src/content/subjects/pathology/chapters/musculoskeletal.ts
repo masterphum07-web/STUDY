@@ -38,8 +38,19 @@ export const musculoskeletalChapter: Chapter = {
         'เนื้อกระดูกเป็นโครงสร้างที่มีการเปลี่ยนแปลงอยู่ตลอดชีวิต (Dynamic remodeling) ผ่านการทำงานร่วมกันของเซลล์ 3 ชนิด:\n1. Osteoblasts: ทำหน้าที่สังเคราะห์สารเคลือบกระดูก (Osteoid / Organic matrix) ซึ่งประกอบด้วย Type I Collagen ถึง 90% และกระตุ้นการสะสมผลึกแร่ธาตุ Hydroxyapatite\n2. Osteocytes: เซลล์กระดูกที่เจริญเต็มที่และฝังตัวอยู่ในช่อง Lacunae คอยรับแรงกล (Mechanosensation) และส่งสัญญาณควบคุมสมดุลแร่ธาตุ\n3. Osteoclasts: เซลล์ขนาดใหญ่หลายนิวเคลียสที่พัฒนามาจาก Monocyte-macrophage lineage ทำหน้าที่หลั่งกรดและเอนไซม์ย่อยสลายกระดูก (Bone resorption) โดยถูกควบคุมผ่านระบบ RANKL และ Osteoprotegerin (OPG)',
     },
     {
+      id: 'sec-msk-3d-model',
+      heading: '2. แบบจำลอง 3 มิติ: ระบบกระดูก ข้อ และรอยโรคพยาธิสภาพ (3D Bone & Joint Pathology Model)',
+      type: 'simulation',
+      content: {
+        simulationId: 'realistic-bone-joint-3d',
+        title: '3D Procedural Bone & Joint Simulator — กระดูก ข้อเข่า และรอยโรคเสื่อม/หัก/รูมาตอยด์',
+        description:
+          'หมุนสำรวจ 360° ตรวจดูเนื้อกระดูกทึบ Cortical bone, โพรงกระดูกพรุน Trabecular bone, รอยหักและ Callus, กระดูกงอกข้อเสื่อม (OA) เทียบกับเยื่อพานนัสรูมาตอยด์ (RA) และก้อนโทฟัสเกาต์ พร้อม HUD ปรับค่า T-score DXA แบบเรียลไทม์',
+      },
+    },
+    {
       id: 'sec-msk-genetic-table',
-      heading: '2. ตารางเปรียบเทียบโรคกระดูกทางพันธุกรรมและเมแทบอลิก (Developmental & Metabolic Bone Diseases)',
+      heading: '3. ตารางเปรียบเทียบโรคกระดูกทางพันธุกรรมและเมแทบอลิก (Developmental & Metabolic Bone Diseases)',
       type: 'table',
       content: {
         caption: 'การเปรียบเทียบพยาธิสภาพของโรคกระดูกสำคัญ 4 ชนิด',
@@ -230,6 +241,7 @@ export const musculoskeletalChapter: Chapter = {
         'อาการน่องโตหลอก (Pseudohypertrophy) ร่วมกับ Gowers sign ในเด็กชายเป็นลักษณะคลาสสิกของ Duchenne Muscular Dystrophy (DMD) ซึ่งเกิดจากการกลายพันธุ์แบบ X-linked recessive ทำให้ขาดโปรตีน Dystrophin ส่งผลให้เซลล์กล้ามเนื้อฉีกขาดและสลายตัวกลายเป็นพังผืดและไขมัน',
     },
   ],
+  simulationIds: ['realistic-bone-joint-3d'],
   updatedAt: '2026-09-23',
 };
 

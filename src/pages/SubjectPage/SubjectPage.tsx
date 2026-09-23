@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { Clock, ChevronRight, Search, PlayCircle } from 'lucide-react';
+import { Clock, ChevronRight, Search, PlayCircle, Box } from 'lucide-react';
 import { getSubjectById, getChaptersBySubjectId } from '../../content/registry';
 import { useProgress } from '../../hooks/useProgress';
 import { Breadcrumb } from '../../components/navigation/Breadcrumb/Breadcrumb';
@@ -207,7 +207,22 @@ export const SubjectPage: React.FC = () => {
                       บทที่ {chapter.order}
                     </span>
                     {getStatusBadge(status)}
-                    {(hasSim || hasLegacyHtml) && (
+                    {hasSim && (
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '0.75rem',
+                          color: '#0ea5e9',
+                          fontWeight: 600,
+                        }}
+                      >
+                        <Box size={14} />
+                        มีแบบจำลอง 3D
+                      </span>
+                    )}
+                    {hasLegacyHtml && (
                       <span
                         style={{
                           display: 'inline-flex',
@@ -219,7 +234,7 @@ export const SubjectPage: React.FC = () => {
                         }}
                       >
                         <PlayCircle size={14} />
-                        มีแบบจำลอง Interactive
+                        มีห้องทดลอง Interactive
                       </span>
                     )}
                   </div>
