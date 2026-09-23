@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patho Study Lab — แยกตามไฟล์สไลด์ + ภาพจำลองชี้ส่วนประกอบ</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-sans-thai@latest/thai-400-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-sans-thai@latest/thai-500-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-sans-thai@latest/thai-600-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-sans-thai@latest/thai-700-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/prompt@latest/thai-600-normal.css">
+<style>
+:root{
+  --bg:#0a0f1e; --bg2:#0f1730; --card:#131d36; --card2:#182543; --line:#ffffff18;
+  --txt:#e9effc; --mut:#9db0d4; --acc:#39d6cf; --acc2:#ffb454; --danger:#ff6b7a; --ok:#5ee08a; --warn:#ffd166;
+  --r:16px; --fs:1; --shadow:0 10px 30px #00000055; --fc:#39d6cf;
+}
+[data-theme="light"]{
+  --bg:#f2f6fc; --bg2:#e8eef8; --card:#ffffff; --card2:#f6f9ff; --line:#0b1a3a1a;
+  --txt:#12203c; --mut:#5a6c8c; --acc:#0aa79f; --acc2:#d97b00; --danger:#d63b4c; --ok:#1d9e57; --warn:#b07800;
+  --shadow:0 10px 26px #0b1a3a14;
+}
+*{box-sizing:border-box}
+html{font-size:calc(16px * var(--fs));scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;line-height:1.65;transition:background .3s,color .3s}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:
+  radial-gradient(700px 340px at 8% -6%, #39d6cf22, transparent 60%),
+  radial-gradient(700px 340px at 92% -6%, #ffb45420, transparent 60%);z-index:0}
+h1,h2,h3,h4,.brand-t{font-family:'Prompt','IBM Plex Sans Thai',sans-serif}
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 80%, transparent);border-bottom:1px solid var(--line)}
+.hwrap{max-width:1240px;margin:0 auto;padding:.7rem 1rem;display:flex;gap:.9rem;align-items:center;flex-wrap:wrap}
+.brand{display:flex;gap:.7rem;align-items:center;min-width:0}
+.logo{width:44px;height:44px;flex:0 0 auto;border-radius:12px;background:linear-gradient(135deg,var(--acc),#2b7cff);display:grid;place-items:center;font-size:1.3rem;box-shadow:var(--shadow)}
+.brand-t{font-size:1.1rem;font-weight:600;line-height:1.2}
+.brand-s{font-size:.72rem;color:var(--mut);line-height:1.35}
+.hctrl{margin-left:auto;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
+.searchbox{position:relative}
+#q{width:min(260px,50vw);padding:.5rem .8rem .5rem 2rem;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-size:.86rem;outline:none}
+#q:focus{border-color:var(--acc)}
+.searchbox .mag{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);opacity:.6;font-size:.85rem}
+#searchPanel{position:absolute;top:calc(100% + 6px);right:0;width:min(370px,88vw);max-height:340px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);display:none;z-index:60}
+#searchPanel.on{display:block}
+.sres{display:flex;gap:.6rem;padding:.55rem .7rem;cursor:pointer;align-items:flex-start;border-bottom:1px solid var(--line)}
+.sres:last-child{border-bottom:0}
+.sres:hover{background:var(--card2)}
+.sres b{font-size:.85rem;font-weight:600}
+.sres small{color:var(--mut);display:block;font-size:.72rem}
+.ibtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt);cursor:pointer;font-size:.88rem;display:grid;place-items:center}
+.ibtn:hover{border-color:var(--acc)}
+nav{position:sticky;top:62px;z-index:40;background:color-mix(in srgb,var(--bg) 90%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{max-width:1240px;margin:0 auto;display:flex;gap:.35rem;padding:.5rem 1rem;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;padding:.45rem .95rem;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--mut);cursor:pointer;font:inherit;font-size:.85rem;font-weight:500;white-space:nowrap}
+.tab:hover{color:var(--txt)}
+.tab.on{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 22%, transparent),color-mix(in srgb,var(--acc2) 16%, transparent));border-color:color-mix(in srgb,var(--acc) 45%, transparent);color:var(--txt)}
+main{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:1.2rem 1rem 4rem}
+.view{display:none;animation:fade .35s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero{border-radius:22px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(135deg,var(--card),var(--card2));box-shadow:var(--shadow);padding:1.4rem 1.3rem;position:relative}
+.hero .glow{position:absolute;inset:auto -60px -120px auto;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--fc) 30%, transparent),transparent 70%)}
+.hero h1{margin:.35rem 0 .3rem;font-size:clamp(1.3rem,3.2vw,1.9rem)}
+.hero p{margin:.2rem 0;color:var(--mut);font-size:.9rem;max-width:70ch}
+.pills{display:flex;gap:.45rem;flex-wrap:wrap}
+.pill{padding:.28rem .72rem;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-size:.75rem;color:var(--mut)}
+.pill.fc{border-color:color-mix(in srgb,var(--fc) 55%, transparent);color:var(--fc);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.8rem;margin:1.1rem 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:.85rem 1rem;box-shadow:var(--shadow)}
+.stat b{font-size:1.45rem;display:block;font-family:'Prompt',sans-serif}
+.stat span{color:var(--mut);font-size:.76rem}
+.grid{display:grid;gap:.9rem}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1rem;cursor:pointer;transition:transform .2s,border-color .2s;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.tile:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--fc) 55%, transparent)}
+.tile .ic{font-size:1.6rem}
+.tile h3{margin:.5rem 0 .25rem;font-size:.98rem}
+.tile p{margin:0;color:var(--mut);font-size:.8rem}
+.tile .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--fc)}
+.sec-h{display:flex;align-items:baseline;gap:.7rem;flex-wrap:wrap;margin:1.5rem 0 .7rem}
+.sec-h h2{margin:0;font-size:1.18rem}
+.sec-h .sub{color:var(--mut);font-size:.8rem}
+.chapnav{display:flex;gap:.4rem;flex-wrap:wrap;margin:.9rem 0 .2rem}
+.sysbar{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:.6rem 0;position:sticky;top:112px;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);padding:.4rem 0;backdrop-filter:blur(8px)}
+.sysbar input[type=text]{flex:1;min-width:150px;padding:.45rem .8rem;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-size:.84rem;outline:none}
+.chipf{padding:.28rem .7rem;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--mut);cursor:pointer;font-size:.75rem;font-family:inherit}
+.chipf:hover{color:var(--txt)}
+.chipf.on{background:color-mix(in srgb,var(--acc) 20%, transparent);border-color:var(--acc);color:var(--txt)}
+.chap{margin-bottom:.6rem;scroll-margin-top:170px}
+.cards{display:grid;gap:.7rem;grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;position:relative;transition:border-color .2s}
+.card.open{border-color:color-mix(in srgb,var(--acc) 45%, transparent)}
+.card.read{opacity:.72}
+.card.flash{animation:flash 1.3s ease}
+@keyframes flash{0%,60%{box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 60%, transparent)}100%{box-shadow:none}}
+.card-toggle{display:flex;gap:.6rem;align-items:center;width:100%;background:none;border:0;color:inherit;cursor:pointer;padding:.8rem 3rem .3rem .85rem;text-align:left;font:inherit}
+.chip{flex:0 0 auto;padding:.16rem .55rem;border-radius:8px;font-size:.68rem;font-weight:600;background:var(--card2);border:1px solid var(--line);color:var(--mut)}
+.chip-vasc{background:#ff6b7a22;color:var(--danger);border-color:#ff6b7a55}
+.chip-degen{background:#a78bfa22;color:#a78bfa;border-color:#a78bfa55}
+.chip-inf{background:#5ee08a22;color:var(--ok);border-color:#5ee08a55}
+.chip-trauma{background:#ffb45422;color:var(--acc2);border-color:#ffb45455}
+.chip-tumor{background:#f472b622;color:#f472b6;border-color:#f472b655}
+.chip-metab{background:#39d6cf22;color:var(--acc);border-color:#39d6cf55}
+.chip-auto{background:#60a5fa22;color:#60a5fa;border-color:#60a5fa55}
+.chip-cong{background:#facc1522;color:var(--warn);border-color:#facc1555}
+.card-tt{flex:1;min-width:0}
+.card-tt strong{display:block;font-size:.93rem;font-weight:600}
+.card-tt em{display:block;font-style:normal;color:var(--mut);font-size:.71rem}
+.chev{transition:transform .25s;color:var(--mut)}
+.card.open .chev{transform:rotate(180deg)}
+.card-tools{position:absolute;right:.6rem;top:.55rem;display:flex;gap:.25rem}
+.tool{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--card2);color:var(--mut);cursor:pointer;font-size:.8rem}
+.tool:hover{color:var(--acc2)}
+.card .sum{margin:.1rem .9rem .55rem;color:var(--mut);font-size:.83rem}
+.card-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.card.open .card-body{max-height:640px;overflow:auto}
+.card-body ul{margin:.2rem .9rem .8rem 1.1rem;padding:0;font-size:.85rem}
+.card-body li{margin:.28rem 0}
+.card-body li::marker{color:var(--acc)}
+.hi{display:flex;gap:.4rem;flex-wrap:wrap;margin:0 .9rem .9rem}
+.hi span{padding:.18rem .6rem;border-radius:8px;background:color-mix(in srgb,var(--acc2) 16%, transparent);border:1px solid color-mix(in srgb,var(--acc2) 40%, transparent);font-size:.72rem;color:var(--acc2);font-weight:600}
+/* diagrams */
+.dg{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);margin-bottom:1rem;overflow:hidden}
+.dg-h{padding:.8rem 1rem;border-bottom:1px solid var(--line);display:flex;gap:.6rem;align-items:center;background:linear-gradient(90deg,color-mix(in srgb,var(--fc) 12%, transparent),transparent)}
+.dg-h h3{margin:0;font-size:.97rem}
+.dg-h .dg-tag{margin-left:auto;font-size:.7rem;color:var(--mut);text-align:right}
+.dg-b{padding:.9rem 1rem;display:grid;gap:1rem;grid-template-columns:1.4fr 1fr;align-items:start}
+@media(max-width:860px){.dg-b{grid-template-columns:1fr}}
+.dg-svg svg{width:100%;height:auto;max-height:440px}
+.dg-legend{list-style:none;margin:0;padding:0;display:grid;gap:.35rem;max-height:340px;overflow:auto}
+.dg-legend li{padding:.42rem .6rem;border-radius:10px;border:1px solid var(--line);background:var(--card2);font-size:.82rem;cursor:pointer;display:flex;gap:.55rem;align-items:center}
+.dg-legend li .no{flex:0 0 20px;width:20px;height:20px;border-radius:50%;background:var(--acc);color:#04121f;font-size:.7rem;font-weight:700;display:grid;place-items:center}
+.dg-legend li.hl,.dg-legend li.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 14%, transparent)}
+.dg-info{margin-top:.6rem;padding:.6rem .8rem;border-radius:12px;background:var(--card2);border:1px dashed color-mix(in srgb,var(--acc) 40%, transparent);font-size:.82rem;color:var(--mut);min-height:3em}
+.dg-info b{color:var(--txt)}
+svg g[data-pid]{cursor:pointer}
+svg g[data-pid].hl{filter:drop-shadow(0 0 6px var(--acc))}
+svg .mkc{fill:var(--acc)}
+svg g[data-pid].hl .mkc{fill:var(--acc2)}
+svg .mkt{font-size:10px;font-weight:700;fill:#04121f;font-family:sans-serif}
+svg text.lb{font-size:10.5px;fill:currentColor;opacity:.85;font-family:'IBM Plex Sans Thai',sans-serif}
+svg text.lb2{font-size:12px;font-weight:700;fill:currentColor;font-family:'IBM Plex Sans Thai',sans-serif}
+/* labs */
+.lab{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);margin-bottom:1.1rem;overflow:hidden}
+.lab-h{padding:.9rem 1.1rem;border-bottom:1px solid var(--line);display:flex;gap:.7rem;align-items:center;background:linear-gradient(90deg,color-mix(in srgb,var(--acc) 10%, transparent),transparent)}
+.lab-h h3{margin:0;font-size:1rem}
+.lab-h .tag{margin-left:auto;font-size:.7rem;color:var(--mut)}
+.lab-b{padding:1rem 1.1rem;display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.panel{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:.9rem}
+.panel h4{margin:0 0 .6rem;font-size:.84rem;color:var(--mut);font-weight:600;letter-spacing:.02em;text-transform:uppercase}
+.ctl{margin:.55rem 0}
+.ctl label{display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.25rem}
+.ctl label b{color:var(--acc);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--acc);height:26px}
+select{width:100%;padding:.45rem .6rem;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-size:.85rem}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:.5rem;margin-top:.6rem}
+.ro{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.5rem .55rem;text-align:center}
+.ro b{display:block;font-size:1rem;font-family:'Prompt',sans-serif;font-variant-numeric:tabular-nums}
+.ro span{font-size:.66rem;color:var(--mut)}
+.ro.bad b{color:var(--danger)} .ro.good b{color:var(--ok)} .ro.warn b{color:var(--warn)}
+.verdict{margin-top:.7rem;padding:.6rem .8rem;border-radius:12px;font-size:.85rem;font-weight:600;border:1px solid var(--line);background:var(--card)}
+.verdict.bad{border-color:#ff6b7a66;background:#ff6b7a18;color:var(--danger)}
+.verdict.good{border-color:#5ee08a66;background:#5ee08a18;color:var(--ok)}
+.verdict.warn{border-color:#ffd16666;background:#ffd16618;color:var(--warn)}
+.note{font-size:.78rem;color:var(--mut);margin-top:.6rem;line-height:1.6}
+.compchips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem}
+.cchip{padding:.25rem .6rem;border-radius:999px;font-size:.72rem;border:1px solid var(--line);background:var(--card);color:var(--mut);cursor:default}
+#bSec .cchip{cursor:pointer}
+.cchip.on{background:color-mix(in srgb,var(--danger) 18%, transparent);border-color:var(--danger);color:var(--danger);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.82rem;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+th,td{padding:.55rem .7rem;border:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--card2);font-weight:600;font-size:.78rem}
+td:first-child{font-weight:600;color:var(--acc)}
+.tblwrap{overflow:auto;margin-bottom:1.1rem;border-radius:14px}
+.btn{padding:.5rem 1rem;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--txt);cursor:pointer;font:inherit;font-size:.86rem;font-weight:600}
+.btn:hover{border-color:var(--acc)}
+.btn.pri{background:linear-gradient(135deg,var(--acc),#2b7cff);border:0;color:#04121f}
+.btn.danger{background:#ff6b7a22;border-color:#ff6b7a66;color:var(--danger)}
+.bfgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem}
+.bfbtn{padding:.6rem .5rem;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);cursor:pointer;font:inherit;font-size:.79rem;text-align:left}
+.bfbtn b{display:block;font-size:.95rem;color:var(--acc)}
+.bfbtn.on{background:#ff6b7a22;border-color:var(--danger)}
+.bfbtn.on b{color:var(--danger)}
+canvas{width:100%;border-radius:12px;background:var(--card)}
+.qopt{display:block;width:100%;text-align:left;margin:.4rem 0;padding:.6rem .8rem;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);cursor:pointer;font:inherit;font-size:.88rem}
+.qopt:hover{border-color:var(--acc)}
+.qopt.right{border-color:var(--ok);background:#5ee08a1c}
+.qopt.wrong{border-color:var(--danger);background:#ff6b7a1c}
+.qopt:disabled{cursor:default;opacity:.92}
+.prog{height:8px;border-radius:99px;background:var(--card2);overflow:hidden;margin:.6rem 0}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));width:0;transition:width .3s}
+footer{border-top:1px solid var(--line);padding:1.4rem 1rem;text-align:center;color:var(--mut);font-size:.78rem;position:relative;z-index:1}
+@media print{nav,header,.lab,.no-print,.dg-side{display:none!important}body{background:#fff;color:#000}.card-body{max-height:none!important}}
+@media (max-width:640px){ .hwrap{padding:.6rem .7rem} .brand-s{display:none} nav{top:56px} .sysbar{top:106px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hwrap">
+    <div class="brand">
+      <div class="logo">🧪</div>
+      <div>
+        <div class="brand-t">Patho Study Lab</div>
+        <div class="brand-s">จัดตามไฟล์สไลด์ · ภาพจำลองชี้ส่วนประกอบ · Simulation Labs · Dept. of Radiological Technology</div>
+      </div>
+    </div>
+    <div class="hctrl">
+      <div class="searchbox">
+        <span class="mag">🔍</span>
+        <input id="q" type="text" placeholder="ค้นหาโรค / คีย์เวิร์ด…" autocomplete="off">
+        <div id="searchPanel"></div>
+      </div>
+      <button class="ibtn" id="btnFontMinus" title="ลดขนาดตัวอักษร">A−</button>
+      <button class="ibtn" id="btnFontPlus" title="เพิ่มขนาดตัวอักษร">A+</button>
+      <button class="ibtn" id="btnTheme" title="สลับธีม">🌙</button>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-tab="home">🏠 หน้าแรก</button>
+    <button class="tab" data-tab="neuro">📕 ไฟล์ 1 · ระบบประสาท</button>
+    <button class="tab" data-tab="msk">📗 ไฟล์ 2 · กระดูก–ข้อ–กล้ามเนื้อ</button>
+    <button class="tab" data-tab="liver">📘 ไฟล์ 3 · ตับ–ถุงน้ำดี–ตับอ่อน</button>
+    <button class="tab" data-tab="lab">🔬 ห้องทดลองจำลอง</button>
+    <button class="tab" data-tab="quiz">📝 ข้อสอบ</button>
+  </div>
+</nav>
+
+<main>
+<!-- ================= HOME ================= -->
+<section class="view on" id="view-home">
+  <div class="hero">
+    <div class="glow"></div>
+    <div class="pills"><span class="pill fc">📕 Neuro</span><span class="pill fc" style="--fc:#5ee08a">📗 MSK</span><span class="pill fc" style="--fc:#ffb454">📘 Liver·GB·Pancreas</span></div>
+    <h1>ชีตรวมพยาธิวิทยา — จัดแยกตามไฟล์สไลด์</h1>
+    <p>แต่ละไฟล์มี: 🖼️ ภาพจำลองชี้ส่วนประกอบ (กดที่ตัวเลขเพื่อดูคำอธิบาย) · 📚 เนื้อหาแบ่งตามบทในสไลด์ · 📊 ตารางเทียบ · 🔬 ห้องทดลองจำลอง</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="statDisease">0</b><span>หัวข้อโรคทั้งหมด</span></div>
+    <div class="stat"><b id="statDiag">0</b><span>ภาพจำลองชี้ส่วนประกอบ</span></div>
+    <div class="stat"><b>8</b><span>ห้องทดลองจำลอง</span></div>
+    <div class="stat"><b id="statQuiz">0</b><span>ข้อสอบพร้อมเฉลย</span></div>
+    <div class="stat"><b id="statRead">0 / 0</b><span>อ่านแล้ว / ติดดาว</span></div>
+  </div>
+  <div class="sec-h"><h2>เลือกไฟล์สไลด์</h2></div>
+  <div class="grid g3">
+    <div class="tile" data-go="neuro" style="--fc:#ff6b7a"><div class="bar"></div><div class="ic">📕</div><h3>ไฟล์ 1 · โรคระบบประสาท (Neuropathology)</h3><p>Dr. Rattanawan Thubthed, Ph.D · CNS (ICP, Stroke, Demyelinating) · PNS · Degenerative · ภาพจำลอง: Neuron/Myelin, Herniation, NMJ</p></div>
+    <div class="tile" data-go="msk" style="--fc:#5ee08a"><div class="bar"></div><div class="ic">📗</div><h3>ไฟล์ 2 · โรคของกล้ามเนื้อ กระดูก และข้อ</h3><p>Dr. Rattanawan Thubthed, Ph.D · Congenital · Metabolic bone · Fracture · Joints (OA/RA/Gout) · Muscle · ภาพจำลอง: Bone cells, ข้อ OA vs RA, Fracture healing</p></div>
+    <div class="tile" data-go="liver" style="--fc:#ffb454"><div class="bar"></div><div class="ic">📘</div><h3>ไฟล์ 3 · Diseases of Liver, Gallbladder & Pancreas</h3><p>Sirorat Thongrod, Ph.D · Jaundice · Hepatitis · Cirrhosis · Tumor · Gallstone · Pancreatitis · ภาพจำลอง: Figure 1 anatomy, Hepatic lobule, ทางเดิน bilirubin, ถุงน้ำดี</p></div>
+    <div class="tile" data-go="lab" style="--fc:#39d6cf"><div class="bar"></div><div class="ic">🔬</div><h3>ห้องทดลองจำลอง (8 ห้อง)</h3><p>ดีซ่าน · ตับแข็ง · ICP · BEFAST · Myelin · T-score · Fracture timeline · Gallstone</p></div>
+    <div class="tile" data-go="quiz" style="--fc:#a78bfa"><div class="bar"></div><div class="ic">📝</div><h3>คลังข้อสอบ</h3><p>สุ่มข้อ + เฉลยอธิบายทันที ครอบคลุมทั้ง 3 ไฟล์</p></div>
+  </div>
+  <div style="margin-top:1.2rem"><button class="btn danger no-print" id="btnReset"> ล้างความคืบหน้าทั้งหมด</button></div>
+</section>
+
+<!-- ================= FILE 1 NEURO ================= -->
+<section class="view" id="view-neuro" style="--fc:#ff6b7a">
+  <div class="hero">
+    <div class="glow"></div>
+    <div class="pills"><span class="pill fc">📕 ไฟล์ที่ 1</span><span class="pill">Dr. Rattanawan Thubthed, Ph.D · rattanawan.thu@pi.ac.th</span><span class="pill">Dept. of Radiological Technology</span></div>
+    <h1>โรคระบบประสาท (Neuropathology)</h1>
+    <p>Central Nervous System Disorders: Traumatic Brain & Spinal Cord Injury · Cerebrovascular · Demyelinating · Peripheral Nervous System Disorders · Tumors of the CNS</p>
+  </div>
+  <div class="chapnav" id="nav-neuro"></div>
+  <div class="sec-h"><h2>🖼️ ภาพจำลองชี้ส่วนประกอบ</h2><span class="sub">กดตัวเลข/หัวข้อในภาพเพื่อดูคำอธิบาย</span></div>
+  <div id="dg-neuro"></div>
+  <div class="sysbar">
+    <input type="text" id="f-neuro" placeholder="กรองเนื้อหาในไฟล์นี้…">
+    <span id="chips-neuro" style="display:contents"></span>
+    <span id="count-neuro" style="color:var(--mut);font-size:.78rem"></span>
+  </div>
+  <div id="chapters-neuro"></div>
+  <div class="sec-h"><h2>📊 ตารางเทียบ (ไฟล์ 1)</h2></div>
+  <div class="tblwrap"><table>
+    <tr><th>ประเด็น</th><th>Global cerebral ischemia</th><th>Focal cerebral ischemia</th></tr>
+    <tr><td>ขอบเขต</td><td>บาดเจ็บกว้างทั้งสมอง (ischemic-hypoxic injury)</td><td>ขาดเลือดเฉพาะจุด → infarction</td></tr>
+    <tr><td>สาเหตุ</td><td>Severe systemic hypotension (systolic &lt; 50 mmHg): cardiac arrest, shock</td><td>Embolic (ลิ่มเลือดจากหัวใจ/atrial fibrillation/plaque ที่ carotid หรือ aortic arch) หรือ Thrombotic occlusion (ลิ่มเลือดเกิดที่ตำแหน่งนั้น)</td></tr>
+  </table></div>
+  <div class="tblwrap"><table>
+    <tr><th>ประเด็น</th><th>Vasogenic edema</th><th>Cytotoxic edema</th></tr>
+    <tr><td>กลไก</td><td>Blood–brain barrier เสียหาย → ของเหลวเคลื่อนจากหลอดเลือดออกสู่ extracellular space</td><td>ของเหลวในเซลล์เพิ่ม จาก neuronal/glial cell injury</td></tr>
+    <tr><td>สาเหตุ</td><td>Inflammation, Tumor (increased vascular permeability)</td><td>Hypoxic/ischemic insult, สารพิษ</td></tr>
+  </table></div>
+  <div class="tblwrap"><table>
+    <tr><th>ประเด็น</th><th>Bell's palsy (CN VII)</th><th>Trigeminal neuralgia (CN V)</th></tr>
+    <tr><td>อาการหลัก</td><td>กล้ามเนื้อใบหน้าอ่อนแรงครึ่งซีก หลับตาไม่สนิท มุมปากตก เสียรับรสลิ้นด้านเดียวกัน</td><td>ปวดใบหน้ารุนแรงเหมือนเข็มแทง/ไฟช็อต เป็นพัก ๆ สั้น ๆ ซ้ำถี่</td></tr>
+    <tr><td>ตำแหน่งพยาธิสภาพ</td><td>ที่ตัวเส้นประสาท ไม่ใช่เนื้อสมอง</td><td>เส้นเลือดกดทับ CN V / เนื้องอก / MS / งูสวัด</td></tr>
+  </table></div>
+</section>
+
+<!-- ================= FILE 2 MSK ================= -->
+<section class="view" id="view-msk" style="--fc:#5ee08a">
+  <div class="hero">
+    <div class="glow"></div>
+    <div class="pills"><span class="pill fc">📗 ไฟล์ที่ 2</span><span class="pill">Dr. Rattanawan Thubthed, Ph.D · rattanawan.thu@pi.ac.th</span></div>
+    <h1>Diseases of Musculoskeletal System and Joint</h1>
+    <p>Congenital Disorders · Metabolic disease of bone · Fractures & Bone healing · Disorders of Joints · Disorders of skeletal muscle</p>
+  </div>
+  <div class="chapnav" id="nav-msk"></div>
+  <div class="sec-h"><h2>🖼️ ภาพจำลองชี้ส่วนประกอบ</h2><span class="sub">กดตัวเลข/หัวข้อในภาพเพื่อดูคำอธิบาย</span></div>
+  <div id="dg-msk"></div>
+  <div class="sysbar">
+    <input type="text" id="f-msk" placeholder="กรองเนื้อหาในไฟล์นี้…">
+    <span id="chips-msk" style="display:contents"></span>
+    <span id="count-msk" style="color:var(--mut);font-size:.78rem"></span>
+  </div>
+  <div id="chapters-msk"></div>
+  <div class="sec-h"><h2>📊 ตารางเทียบ (ไฟล์ 2)</h2></div>
+  <div class="tblwrap"><table>
+    <tr><th>ประเด็น</th><th>Osteoarthritis (OA)</th><th>Rheumatoid Arthritis (RA)</th></tr>
+    <tr><td>กลไก</td><td>เสื่อมของ articular cartilage จากแรงกด/เสียดสี + อายุ → chondrocytes สลาย matrix มากกว่าสร้าง</td><td>Autoimmune → synovitis → pannus ทำลายกระดูกอ่อน/กระดูก</td></tr>
+    <tr><td>ลักษณะข้อ</td><td>ช่องข้อแคบลง กระดูกงอก (osteophyte) ข้อผิดรูป</td><td>Symmetrical polyarthritis ปวด บวม แดง ร้อน ข้อนิ้วมือ/ข้อมือ/เท้า</td></tr>
+    <tr><td>ข้อฝืดเช้า</td><td>ไม่นาน</td><td>นาน &gt; 1 ชั่วโมง</td></tr>
+    <tr><td>ผลท้าย</td><td>ปวดข้อ ข้อฝืด เคลื่อนไหวลำบาก</td><td>ข้อผิดรูป → Ankylosis (ข้อยึดติด)</td></tr>
+  </table></div>
+  <div class="tblwrap"><table>
+    <tr><th>ภาวะ</th><th>เกณฑ์ / จุดเด่น</th></tr>
+    <tr><td>Osteopenia</td><td>T-score ระหว่าง −1 ถึง −2.5 SD (มวลกระดูกลดลงกว่าปกติ)</td></tr>
+    <tr><td>Osteoporosis</td><td>T-score ≤ −2.5 SD → เพิ่มเสี่ยง fracture · Primary: postmenopausal + senile · Secondary: hyperthyroidism, malnutrition, GI disorders, corticosteroids</td></tr>
+    <tr><td>Osteomalacia / Rickets</td><td>Mineralization ไม่พอ (ผู้ใหญ่/เด็ก) → กระดูกอ่อนนุ่มเปราะ · Vit D deficiency, malabsorption, CKD</td></tr>
+    <tr><td>Paget disease</td><td>Remodeling เพิ่มผิดปกติ → disorganized bone: 1 Osteolytic → 2 Mixed → 3 Osteosclerotic (burned-out) · หัวโต (hat size เพิ่ม) ขาโก่ง</td></tr>
+  </table></div>
+  <div class="tblwrap"><table>
+    <tr><th>Contracture</th><th>Physiologic</th><th>Pathologic</th></tr>
+    <tr><td>กลไก</td><td>ไม่มี action potential ใน sarcolemma · Calcium pump ล้มเหลวจาก ATP depletion → คลายตัวไม่ได้</td><td>หดสั้นถาวร ทั้งที่ ATP เพียงพอและ action potential ปกติ (จาก muscle spasm/weakness)</td></tr>
+    <tr><td>ตัวอย่าง</td><td>McArdle disease, Malignant hyperthermia</td><td>Achilles tendon contracture, Muscular dystrophy, Cerebral palsy, CNS injury</td></tr>
+  </table></div>
+</section>
+
+<!-- ================= FILE 3 LIVER ================= -->
+<section class="view" id="view-liver" style="--fc:#ffb454">
+  <div class="hero">
+    <div class="glow"></div>
+    <div class="pills"><span class="pill fc">📘 ไฟล์ที่ 3</span><span class="pill">Sirorat Thongrod, Ph.D</span><span class="pill">PATHOLOGY</span></div>
+    <h1>Diseases of Liver, Gallbladder and Exocrine Pancreas</h1>
+    <p>Liver (Jaundice) · Hepatitis · Cirrhosis · Tumor · Gallbladder: Gallstone / Cholecystitis / Tumor · Exocrine Pancreas: Pancreatitis / Tumor</p>
+  </div>
+  <div class="chapnav" id="nav-liver"></div>
+  <div class="sec-h"><h2>🖼️ ภาพจำลองชี้ส่วนประกอบ</h2><span class="sub">กดตัวเลข/หัวข้อในภาพเพื่อดูคำอธิบาย</span></div>
+  <div id="dg-liver"></div>
+  <div class="sysbar">
+    <input type="text" id="f-liver" placeholder="กรองเนื้อหาในไฟล์นี้…">
+    <span id="chips-liver" style="display:contents"></span>
+    <span id="count-liver" style="color:var(--mut);font-size:.78rem"></span>
+  </div>
+  <div id="chapters-liver"></div>
+  <div class="sec-h"><h2>📊 ตารางเทียบ (ไฟล์ 3)</h2></div>
+  <div class="tblwrap"><table>
+    <tr><th>ประเด็น</th><th>Hemolytic</th><th>Hepatocellular</th><th>Obstructive</th></tr>
+    <tr><td>กลไก</td><td>ทำลายเม็ดเลือดแดงมากกว่าปกติ</td><td>เซลล์ตับถูกทำลาย → สร้าง/หลั่ง bilirubin ผิดปกติ</td><td>อุดกั้นทางเดินน้ำดี → bilirubin คั่ง</td></tr>
+    <tr><td>Bilirubin ที่สูง</td><td>Indirect (unconjugated)</td><td>ทั้ง Direct + Indirect</td><td>Direct (conjugated)</td></tr>
+    <tr><td>ปัสสาวะ</td><td>สีปกติ</td><td>เข้ม</td><td>เข้มมาก (dark urine)</td></tr>
+    <tr><td>อุจจาระ</td><td>เข้ม</td><td>ปกติ/ซีด</td><td>ซีด (clay-colored)</td></tr>
+  </table></div>
+  <div class="tblwrap"><table>
+    <tr><th>ประเด็น</th><th>HAV</th><th>HBV</th></tr>
+    <tr><td>การติดต่อ</td><td>Fecal–oral (อาหาร/น้ำปนเปื้อน) · ไม่เกิด parenteral</td><td>Parenteral, sexual, vertical (mother→neonate) · พบบใน male homosexuals</td></tr>
+    <tr><td>Incubation</td><td>15–45 วัน</td><td>เฉลี่ย 60–90 วัน</td></tr>
+    <tr><td>Chronic / carrier</td><td>ไม่เกิด — หายเกือบทั้งหมด (1% fulminant → liver failure)</td><td>เกิด carrier (ตรวจพบ HBsAg) + chronic hepatitis → cirrhosis</td></tr>
+    <tr><td>HCC</td><td>ไม่สัมพันธ์</td><td>สัมพันธ์ชัดเจน (major association) · ground-glass hepatocytes · Dane particle</td></tr>
+  </table></div>
+  <div class="tblwrap"><table>
+    <tr><th>ประเด็น</th><th>HCC</th><th>Cholangiocarcinoma (CCA)</th><th>Metastasis to liver</th></tr>
+    <tr><td>ความถี่</td><td>Primary malignancy พบบ่อย+สำคัญสุด · ชาย &gt; หญิง</td><td>พบน้อยกว่า HCC · ชุกใน Far East/อีสาน</td><td>พบบกว่า primary liver tumors</td></tr>
+    <tr><td>ปัจจัยเสี่ยง</td><td>Macronodular cirrhosis, HBV</td><td>พยาธิใบไม้ตับ Opisthorchis viverrini / Clonorchis sinensis</td><td>Colon, pancreas, lung, breast carcinomas</td></tr>
+    <tr><td>ลักษณะก้อน</td><td>หลายก้อนขนาดต่างกัน มักมีก้อนใหญ่สุดหนึ่งก้อน · กลีบขวา &gt; ซ้าย · necrosis + hemorrhage ในก้อน</td><td>หลายก้อนกระจายทั่วไป · ก้อนแข็งแน่น · ตับโต</td><td>Multiple nodules · hepatomegaly + nodular free edge</td></tr>
+  </table></div>
+  <div class="tblwrap"><table>
+    <tr><th>ประเด็น</th><th>Acute pancreatitis</th><th>Chronic pancreatitis</th></tr>
+    <tr><td>พยาธิสภาพ</td><td>4 หลัก: proteolytic destruction · necrosis of blood vessel · fat necrosis (สะสม calcium → ขาวเหลือง) · inflammatory reaction</td><td>Progressive parenchymal fibrosis · calcification เห็นบน radiography · pseudocysts</td></tr>
+    <tr><td>สาเหตุ</td><td>สำคัญสุด: Alcohol + โรคทางเดินน้ำดี (นิ่วถุงน้ำดี) · อุบัติเหตุ ยา Mumps</td><td>Almost always alcoholism · จาก mild/subclinical acute ที่ซ้ำ ๆ</td></tr>
+  </table></div>
+  <div class="tblwrap"><table>
+    <tr><th>นิ่วถุงน้ำดี</th><th>ลักษณะ</th></tr>
+    <tr><td>Cholesterol stones</td><td>มัก solitary ใหญ่เกินจะเข้า cystic duct / common bile duct · สัมพันธ์ obesity, multiple pregnancies, หญิง</td></tr>
+    <tr><td>Pigment stones</td><td>Precipitation ของ excess insoluble unconjugated bilirubin · สัมพันธ์ hemolytic anemia + bacterial infection</td></tr>
+    <tr><td>Mixed stones</td><td>พบบสุด 75–80% · ส่วนใหญ่ผสม cholesterol + calcium salts</td></tr>
+  </table></div>
+</section>
+
+<!-- ================= LAB ================= -->
+<section class="view" id="view-lab">
+  <div class="hero" style="--fc:#39d6cf">
+    <div class="glow"></div>
+    <h1>🔬 Simulation Lab (8 ห้อง)</h1>
+    <p>ปรับตัวแปรทางพยาธิสรีรวิทยาแล้วดูผลทันที — สร้างตามกลไกในสไลด์ทั้ง 3 ไฟล์</p>
+  </div>
+
+  <div class="lab" style="margin-top:1rem">
+    <div class="lab-h"><span>🟡</span><h3>Lab 1 · Bilirubin / Jaundice Simulator</h3><span class="tag">📘 ไฟล์ 3</span></div>
+    <div class="lab-b">
+      <div class="panel">
+        <h4>ตัวแปรต้น</h4>
+        <div class="ctl"><label>อัตราการทำลายเม็ดเลือดแดง (Hemolysis) <b id="jHemoV">10</b></label><input type="range" id="jHemo" min="0" max="100" value="10"></div>
+        <div class="ctl"><label>การทำงานของเซลล์ตับ (Hepatocyte fn) <b id="jHepV">95</b></label><input type="range" id="jHep" min="0" max="100" value="95"></div>
+        <div class="ctl"><label>ความโล่งทางเดินน้ำดี (Bile duct patency) <b id="jDuctV">95</b></label><input type="range" id="jDuct" min="0" max="100" value="95"></div>
+        <div class="readout">
+          <div class="ro" id="roTotal"><b id="jTotal">–</b><span>Total bili (mg/dL)</span></div>
+          <div class="ro"><b id="jDirect">–</b><span>Direct</span></div>
+          <div class="ro"><b id="jIndirect">–</b><span>Indirect</span></div>
+          <div class="ro"><b id="jAlt">–</b><span>ALT/AST (U/L)</span></div>
+          <div class="ro"><b id="jAlp">–</b><span>ALP (U/L)</span></div>
+        </div>
+        <div class="verdict good" id="jType">ปกติ — ไม่พบดีซ่าน</div>
+        <p class="note" id="jNote">เลื่อนแถบเพื่อจำลองกลไก Hemolytic / Hepatocellular / Obstructive jaundice</p>
+      </div>
+      <div class="panel">
+        <h4>ผลที่ร่างกายแสดง</h4>
+        <svg viewBox="0 0 360 200">
+          <circle id="jFaceSkin" cx="70" cy="80" r="52" fill="#f3c9a0" stroke="#00000030"/>
+          <circle id="jScleraL" cx="52" cy="70" r="10" fill="#ffffff"/>
+          <circle id="jScleraR" cx="88" cy="70" r="10" fill="#ffffff"/>
+          <circle cx="52" cy="70" r="4" fill="#3a2a1c"/><circle cx="88" cy="70" r="4" fill="#3a2a1c"/>
+          <path d="M52,102 Q70,114 88,102" stroke="#7a4a2a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <text class="lb" x="70" y="152" text-anchor="middle">ผิวหนัง/ตาขาว (conjunctiva)</text>
+          <rect x="170" y="40" width="34" height="90" rx="14" fill="#ffffff22" stroke="#00000030"/>
+          <rect id="jUrineFill" x="174" y="60" width="26" height="66" rx="10" fill="#f5d76e"/>
+          <text class="lb" x="187" y="152" text-anchor="middle">ปัสสาวะ</text>
+          <rect x="250" y="40" width="34" height="90" rx="14" fill="#ffffff22" stroke="#00000030"/>
+          <rect id="jStoolFill" x="254" y="60" width="26" height="66" rx="10" fill="#8a5a34"/>
+          <text class="lb" x="267" y="152" text-anchor="middle">อุจจาระ</text>
+          <rect x="306" y="52" width="14" height="10" rx="3" id="jFlowUcj" fill="#ffd166"/>
+          <rect x="306" y="68" width="14" height="10" rx="3" id="jFlowCj" fill="#39d6cf"/>
+          <rect x="306" y="84" width="14" height="10" rx="3" id="jFlowEx" fill="#5ee08a"/>
+          <text class="lb" x="326" y="61">unconj</text><text class="lb" x="326" y="77">conj</text><text class="lb" x="326" y="93">excreted</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-h"><span>🫀</span><h3>Lab 2 · Liver Cirrhosis Progression + Portal HTN</h3><span class="tag">📘 ไฟล์ 3</span></div>
+    <div class="lab-b">
+      <div class="panel">
+        <h4>ระยะโรค & สาเหตุ</h4>
+        <div class="ctl"><label>ระยะ (Stage) <b id="cStageV">0 — ปกติ</b></label><input type="range" id="cStage" min="0" max="4" step="1" value="0"></div>
+        <div class="ctl"><label>สาเหตุ (Types by cause)</label>
+          <select id="cCause">
+            <option value="alcohol">Alcohol cirrhosis (micronodular — prototype)</option>
+            <option value="viral">Postnecrotic / Viral B·C (macronodular)</option>
+            <option value="biliary">Biliary cirrhosis (obstruction)</option>
+          </select>
+        </div>
+        <div class="readout">
+          <div class="ro"><b id="cSize">ปกติ</b><span>ขนาดตับ</span></div>
+          <div class="ro"><b id="cSurface">เรียบ</b><span>ผิวภายนอก</span></div>
+          <div class="ro" id="roPortal"><b id="cPortal">7</b><span>Portal pressure (mmHg)</span></div>
+          <div class="ro" id="roRisk"><b id="cRisk">2%</b><span>ความเสี่ยง HCC</span></div>
+        </div>
+        <h4 style="margin-top:.9rem">Consequences of intrahepatic scarring + increased portal venous pressure</h4>
+        <div class="compchips" id="compChips">
+          <span class="cchip" data-lv="2">Esophageal varices → upper GI hemorrhage</span>
+          <span class="cchip" data-lv="2">Rectal hemorrhoids</span>
+          <span class="cchip" data-lv="3">Caput medusae</span>
+          <span class="cchip" data-lv="3">Splenomegaly</span>
+          <span class="cchip" data-lv="4">Ascites / Liver failure</span>
+          <span class="cchip" data-lv="4">Hepatic encephalopathy</span>
+        </div>
+        <p class="note" id="cNote">ตับปกติ: 1400–1600 g (ชาย) / 1200–1400 g (หญิง) · กลีบขวาใหญ่กว่าซ้าย ~6 เท่า · ผิวเรียบ</p>
+      </div>
+      <div class="panel">
+        <h4>ภาพตัดตับจำลอง (gross morphology)</h4>
+        <svg viewBox="0 0 420 260">
+          <defs>
+            <clipPath id="livClip"><path d="M52,120 C48,84 86,52 140,44 C196,36 258,40 306,58 C352,75 372,104 366,132 C360,160 322,178 276,186 C232,194 176,196 132,186 C92,177 58,152 52,120 Z"/></clipPath>
+            <linearGradient id="livGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" id="livG1" stop-color="#9a5240"/><stop offset="1" id="livG2" stop-color="#6e3527"/>
+            </linearGradient>
+          </defs>
+          <g id="livGroup">
+            <path d="M52,120 C48,84 86,52 140,44 C196,36 258,40 306,58 C352,75 372,104 366,132 C360,160 322,178 276,186 C232,194 176,196 132,186 C92,177 58,152 52,120 Z" fill="url(#livGrad)" stroke="#3d1d15" stroke-width="2"/>
+            <g clip-path="url(#livClip)">
+              <g id="livFat"></g>
+              <g id="livFib" opacity="0"></g>
+            </g>
+            <g id="livNod"></g>
+            <path d="M208,42 L204,124" stroke="#e8d8c8" stroke-width="4" fill="none" opacity=".8"/>
+            <ellipse cx="252" cy="196" rx="26" ry="13" fill="#3f9d5a" stroke="#20522e" transform="rotate(-12 252 196)"/>
+            <text class="lb" x="252" y="224" text-anchor="middle">gallbladder</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-h"><span>🧠</span><h3>Lab 3 · ICP & Cerebral Perfusion (Monro–Kellie)</h3><span class="tag">📕 ไฟล์ 1</span></div>
+    <div class="lab-b">
+      <div class="panel">
+        <h4>ตัวแปร</h4>
+        <div class="ctl"><label>ปริมาตรก้อน/บวมในกะโหลก (mL) <b id="iVolV">0</b></label><input type="range" id="iVol" min="0" max="140" value="0"></div>
+        <div class="ctl"><label>ความดันโลหิตเฉลี่ย MAP (mmHg) <b id="iMapV">90</b></label><input type="range" id="iMap" min="50" max="150" value="90"></div>
+        <div class="readout">
+          <div class="ro" id="roIcp"><b id="iIcp">10</b><span>ICP (mmHg)</span></div>
+          <div class="ro" id="roCpp"><b id="iCpp">80</b><span>CPP = MAP−ICP</span></div>
+          <div class="ro" id="roCbf"><b id="iCbf">ปกติ</b><span>Cerebral blood flow</span></div>
+        </div>
+        <div class="verdict good" id="iRisk">ICP ปกติ (5–15 mmHg)</div>
+        <p class="note" id="iNote">กะโหลก/โพรงกระดูกสันหลังเป็นโครงสร้างแข็ง จำกัดการขยายตัว — ปริมาณเพิ่มในกะโหลก → ICP สูง → ลด perfusion → บาดเจ็บรุนแรง/เสียชีวิต</p>
+      </div>
+      <div class="panel">
+        <h4>สมอง & กราฟ Pressure–Volume</h4>
+        <svg viewBox="0 0 400 210">
+          <path d="M200,10 C116,10 52,66 52,128 C52,180 116,204 200,204 C284,204 348,180 348,128 C348,66 284,10 200,10 Z" fill="#e8ddcf" stroke="#00000035" stroke-width="3"/>
+          <path d="M200,24 C128,24 68,74 68,128 C68,172 126,192 200,192 C274,192 332,172 332,128 C332,74 272,24 200,24 Z" fill="#d9a0a0" stroke="#00000025"/>
+          <path d="M96,80 q18,-14 36,0 M140,60 q18,-14 36,0 M200,52 q18,-12 36,2 M250,70 q18,-12 34,2 M100,120 q18,-12 34,2 M260,120 q16,-12 32,2" stroke="#a86a6a" stroke-width="3" fill="none" opacity=".7"/>
+          <circle id="icpMass" cx="118" cy="120" r="0" fill="#c0392b" opacity=".85"/>
+          <path id="icpVentL" d="M168,96 q-10,26 4,44 q10,-6 8,-24 q-2,-14 -12,-20 Z" fill="#7fb3d5" opacity=".9"/>
+          <path id="icpVentR" d="M232,96 q10,26 -4,44 q-10,-6 -8,-24 q2,-14 12,-20 Z" fill="#7fb3d5" opacity=".9"/>
+          <line id="icpMid" x1="200" y1="30" x2="200" y2="188" stroke="#5a2d22" stroke-width="2.5" stroke-dasharray="5 4"/>
+        </svg>
+        <canvas id="icpGraph" height="150"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-h"><span>🚨</span><h3>Lab 4 · Stroke BEFAST Triage Trainer</h3><span class="tag">📕 ไฟล์ 1</span></div>
+    <div class="lab-b">
+      <div class="panel">
+        <h4>ประเมินอาการผู้ป่วย (แตะถ้าพบ)</h4>
+        <div class="bfgrid" id="bfGrid">
+          <button class="bfbtn" data-bf="B"><b>B</b>alance — การทรงตัว เดินเซ ล้มง่าย</button>
+          <button class="bfbtn" data-bf="E"><b>E</b>yes — ตามัว มองเห็นภาพซ้อน</button>
+          <button class="bfbtn" data-bf="F"><b>F</b>ace — หน้าเบี้ยว ยิ้มไม่เท่ากัน</button>
+          <button class="bfbtn" data-bf="A"><b>A</b>rm — แขนขาอ่อนแรง ยกไม่ขึ้น</button>
+          <button class="bfbtn" data-bf="S"><b>S</b>peech — พูดไม่ชัด อ้อแอ้ ฟังไม่เข้าใจ</button>
+        </div>
+        <div class="readout">
+          <div class="ro"><b id="bfCount">0</b><span>อาการที่พบ</span></div>
+          <div class="ro" id="roTimer"><b id="bfTimer">00:00</b><span>เวลาตั้งแต่ onset</span></div>
+          <div class="ro" id="roWindow"><b id="bfWindow">–</b><span>Window เหลือ</span></div>
+        </div>
+        <div class="verdict good" id="bfAlert">ยังไม่พบอาการสงสัย stroke</div>
+        <div class="ctl" style="margin-top:.7rem"><label>ชนิด stroke</label>
+          <select id="bfType"><option value="ischemic">Ischemic — Atherosclerosis / Embolism</option><option value="hemorrhagic">Hemorrhagic — หลอดเลือดแตก</option></select>
+        </div>
+        <p class="note" id="bfNote">Ischemic: ก้อนเลือดไหลมาตามกระแสเลือดแล้วอุดหลอดเลือดสมอง · Hemorrhagic: ความดันสูง + หลอดเลือดเปราะ</p>
+        <div style="display:flex;gap:.5rem;margin-top:.6rem"><button class="btn" id="bfReset">↺ รีเซ็ตเคส</button></div>
+      </div>
+      <div class="panel">
+        <h4>T — Time: เวลาคือชีวิต</h4>
+        <svg viewBox="0 0 360 150">
+          <rect x="20" y="30" width="320" height="26" rx="13" fill="#ffffff18"/>
+          <rect x="20" y="30" width="150" height="26" rx="13" fill="#5ee08a88"/>
+          <rect x="170" y="30" width="90" height="26" rx="13" fill="#ffd16688"/>
+          <rect x="260" y="30" width="80" height="26" rx="13" fill="#ff6b7a66"/>
+          <text x="95" y="47" text-anchor="middle" font-size="10" fill="#06281a" font-weight="700">Thrombolysis ≤4.5 ชม.</text>
+          <text x="215" y="47" text-anchor="middle" font-size="10" fill="#3a2a00" font-weight="700">Thrombectomy</text>
+          <text x="300" y="47" text-anchor="middle" font-size="10" fill="#3a0d12" font-weight="700">เสี่ยงพิการ</text>
+          <line id="bfCursor" x1="20" y1="22" x2="20" y2="64" stroke="currentColor" stroke-width="3"/>
+          <text class="lb" x="20" y="80">0 นาที</text>
+          <text class="lb" x="340" y="80" text-anchor="end">24 ชม.</text>
+          <text class="lb" x="20" y="112" font-weight="700">เจออาการเหล่านี้ รีบโทร 1669 ทันที!</text>
+          <text class="lb" x="20" y="132" opacity=".6">Risk factors: HTN · ไขมันในเลือดสูง · เบาหวาน · สูบบุหรี่ · โรคหัวใจ · ไม่ออกกำลังกาย · แอลกอฮอล์มาก</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-h"><span>⚡</span><h3>Lab 5 · Myelin & Nerve Conduction (MS / Demyelination)</h3><span class="tag">📕 ไฟล์ 1</span></div>
+    <div class="lab-b">
+      <div class="panel">
+        <h4>ความสมบูรณ์ปลอกไมอีลิน</h4>
+        <div class="ctl"><label>Myelin integrity <b id="mIntV">100%</b></label><input type="range" id="mInt" min="0" max="100" value="100"></div>
+        <div class="readout">
+          <div class="ro" id="roVel"><b id="mVel">70</b><span>Conduction velocity (m/s)</span></div>
+          <div class="ro"><b id="mSeg">0/8</b><span>ปลอกเสียหาย</span></div>
+          <div class="ro" id="roSig"><b id="mSig">แรง</b><span>สัญญาณถึงกล้ามเนื้อ</span></div>
+        </div>
+        <div class="verdict good" id="mNote">Saltatory conduction ปกติ — สัญญาณวิ่งกระโดดตาม Node of Ranvier</div>
+        <p class="note">MS: plaque ของ demyelination สี gray-tan ขอบชัดใน periventricular white matter → transient/progressive loss of neurologic function · พบบในหญิงวัย 20–40 ปี</p>
+      </div>
+      <div class="panel">
+        <h4>Axon จำลอง (animation)</h4>
+        <canvas id="myCanvas" height="170"></canvas>
+        <div style="display:flex;align-items:center;gap:.6rem;margin-top:.6rem">
+          <span style="font-size:.8rem;color:var(--mut)">กล้ามเนื้อ:</span>
+          <div id="mMuscle" style="flex:1;height:16px;border-radius:99px;background:var(--card);border:1px solid var(--line);overflow:hidden"><div id="mMuscleFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--acc),var(--ok));transition:width .2s"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-h"><span>🦴</span><h3>Lab 6 · Bone Mineral Density (T-score / DXA)</h3><span class="tag">📗 ไฟล์ 2</span></div>
+    <div class="lab-b">
+      <div class="panel">
+        <h4>ผล DXA scan</h4>
+        <div class="ctl"><label>T-score (SD) <b id="bTV">-1.0</b></label><input type="range" id="bT" min="-4" max="2.5" step="0.1" value="-1"></div>
+        <div class="readout">
+          <div class="ro" id="roBClass"><b id="bClass">Osteopenia</b><span>การวินิจฉัย</span></div>
+          <div class="ro" id="roBRisk"><b id="bRisk">12%</b><span>Fracture risk</span></div>
+        </div>
+        <div class="verdict warn" id="bNote">Osteopenia: T-score อยู่ระหว่าง −1 ถึง −2.5 SD</div>
+        <h4 style="margin-top:.9rem">Secondary causes (กดเลือก)</h4>
+        <div class="compchips" id="bSec">
+          <span class="cchip" data-sec="1">Hyperthyroidism</span>
+          <span class="cchip" data-sec="1">Malnutrition</span>
+          <span class="cchip" data-sec="1">Gastrointestinal disorders</span>
+          <span class="cchip" data-sec="1">Corticosteroids</span>
+        </div>
+        <p class="note">Primary osteoporosis: 1) Postmenopausal 2) Senile · อาการ osteomalacia: ปวดกระดูก กล้ามเนื้ออ่อนแรง กระดูกผิดรูปในเด็ก (rickets)</p>
+      </div>
+      <div class="panel">
+        <h4>Vertebra จำลอง — trabecular density</h4>
+        <svg viewBox="0 0 300 200">
+          <rect x="70" y="30" width="160" height="140" rx="22" fill="#e9dcc3" stroke="#8a7a55" stroke-width="3"/>
+          <g id="vertTrab" stroke="#8a7a55" stroke-width="2" opacity=".85"></g>
+          <rect x="70" y="30" width="160" height="140" rx="22" fill="none" stroke="#8a7a55" stroke-width="3"/>
+          <text class="lb" x="150" y="190" text-anchor="middle">trabecular bone density</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-h"><span>🩹</span><h3>Lab 7 · Fracture Healing Timeline</h3><span class="tag">📗 ไฟล์ 2</span></div>
+    <div class="lab-b">
+      <div class="panel">
+        <h4>ควบคุมเวลา</h4>
+        <div class="ctl"><label>วันที่หลังกระดูกหัก <b id="frDayV">0</b></label><input type="range" id="frDay" min="0" max="365" value="0"></div>
+        <div style="display:flex;gap:.5rem"><button class="btn pri" id="frPlay">▶ เล่น</button><button class="btn" id="frReset">↺ รีเซ็ต</button></div>
+        <div class="verdict good" id="frStage">Hematoma formation</div>
+        <p class="note">Hematoma → Inflammatory phase → Soft callus (≈1 สัปดาห์) → Bony callus (≈2 สัปดาห์, woven bone สะสมแคลเซียม) → Remodeling (หลายเดือน–หลายปี: woven → lamellar bone)</p>
+      </div>
+      <div class="panel">
+        <h4>กระดูกหักจำลอง</h4>
+        <svg viewBox="0 0 400 180">
+          <g id="frBone">
+            <path d="M20,70 h140 l14,10 l-10,12 l12,10 h-156 z" fill="#efe6d2" stroke="#8a7a55" stroke-width="3"/>
+            <path d="M380,70 h-140 l-14,10 l10,12 l-12,10 h156 z" fill="#efe6d2" stroke="#8a7a55" stroke-width="3"/>
+          </g>
+          <ellipse id="frHematoma" cx="200" cy="90" rx="34" ry="26" fill="#a83232" opacity="0"/>
+          <g id="frInflam" opacity="0"></g>
+          <ellipse id="frSoft" cx="200" cy="90" rx="0" ry="0" fill="#9fc6e8" opacity="0"/>
+          <ellipse id="frBony" cx="200" cy="90" rx="46" ry="30" fill="#d9c08a" stroke="#8a7a55" stroke-width="2" opacity="0"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-h"><span>💎</span><h3>Lab 8 · Gallstone Formation Simulator (Cholelithiasis)</h3><span class="tag">📘 ไฟล์ 3</span></div>
+    <div class="lab-b">
+      <div class="panel">
+        <h4>องค์ประกอบน้ำดี</h4>
+        <div class="ctl"><label>Cholesterol saturation <b id="gCholV">30</b></label><input type="range" id="gChol" min="0" max="100" value="30"></div>
+        <div class="ctl"><label>Unconjugated bilirubin / hemolysis <b id="gBiliV">20</b></label><input type="range" id="gBili" min="0" max="100" value="20"></div>
+        <div class="ctl"><label>Gallbladder stasis <b id="gStasisV">20</b></label><input type="range" id="gStasis" min="0" max="100" value="20"></div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.4rem">
+          <button class="btn" id="gSc1">เคส: หญิง obesity + multiple pregnancies</button>
+          <button class="btn" id="gSc2">เคส: Hemolytic anemia + bacterial infection</button>
+        </div>
+        <div class="verdict good" id="gType">น้ำดีปกติ — ยังไม่เกิดนิ่ว</div>
+        <p class="note" id="gNote">Mixed stones คิดเป็น 75–80% ของนิ่วทั้งหมด · Cholesterol stones มัก solitary และใหญ่เกินเข้า cystic duct/CBD</p>
+      </div>
+      <div class="panel">
+        <h4>ถุงน้ำดีจำลอง (capacity ≈ 50 mL)</h4>
+        <svg viewBox="0 0 300 210">
+          <path d="M150,24 C104,30 80,66 84,106 C88,146 118,174 150,174 C182,174 212,146 216,106 C220,66 196,30 150,24 Z" fill="#4d9e63" stroke="#20522e" stroke-width="3"/>
+          <path d="M150,24 C142,14 134,10 124,8" stroke="#20522e" stroke-width="6" fill="none"/>
+          <g id="gbStones"></g>
+          <text class="lb" x="150" y="196" text-anchor="middle">fundus · body · neck → cystic duct</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section class="view" id="view-quiz">
+  <div class="hero" style="--fc:#a78bfa">
+    <div class="glow"></div>
+    <h1>📝 คลังข้อสอบ Patho</h1>
+    <p>ครอบคลุมทั้ง 3 ไฟล์ · สุ่มลำดับข้อทุกครั้งที่เริ่ม · เฉลยพร้อมคำอธิบายทันที</p>
+  </div>
+  <div class="panel" id="quizBox" style="max-width:760px;margin-top:1rem">
+    <div id="quizStart">
+      <h3 style="margin-top:0">พร้อมทดสอบไหม?</h3>
+      <p class="note" style="margin:.2rem 0 .8rem">📕 Neuro · 📗 MSK · 📘 Hepatobiliary–Pancreas</p>
+      <button class="btn pri" id="btnQuizStart">▶ เริ่มทำข้อสอบ</button>
+    </div>
+    <div id="quizRun" style="display:none">
+      <div class="prog"><i id="quizProg"></i></div>
+      <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--mut)"><span id="quizIdx"></span><span id="quizScoreLive"></span></div>
+      <h3 id="quizQ" style="margin:.7rem 0 .3rem;font-size:1rem"></h3>
+      <div id="quizOpts"></div>
+      <div class="verdict" id="quizExp" style="display:none"></div>
+      <div style="margin-top:.7rem"><button class="btn pri" id="btnQuizNext" style="display:none">ถัดไป →</button></div>
+    </div>
+    <div id="quizEnd" style="display:none">
+      <h3 style="margin-top:0">🎉 ทำเสร็จแล้ว!</h3>
+      <div class="readout"><div class="ro good"><b id="quizFinal">–</b><span>คะแนน</span></div><div class="ro"><b id="quizPct">–</b><span>เปอร์เซ็นต์</span></div></div>
+      <div id="quizReview" style="margin-top:.8rem;font-size:.84rem"></div>
+      <div style="margin-top:.8rem"><button class="btn pri" id="btnQuizAgain">↺ ทำอีกครั้ง</button></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>Patho Study Lab · จัดเนื้อหาแยกตามไฟล์สไลด์ giảng dạy · Dr. Rattanawan Thubthed, Ph.D & Sirorat Thongrod, Ph.D · Dept. of Radiological Technology</footer>
+
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id);};
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function lerp(a,b,t){return a+(b-a)*t;}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+function seeded(seed){var s=seed;return function(){s=(s*9301+49297)%233280;return s/233280;};}
+
+/* ================= FILES DATA ================= */
+var FILES=[
+{key:"neuro",chapters:[
+ {id:"cns",icon:"🧠",short:"ICP & Brain injury",title:"CNS · ความดันในกะโหลกศีรษะสูง & การบาดเจ็บของสมอง",items:[
+  {id:"n1",t:"ความดันภายในกะโหลกศีรษะสูง (Increased ICP)",en:"Intracranial hypertension",cat:"trauma",tag:"ICP",sum:"กะโหลกศีรษะ+โพรงกระดูกสันหลังเป็นโครงสร้างแข็ง ปกป้อง CNS แต่จำกัดพื้นที่ขยายตัว",pts:["Any increase in volume inside the skull → increased ICP","High ICP ลดเลือดไปเลี้ยงสมอง → decreased perfusion → serious injury หรือเสียชีวิต","สาเหตุ 7 กลุ่ม: 1 Cerebral edema (สมองบวม) 2 Hydrocephalus (น้ำคั่งในสมอง) 3 Herniation (สมองเคลื่อนกดทับ) 4 Hemorrhage (เลือดออกในสมอง) 5 Ischemia (ขาดเลือด) 6 Tumors or mass lesions 7 Hematomas"],hi:["7 causes","Monro–Kellie"]},
+  {id:"n2",t:"Cerebral edema (สมองบวม)",en:"Vasogenic vs Cytotoxic",cat:"trauma",tag:"ICP",sum:"การสะสมของเหลวมากเกินไปในเนื้อสมอง (brain parenchyma) — 2 ชนิดมักเกิดร่วมกันหลัง generalized injury",pts:["Vasogenic: blood–brain barrier เสียหาย → ของเหลวเคลื่อนจาก vascular compartment สู่ extracellular spaces (increased vascular permeability จาก inflammation & tumor)","Cytotoxic: ของเหลวในเซลล์เพิ่ม จาก neuronal/glial cell injury หลัง generalized hypoxic/ischemic insult หรือสารพิษ"],hi:["BBB disrupted","Hypoxic insult"]},
+  {id:"n3",t:"Hydrocephalus (ภาวะน้ำคั่งในสมอง)",en:"CSF volume ↑ in ventricular system",cat:"trauma",tag:"ICP",sum:"CSF สร้างที่ choroid plexus ภายใน ventricles ไหลเวียนแล้วดูดซึมกลับเข้ากระแสเลือด",pts:["ปริมาณ CSF ขึ้นกับสมดุลระหว่าง 'การสร้าง' และ 'การดูดซึม'","ผิดปกติ = CSF มากผิดปกติในโพรงสมอง จากการไหลผิดปกติหรือการดูดซึมลดลง"],hi:["Choroid plexus"]},
+  {id:"n4",t:"Herniation (ภาวะสมองเคลื่อน/เคลื่อนกดทับ)",en:"Brain herniation",cat:"trauma",tag:"ICP",sum:"การเคลื่อนที่ของเนื้อสมองจาก compartment หนึ่งไปอีกบริเวณหนึ่ง ตามแรงดัน ICP ที่สูง",pts:["สาเหตุ: Brain tumor, Abscess, Hemorrhage, trauma, ischemia/infarction, infection, Hydrocephalus","ชนิดหลัก: subfalcine, uncal (transtentorial), tonsillar — ดูภาพจำลองด้านบน"],hi:["Mass effect"]},
+  {id:"n9",t:"Tumors / mass lesions & Hematomas",en:"Space-occupying lesions",cat:"tumor",tag:"ก้อนในสมอง",sum:"เนื้องอกหรือก้อนในสมองเพิ่มปริมาตรในกะโหลก → ICP สูง",pts:["อาการก้อนในสมอง: อาการชัก · ภาวะขั้วประสาทตาบวม (papilledema) · การเดินไม่มั่นคง","Hematomas = a pool of blood inside or around the brain · พบบ่อยสุดจาก head injury: ตก, อุบัติเหตุรถยนต์, กีฬา"],hi:["Seizure","Papilledema"]},
+  {id:"n10",t:"Intracranial aneurysm",en:"Weak bulging of arterial wall",cat:"vasc",tag:"หลอดเลือด",sum:"ผนังหลอดเลือดแดงในสมองอ่อนแอและโป่งพองออกเป็นกระเปาะ (bulging)",pts:["สาเหตุ: arteriosclerosis, congenital abnormality, trauma, inflammation, infection"],hi:["Bulging"]},
+  {id:"n27",t:"การประเมินและการรักษา (Evaluation & Treatment)",en:"MRI / CT / X-ray",cat:"trauma",tag:"การตรวจ",sum:"วินิจฉัยจาก clinical features แล้วยืนยันด้วย imaging",pts:["MRI: สนามแม่เหล็กความเข้มสูง+คลื่นวิทยุ+คอมพิวเตอร์ สร้างภาพอวัยวะภายใน","CT scan: เอกซเรย์คอมพิวเตอร์ ใช้รังสีเอ็กซ์หมุนรอบร่างกาย+สารทึบรังสี","X-ray: เทคนิคใช้รังสีเอกซ์","การรักษา abscess: aspiration (ดูดหนอง) / excision (เอาก้อนออก) / antibiotics + corticosteroids ลด cerebral edema / control ICP / supportive therapy"],hi:["MRI","CT","Aspiration"]}
+ ]},
+ {id:"cva",icon:"🩸",short:"Cerebrovascular",title:"CNS · โรคหลอดเลือดสมอง (Cerebrovascular disorders)",items:[
+  {id:"n5",t:"Hemorrhage (เลือดออกในสมอง)",en:"Intracerebral bleeding",cat:"vasc",tag:"หลอดเลือด",sum:"เกิดจาก (1) hypertension+โรคที่ทำลายผนังหลอดเลือด (2) structural lesions (3) tumors",pts:["Arteriovenous malformation (AVM): ความผิดปกติแต่กำเนิดที่หลอดเลือดแดง-ดำเชื่อมต่อกันโดยตรง ไม่ผ่านเส้นเลือดฝอย","Cavernous malformations: กลุ่มหลอดเลือดฝอยจับตัวเป็นก้อนคล้ายโพรง/รังผึ้ง ผนังบางกว่าปกติ → โอกาสรั่วซึมหรือแตก"],hi:["AVM","Cavernous"]},
+  {id:"n6",t:"Ischemia → Infarction",en:"Global vs Focal cerebral ischemia",cat:"vasc",tag:"หลอดเลือด",sum:"ภาวะขาดเลือดไปเลี้ยงสมอง → เนื้อเยื่อตาย (infarction)",pts:["Global cerebral ischemia: บาดเจ็บกว้างจากขาดเลือด+ออกซิเจน · severe systemic hypotension โดยเฉพาะ systolic < 50 mmHg · พบใน cardiac arrest, shock","Focal — Embolic infarction: ลิ่มเลือดจากหัวใจ/หลอดเลือดดำ, กล้ามเนื้อหัวใจผิดปกติ, โรคลิ้นหัวใจ, atrial fibrillation, plaque ใน carotid artery หรือ aortic arch","Focal — Thrombotic occlusion: ลิ่มเลือดเกิดในตำแหน่งนั้น (ภาวะหลอดเลือดแดงแข็ง: ผนังหนา เสียความยืดหยุ่น จากไขมัน/คอเลสเตอรอล/หินปูน → plaque)"],hi:["Embolic","Thrombotic"]},
+  {id:"n7",t:"Stroke (โรคหลอดเลือดสมอง)",en:"Cerebrovascular accident",cat:"vasc",tag:"Stroke",sum:"ภาวะที่สมองขาดเลือดหรือได้รับความเสียหายจากเลือดออกในสมอง → สมองทำงานผิดปกติ",pts:["1 หลอดเลือดอุดตัน (Ischemic): Atherosclerosis (ไขมันเกาะ) / Embolism (ลิ่มเลือดหลุดมาอุด)","2 หลอดเลือดแตก (Hemorrhagic): ความดันสูง · หลอดเลือดเปราะ","Risk factors: ความดันโลหิตสูง ไขมันในเลือดสูง เบาหวาน สูบบุหรี่ โรคหัวใจ ไม่ออกกำลังกาย ดื่มแอลกอฮอล์มาก"],hi:["Ischemic","Hemorrhagic"]},
+  {id:"n8",t:"BEFAST — การรู้จำ stroke",en:"B·E·F·A·S·T",cat:"vasc",tag:"Stroke",sum:"เช็กลิสต์ประเมินอาการฉุกเฉิน — เจออาการเหล่านี้ รีบโทร 1669 ทันที!",pts:["B – Balance: การทรงตัว เดินเซ ล้มง่าย","E – Eyes: การมองเห็น ตามัว มองเห็นภาพซ้อน","F – Face: ใบหน้า หน้าเบี้ยว ยิ้มไม่เท่ากัน","A – Arm: แขนขาอ่อนแรง ยกไม่ขึ้น","S – Speech: พูดไม่ชัด อ้อแอ้ ฟังไม่เข้าใจ","T – Time: เวลา เวลาคือชีวิต"],hi:["โทร 1669"]}
+ ]},
+ {id:"inf",icon:"🦠",short:"CNS infections",title:"CNS · การติดเชื้อ (Meningitis / Abscess / Encephalitis)",items:[
+  {id:"n11",t:"Meningitis",en:"เยื่อหุ้มสมอง/ไขสันหลังอักเสบ",cat:"inf",tag:"ติดเชื้อ",sum:"การอักเสบของเยื่อหุ้มสมองหรือไขสันหลัง",pts:["สาเหตุ: bacteria, viruses, fungi, parasites, หรือ toxins","Acute meningitis: ไข้ + อาการเยื่อหุ้มสมองอักเสบ"],hi:["Acute meningitis"]},
+  {id:"n12",t:"Brain or Spinal cord abscess",en:"ฝีในสมอง/ไขสันหลัง",cat:"inf",tag:"ติดเชื้อ",sum:"ถุงหนองเฉพาะที่ (localized collections of pus) ภายใน parenchyma ของสมองหรือไขสันหลัง",pts:["(1) หลัง open trauma และระหว่าง neurosurgery","(2) contiguous spread จากบริเวณใกล้สมอง: หูชั้นกลาง, mastoid cells, nasal cavity, nasal sinuses","(3) metastatic/hematogenous จาก distant foci: หัวใจ ปอด อุ้งเชิงกราน ผิวหนัง ทอนซิล ฟันเป็นหนอง osteomyelitis (ยกเว้น cranial bones) เข็มสกปรก","(4) cryptogenic (ไม่ทราบสาเหตุ)","เสี่ยงสูง: immunodeficiency syndrome (AIDS) / immunosuppressed","รักษา: aspiration/excision + antibiotics (มักใช้ร่วม corticosteroids ลดสมองบวม) + control ICP + supportive"],hi:["Hematogenous spread","AIDS risk"]},
+  {id:"n13",t:"Encephalitis (โรคไข้สมองอักเสบ)",en:"Viral encephalitis",cat:"inf",tag:"ติดเชื้อ",sum:"ภาวะที่เนื้อสมองเกิดการอักเสบ — acute febrile illness มักจากไวรัส",pts:["พบบ่อยสุด: arthropod-borne (mosquito-borne) viruses และ herpes simplex viruses","ในผู้ใหญ่เกือบทั้งหมดเป็น herpes simplex type 1 (ไวรัสเริม)","เกี่ยวข้อง: คางทูม (Mumps)"],hi:["HSV type 1"]}
+ ]},
+ {id:"spinal",icon:"🦴",short:"Spinal cord",title:"ไขสันหลัง · Spinal cord trauma & Spinal shock",items:[
+  {id:"n14",t:"Spinal cord trauma & Spinal shock",en:"บาดเจ็บไขสันหลัง / ช็อกจากไขสันหลัง",cat:"trauma",tag:"ไขสันหลัง",sum:"เกิดจากการบาดเจ็บรุนแรงที่ไขสันหลัง เช่น อุบัติเหตุรถยนต์ ตกจากที่สูง กระแทกแรง",pts:["Spinal shock: สูญเสียการทำงานของไขสันหลังชั่วคราว — การเคลื่อนไหว + ความรู้สึก + reflex ต่ำกว่ารอยโรค","มักเกิดภายใน 48 ชม.","สิ้นสุดเมื่อมี reflex กลับมา: Bulbocavernosus reflex (กล้ามเนื้อบริเวณอวัยวะเพศ/ก้น) · Anal wink reflex (กล้ามเนื้อรอบทวารหนัก)"],hi:["48 ชม.","Bulbocavernosus"]},
+  {id:"n15",t:"หมอนรองกระดูกสันหลังทับเส้นประสาท",en:"Herniated nucleus pulposus",cat:"trauma",tag:"ไขสันหลัง",sum:"การเคลื่อนที่ของหมอนรองกระดูกสันหลังออกไปจากขอบเขตปกติของแนวกระดูกสันหลัง",pts:["หมอนรองกระดูกเสื่อมสภาพ แตก หรือปลิ้น ออกมากดทับเส้นประสาทโดยตรง","หมอนรองกระดูกเคลื่อน → กดเส้นประสาท → ปวด ชา อ่อนแรง"],hi:["Radiculopathy"]}
+ ]},
+ {id:"pns",icon:"⚡",short:"PNS",title:"ระบบประสาทส่วนปลาย (Peripheral nervous system)",items:[
+  {id:"n16",t:"โครงสร้างเส้นประสาทส่วนปลาย",en:"PNS = cranial + spinal nerves",cat:"degen",tag:"PNS",sum:"PNS ประกอบด้วยเส้นประสาทสมอง (cranial nerves) และเส้นประสาทไขสันหลัง (spinal nerves)",pts:["1 Axonal processes (แอกซอน/ใยประสาท): ส่งสัญญาณประสาท","2 Myelin sheath (ปลอกไมอีลิน): หุ้มแอกซอน ช่วยให้ส่งสัญญาณเร็วขึ้น — สร้างโดย Schwann cells (เซลล์ชวาน)","Node of Ranvier: ช่องว่างระหว่าง myelin ช่วยให้สัญญาณวิ่งแบบกระโดดเร็วขึ้น (saltatory conduction)"],hi:["Schwann cells","Node of Ranvier"]},
+  {id:"n17",t:"โรคใบหน้าเบี้ยวครึ่งซีก (Bell's palsy)",en:"CN VII inflammation",cat:"inf",tag:"PNS",sum:"โรคที่มีการอักเสบของเส้นประสาทสมองคู่ที่ 7 — ไม่เป็นอันตรายถึงชีวิต รักษาหายได้",pts:["CN VII (facial nerve): ควบคุมกล้ามเนื้อใบหน้าสำหรับแสดงอารมณ์ รับรสที่ลิ้นส่วนหน้า ควบคุมการผลิตน้ำตาและน้ำลาย","อาการ: กล้ามเนื้อใบหน้าอ่อนแรง หลับตาไม่สนิทข้างหนึ่ง ยักคิ้วไม่ได้ มุมปากตก ดื่มน้ำแล้วไหลออกมุมปาก เสียการรับรสลิ้นด้านเดียวกับหน้าที่อ่อนแรง ลดความดังของเสียงในหูข้างนั้น","ความผิดปกติอยู่ที่ตัวเส้นประสาท ไม่ได้อยู่ในเนื้อสมอง","สาเหตุ: ไม่ทราบชัดเจน / อุบัติเหตุ / เนื้องอก / เชื้อเริม (HSV) / งูสวัด (herpes zoster) แฝงในปมประสาทเมื่อภูมิต้านทานต่ำ"],hi:["CN VII"]},
+  {id:"n18",t:"โรคปวดประสาทใบหน้า (Trigeminal neuralgia)",en:"CN V neuralgia",cat:"degen",tag:"PNS",sum:"เส้นประสาทสมองคู่ที่ 5 ควบคุมกล้ามเนื้อเคี้ยวอาหารและรับความรู้สึกบนใบหน้า (สัมผัส ร้อน/เย็น)",pts:["ปวดใบหน้าด้านใดด้านหนึ่ง รวมถึงกระพุ้งแก้ม เหงือก ฟัน อย่างรุนแรง","ปวดฉับพลันเอง เหมือนโดนเข็มแทง/ไฟช็อต/แสบร้อน","บางรายปวดเหมือนปวดฟัน → เข้าใจผิดเป็นฟันผุ ถูกถอนฟันโดยไม่จำเป็น","ปวดรุนแรงเป็นพัก ๆ สั้น ๆ ไม่กี่นาที แต่ซ้ำถี่ตลอดวัน","สาเหตุ: เส้นเลือดสมองกดทับ CN V, เนื้องอกสมอง, ปลอกประสาทเสื่อม (multiple sclerosis), แทรกซ้อนจากงูสวัดที่ใบหน้า"],hi:["CN V"]},
+  {id:"n19",t:"โรคเส้นประสาทผิดปกติจากเบาหวาน",en:"Diabetic neuropathy",cat:"metab",tag:"PNS",sum:"น้ำตาลและไขมันในเลือดสูงเป็นเวลานาน → ไมโตรคอนเดรียทำงานผิดปกติ (oxidative stress)",pts:["เส้นประสาทส่วนปลายทำงานผิดปกติ → การเกิดแผลที่เท้าและการถูกตัดเท้า","เสียชีวิตได้มากถึง 70%","สูญเสียการรับความรู้สึก: เริ่มจากชาตามปลายนิ้วแล้วลุกลาม","เสียหายที่เส้นประสาทกล้ามเนื้อตา: มองเห็นภาพซ้อน กลอกตาบางทิศทางไม่ได้ ปวดหัวร่วม","เท้าเป็นอวัยวะผู้ป่วยเบาหวานที่บาดเจ็บง่ายที่สุด — เหยียบของมีคมไม่รู้สึก แผลหายช้ากว่าคนปกติ"],hi:["Foot ulcer","70%"]},
+  {id:"n20",t:"เส้นประสาทสมองเป็นอัมพาตจากการขาดเลือด",en:"Microvascular cranial nerve palsy",cat:"vasc",tag:"PNS",sum:"พบได้บ่อยที่สุดของกลุ่มประชากรอาวุโส ผู้ป่วยเบาหวานและความดันโลหิตสูง",pts:["ผิดปกติที่เส้นประสาทสมองคู่ที่ 3 (Oculomotor), คู่ที่ 4 (Trochlear), คู่ที่ 6 (Abducens)","ต้นกำเนิดจากก้านสมองเข้าสู่เบ้าตา ทำหน้าที่หลักหมุนลูกตาและช่วยกลอกตาขึ้นลง","กล้ามเนื้อตาอ่อนแรง → ลูกตาสองข้างกลอกไม่พร้อมกัน → ตามัวหรือเห็นภาพซ้อนเมื่อมองสองตาพร้อมกัน"],hi:["CN III·IV·VI","Diplopia"]}
+ ]},
+ {id:"demyel",icon:"🛡️",short:"Demyelinating & NMJ",title:"Demyelinating disorders & Neuromuscular junction",items:[
+  {id:"n21",t:"โรคปลอกประสาทอักเสบ (Multiple sclerosis)",en:"MS",cat:"auto",tag:"Demyelination",sum:"มีการทำลายปลอกประสาท/ปลอกไมอีลินที่หุ้มเส้นประสาท → การนำกระแสประสาทช้าลง เกิดอาการผิดปกติต่าง ๆ",pts:["กลไกกระตุ้นให้เม็ดเลือดขาวลิมโฟไซต์ออกจากต่อมน้ำเหลืองผ่านเข้าสู่ CNS: เส้นประสาทตา สมอง และไขสันหลัง","Gross: large 'plaque' ของ demyelination ขอบชัด สี gray-tan ใน periventricular white matter → transient or progressive loss of neurologic function","ปัจจัย: กรรมพันธุ์ · ชนชาติ (คนไทยพบน้อย) · เชื้อไวรัสบางชนิด (HBV) · วิตามินดีในเลือดต่ำ · การสูบบุหรี่","มักเกิดในผู้หญิงมากกว่าผู้ชาย พบบ่อยในวัยเจริญพันธุ์ อายุเฉลี่ย 20–40 ปี"],hi:["Plaque gray-tan","Periventricular"]},
+  {id:"n22",t:"Myasthenia gravis",en:"Autoimmune NMJ disease",cat:"auto",tag:"NMJ",sum:"โรคภูมิคุ้มกันทำลายตนเองที่ผลต่อระบบประสาทและกล้ามเนื้อ — กล้ามเนื้ออ่อนแรงเป็น ๆ หาย ๆ",pts:["เริ่มที่กล้ามเนื้อมัดเล็กบริเวณใบหน้าและดวงตา: หนังตาตก มองเห็นภาพซ้อน","ต่อมาลุกลามกล้ามเนื้อทั่วร่างกาย → กลืนลำบาก สำลัก · รายรุนแรงหายใจล้มเหลว","กลไก: ร่างกายสร้างแอนติบอดีผิดปกติต่อ acetylcholine receptor ที่รอยต่อประสาท–กล้ามเนื้อ → จำนวนตัวรับลดลง → การส่งสัญญาณผิดปกติ","สัมพันธ์กับความผิดปกติของต่อมไทมัส และอาจพบร่วมกับ SLE, Rheumatoid arthritis"],hi:["Anti-AChR","Thymus"]}
+ ]},
+ {id:"degen",icon:"🧩",short:"Degenerative & functional",title:"โรคลมชัก · Motor neuron · Degenerative diseases",items:[
+  {id:"n23",t:"โรคลมชัก (Epilepsy) & อาการชัก (Seizure)",en:"Epilepsy / Seizure",cat:"degen",tag:"ไฟฟ้าสมอง",sum:"การรบกวนของกระแสไฟฟ้าในสมองที่ควบคุมไม่ได้ → การเคลื่อนไหว ความรู้สึก หรือพฤติกรรมเปลี่ยนแปลง โดยอาจรู้หรือไม่รู้ตัว",pts:["Seizure: ร่างกายกระตุกเกร็ง เหม่อลอย หมดสติ หรือชักทั้งตัว จากคลื่นไฟฟ้าสมองผิดปกติชั่วคราว เกิดขึ้นครั้งเดียวหรือชั่วคราวได้","สิ่งกระตุ้น: ไข้สูงจากการติดเชื้อ · ขาดการนอนหลับ · ภาวะโซเดียมในเลือดต่ำ · ยาบางชนิด (ยาแก้ปวด ยต้านโรคซึมเศร้า) · การบาดเจ็บที่ศีรษะ · โรคหลอดเลือดสมอง · เนื้องอกในสมอง · โคเคน/ยาบ้า · แอลกอฮอล์ · การติดเชื้อโควิด-19"],hi:["Triggers"]},
+  {id:"n24",t:"โรคเซลล์ประสาทสั่งการเสื่อม / โรคกล้ามเนื้ออ่อนแรง (ALS)",en:"Motor neuron disease",cat:"degen",tag:"Degenerative",sum:"ALS เป็นชนิดที่พบบ่อยที่สุด — เซลล์ประสาทสั่งการทั้งส่วนบนและส่วนล่างค่อย ๆ เสื่อมสภาพ",pts:["กล้ามเนื้อทั่วร่างกายอ่อนแรง ลีบเล็กลง สูญเสียการควบคุม · ไม่ทราบสาเหตุแน่ชัด","เซลล์ประสาทสั่งการส่วนบน: ตั้งอยู่ในสมอง ส่งข้อความไปยังไขสันหลัง","เซลล์ประสาทสั่งการส่วนล่าง: ตั้งอยู่ในไขสันหลัง ส่งสัญญาณจากสมองไปยังกล้ามเนื้อ"],hi:["UMN + LMN"]},
+  {id:"n25",t:"Alzheimer's disease",en:"Dementia — amyloid β & tau",cat:"degen",tag:"Degenerative",sum:"ภาวะสมองเสื่อม — สูญเสียความทรงจำแบบค่อยเป็นค่อยไปมากขึ้นตามลำดับ",pts:["สัญญาณเริ่มแรก: ลืมเหตุการณ์ ลืมกิจวัตรประจำวัน → ต่อมาสูญเสียการตัดสินใจ การช่วยเหลือตนเอง","โรคมักเริ่มต้นในส่วนสมองที่ควบคุมความทรงจำ แล้วลุกลามส่วนอื่นตามลำดับ · สมองมักถูกทำลายก่อนมีอาการแสดง","เซลล์ประสาทเสื่อมสภาพ สูญเสียการทำงานเชื่อมต่อระหว่างเซลล์ จนเซลล์สมองตาย","พยาธิสภาพ: Plaques = central core of amyloid + surrounding dystrophic neurites · Neurons containing tangles (tau) · Immunohistochemical Aβ","ปัจจัย: พันธุกรรม วิถีชีวิต สิ่งแวดล้อม"],hi:["Amyloid plaques","Tau tangles"]},
+  {id:"n26",t:"โรคพาร์กินสัน (Parkinson's disease)",en:"Hypokinetic movement disorder",cat:"degen",tag:"Degenerative",sum:"ความเสื่อมของเซลล์ประสาทบริเวณก้านสมอง → โดพามีน (dopamine) ลดลง",pts:["อาการทางการเคลื่อนไหว: มือสั่น เคลื่อนไหวช้าลง กล้ามเนื้อแข็ง","ส่วนใหญ่พบในผู้ที่มีอายุมากกว่า 50 ปี · ถ่ายทอดทางพันธุกรรมร้อยละ 10–15","(α-synuclein, tau) accumulation","Pathology: Depigmented substantia nigra · Lewy body ใน neuron ของ substantia nigra ย้อมติดสีชมพู","วินิจฉัยจาก clinical features + MRI / CT scan"],hi:["Substantia nigra","Lewy body"]}
+ ]}
+]},
+{key:"msk",chapters:[
+ {id:"basic",icon:"🔬",short:"Bone cells & joint",title:"พื้นฐาน · เซลล์กระดูกและโครงสร้างข้อ",items:[
+  {id:"m1",t:"Bone cells — เซลล์กระดูก 3 ชนิด",en:"Osteoblast / Osteocyte / Osteoclast",cat:"metab",tag:"พื้นฐาน",sum:"หน้าที่หลักของเซลล์กระดูกในกระบวนการ bone remodeling",pts:["Osteoblast: สร้างกระดูก (bone formation)","Osteocyte: ดูแลและควบคุมการทำงานของกระดูก (maintain bone matrix)","Osteoclast: สลายกระดูก (bone resorption)"],hi:["Remodeling balance"]}
+ ]},
+ {id:"cong",icon:"👶",short:"Congenital",title:"ความผิดปกติแต่กำเนิด (Congenital disorders)",items:[
+  {id:"m2",t:"Achondroplasia (ภาวะกระดูกอ่อนเจริญผิดปกติ)",en:"FGFR3 mutation",cat:"cong",tag:"Congenital",sum:"โรคความผิดปกติของการพัฒนาโครงกระดูก (skeletal dysplasia) ที่พบบ่อยที่สุด → ภาวะเตี้ยแคระ (dwarfism)",pts:["ถ่ายทอดแบบ Autosomal dominant","เกิดจากการเจริญของกระดูกอ่อน (cartilage) ช้าหรือถูกยับยั้ง","FGFR3 mutation — ปกติ FGF/FGFR3 มียับยั้งการสร้างกระดูกอ่อน → chondrocyte proliferation ผิดปกติ","กระดูกท่อนบนสุดของแขน/ขาสั้นกว่าปกติเห็นได้ชัด: Humerus, Femur → Rhizomelic shortening (แขนและขาส่วนต้นสั้น)"],hi:["FGFR3","Rhizomelic"]},
+  {id:"m3",t:"Thanatophoric dysplasia",en:"Lethal skeletal dysplasia",cat:"cong",tag:"Congenital",sum:"ภาวะแคระแกร็นชนิดรุนแรงที่พบบ่อยที่สุด และมักเสียชีวิต",pts:["แขนขาสั้นมาก (micromelic shortening of limbs)","หน้าผากนูน (frontal bossing) · ศีรษะค่อนข้างใหญ่ (relative macrocephaly)","ช่องอกเล็ก (small thoracic cavity) · หน้าท้องรูประฆัง (bell-shaped abdomen) · ทรวงอกพัฒนาไม่สมบูรณ์ (thoracic hypoplasia)","เกิดภาวะหายใจล้มเหลว (respiratory insufficiency)","FGFR3 gain-of-function mutation เช่นเดียวกับ achondroplasia (คนละตำแหน่ง)"],hi:["Lethal","Thoracic hypoplasia"]},
+  {id:"m4",t:"Osteogenesis imperfecta (โรคกระดูกเปราะ)",en:"Type I collagen disorder",cat:"cong",tag:"Congenital",sum:"โรคพันธุกรรมของเนื้อเยื่อเกี่ยวพัน (inherited connective tissue disorder) ที่พบบ่อยที่สุด",pts:["ความผิดปกติในการสร้าง Type I collagen","ถ่ายทอดส่วนใหญ่แบบ Autosomal dominant (COL1A1 หรือ COL1A2 mutation)","มวลกระดูกลดลง (too little bone) → กระดูกเปราะและหักง่าย (bone fragility)","ตาขาวสีฟ้า (blue sclera): คอลลาเจนใน sclera ลดลง ทำให้เห็น choroid ด้านล่าง","การสูญเสียการได้ยิน (hearing loss): ความผิดปกติของกระดูกหูชั้นกลาง","ฟันผิดปกติ (dentinogenesis imperfecta): ฟันเล็ก รูปร่างผิดปกติ สีฟ้าหรือเหลืองน้ำตาล"],hi:["Blue sclera","COL1A1/A2"]}
+ ]},
+ {id:"metab",icon:"🦴",short:"Metabolic bone",title:"Metabolic disease of bone",items:[
+  {id:"m5",t:"Osteopenia & Osteoporosis",en:"มวลกระดูกต่ำ / กระดูกพรุน",cat:"metab",tag:"Metabolic",sum:"Osteopenia = ปริมาณมวลกระดูก (bone mass) ลดลงกว่าปกติ · Osteoporosis = มวลกระดูกต่ำจนเพิ่มความเสี่ยงกระดูกหัก (fracture)",pts:["Osteopenia: ค่า T-score อยู่ระหว่าง −1 ถึง −2.5 SD","Osteoporosis: ค่า T-score ≤ −2.5 SD","Primary osteoporosis: 1) Postmenopausal 2) Senile","Secondary osteoporosis: ไทรอยด์ทำงานเกิน (hyperthyroidism) · ภาวะทุพโภชนาการ (malnutrition) · โรคทางเดินอาหาร (GI disorders) · การใช้ยาสเตียรอยด์ (corticosteroids)"],hi:["T-score ≤ −2.5"]},
+  {id:"m6",t:"ภาวะกระดูกนิ่ม (Osteomalacia) / Rickets",en:"Mineralization defect",cat:"metab",tag:"Metabolic",sum:"ภาวะที่กระดูกมีการสะสมแร่ธาตุ (mineralization) ไม่เพียงพอ → กระดูกอ่อนนุ่มและเปราะ",pts:["ในผู้ใหญ่เรียกว่า Osteomalacia · ในเด็กที่กระดูกยังเจริญไม่เต็มที่เรียกว่า Rickets (โรคกระดูกอ่อน)","Vitamin D: เพิ่มการดูดซึม Calcium & Phosphate จากลำไส้ → แร่ธาตุเพียงพอสำหรับ bone mineralization","สาเหตุ: ขาดวิตามินดี · ดูดซึมวิตามินดีผิดปกติ (malabsorption) · โรคไตเรื้อรัง (CKD)","อาการ: ปวดกระดูก (bone pain) · กล้ามเนื้ออ่อนแรง (muscle weakness) · กระดูกผิดรูปในเด็ก (skeletal deformities)"],hi:["Vitamin D","Rickets"]},
+  {id:"m7",t:"ภาวะพาราไทรอยด์ทำงานเกิน (Hyperparathyroidism)",en:"PTH excess",cat:"metab",tag:"Metabolic",sum:"การหลั่งฮอร์โมนพาราไทรอยด์ (PTH) มากเกินไป",pts:["ต่อมพาราไทรอยด์สร้าง PTH มากเอง (autonomous secretion)","หรือหลั่งเพื่อชดเชยภาวะแคลเซียมต่ำ (compensatory hypersecretion)","Osteoclast activity ↑ → Bone resorption (สลายกระดูก) → Bone loss"],hi:["Osteoclast ↑"]},
+  {id:"m8",t:"Paget disease of bone (Osteitis deformans)",en:"Disordered bone remodeling",cat:"metab",tag:"Metabolic",sum:"การสร้างและสลายกระดูก (bone remodeling) เพิ่มขึ้นผิดปกติ → กระดูกที่สร้างใหม่มีโครงสร้างไม่เป็นระเบียบ (disorganized bone) แข็งแรงน้อย และผิดรูปได้ง่าย",pts:["1 Osteolytic phase: osteoclasts เพิ่มขึ้นมาก → bone resorption อย่างรุนแรง","2 Mixed osteoclastic–osteoblastic phase: สลาย+สร้างเพิ่ม · osteoblast พยายามสร้างชดเชย แต่กระดูกใหม่เรียงตัวผิดปกติ (disorganized woven bone)","3 Osteosclerotic (burned-out) phase: การสร้างเด่น → sclerotic bone หนาแน่น แต่คุณภาพไม่ดี แข็งแต่เปราะ","อาการ: ปวดกระดูก · กระดูกผิดรูป · กระดูกหักง่าย (pathologic fractures) · ศีรษะโตขึ้น (increasing hat size) · ขาโก่ง (bowing of long bones)","Pathology: cortical bone หนาและกว้างแต่ less dense ลักษณะ spongy · trabeculae ของ medullary bone หยาบและหนา · lytic areas เห็นเป็น blood-filled lakes"],hi:["3 phases","Woven bone"]}
+ ]},
+ {id:"fx",icon:"🩹",short:"Fracture & healing",title:"Fractures (กระดูกหัก) & Bone healing",items:[
+  {id:"m9",t:"Fractures & ขั้นตอนการหายของกระดูก",en:"5 stages of bone healing",cat:"trauma",tag:"Fracture",sum:"ภาวะที่ความต่อเนื่องหรือความสมบูรณ์ของกระดูกสูญเสียไป จากการบาดเจ็บทางกล (mechanical injury) หรือความแข็งแรงของกระดูกลดลง",pts:["1 Hematoma formation: หลอดเลือดฉีกขาด เลือดออกเกิดก้อนเลือด (hematoma) — ลิ่มเลือดเป็นโครงร่างให้เซลล์ซ่อมแซมเข้ามา","2 Inflammatory phase: เซลล์อักเสบและเกล็ดเลือดหลั่ง growth factors → กระตุ้น osteoblasts และ osteoclasts","3 Soft callus (≈ 1 สัปดาห์): สร้างเนื้อเยื่อเกี่ยวพันและกระดูกอ่อน เชื่อมปลายกระดูกชั่วคราว","4 Bony callus (≈ 2 สัปดาห์): soft callus เปลี่ยนเป็นกระดูกใหม่ (woven bone) มีการสะสมแคลเซียม กระดูกแข็งแรงขึ้น","5 Remodeling (หลายเดือน–หลายปี): ปรับกระดูกจาก woven bone เป็น lamellar bone → กลับมาแข็งแรงและใกล้เคียงรูปร่างเดิม"],hi:["Soft callus 1 wk","Bony callus 2 wk"]}
+ ]},
+ {id:"joint",icon:"🦵",short:"Disorders of joints",title:"Disorders of Joints (โรคข้อ)",items:[
+  {id:"m10",t:"Osteoarthritis (OA) — ข้อเสื่อม",en:"Articular cartilage degeneration",cat:"degen",tag:"Joint",sum:"โรคข้อที่พบบ่อยที่สุด เกิดจากการเสื่อมของกระดูกอ่อนผิวข้อ (articular cartilage degeneration) → โครงสร้างและการทำงานของ synovial joint ผิดปกติ",pts:["สาเหตุ: แรงกดและแรงเสียดสีต่อข้อ + อายุเพิ่มขึ้น","กลไก: Chondrocytes ทำงานผิดปกติ → สลาย cartilage matrix มากกว่าสร้าง → กระดูกอ่อนผิวข้อเสื่อมและบางลง","ช่องข้อแคบลง → กระดูกใต้ผิวข้อรับแรงมากขึ้น → เกิดกระดูกงอก (osteophyte) และข้อผิดรูป","อาการ: ปวดข้อ ข้อฝืด เคลื่อนไหวลำบาก"],hi:["Osteophyte","Joint space ↓"]},
+  {id:"m11",t:"Rheumatoid arthritis (RA) — ข้ออักเสบรูมาตอยด์",en:"Autoimmune synovitis",cat:"auto",tag:"Joint",sum:"โรคข้ออักเสบเรื้อรังจากภูมิคุ้มกันทำลายตนเอง (autoimmune) → อักเสบของเยื่อบุข้อ (synovium) แบบเรื้อรัง → ทำลายกระดูกอ่อนและกระดูกในข้อ",pts:["กลไก: ภูมิคุ้มกันผิดปกติ → เซลล์อักเสบโจมตีเยื่อบุข้อ → Synovitis → เยื่อบุข้อหนาตัวเป็น Pannus → Pannus ทำลายกระดูกอ่อนและกระดูก → ข้อผิดรูป → อาจเกิด Ankylosis (ข้อยึดติด)","ข้ออักเสบหลายข้อแบบสมมาตร (symmetrical polyarthritis)","ปวด บวม แดง ร้อน · ข้อฝืดตอนเช้านาน > 1 ชั่วโมง · พบมากที่ข้อนิ้วมือ ข้อมือ เท้า"],hi:["Pannus","Morning stiffness >1 hr"]},
+  {id:"m12",t:"Gout (โรคเกาต์)",en:"Monosodium urate crystals",cat:"metab",tag:"Joint",sum:"โรคข้ออักเสบเกิดจากผลึกกรดยูริก (monosodium urate crystals) สะสมในข้อและเนื้อเยื่อรอบข้อ → อักเสบเฉียบพลัน",pts:["Hyperuricemia (> 6.8 mg/dL)","ปัจจัยเสี่ยง: hyperuricemia เป็นเวลานาน (20–30 ปี) · พันธุกรรม · ดื่มแอลกอฮอล์ · โรคอ้วน","อาการ: ปวดข้อเฉียบพลันรุนแรง ข้อบวม แดง ร้อน","มักเกิดที่ข้อโคนนิ้วหัวแม่เท้า (Podagra)","อาการหายได้เองภายในหลายวันถึงหลายสัปดาห์"],hi:["Podagra","> 6.8 mg/dL"]}
+ ]},
+ {id:"muscle",icon:"💪",short:"Skeletal muscle",title:"Disorders of skeletal muscle",items:[
+  {id:"m13",t:"Duchenne muscular dystrophy (โรคกล้ามเนื้อเสื่อมแบบดูเชนน์)",en:"Dystrophin gene mutation",cat:"cong",tag:"Muscle",sum:"โรคกล้ามเนื้อเสื่อมที่ถ่ายทอดแบบ X-linked recessive — กลายพันธุ์ของยีน Dystrophin",pts:["โปรตีน Dystrophin ทำงานผิดปกติหรือขาดหายไป (Dystrophin-Glycoprotein Complex: กลุ่มโปรตีนใหญ่ในเซลล์กล้ามเนื้อลาย)","เยื่อหุ้มเซลล์กล้ามเนื้อเปราะบางถูกทำลายง่าย → เซลล์กล้ามเนื้อเสียหายเมื่อหดตัว → กล้ามเนื้อเสื่อมและตาย ถูกแทนที่ด้วยไขมันและพังผืด → อ่อนแรงมากขึ้นเรื่อย ๆ","เริ่มแสดงอาการวัยเด็ก อายุประมาณ 2–6 ปี · พบประมาณ 1 ต่อ 3,500 เด็กชายที่เกิดมีชีวิต","อ่อนแรงแบบค่อยเป็นค่อยไป เริ่มที่กล้ามเนื้อสะโพก เชิงกราน และต้นขา · พัฒนาการเคลื่อนไหวล่าช้า เดินช้า","ล้มบ่อย เดินโคลงเคลง (waddling gait) · วิ่ง กระโดด ขึ้นบันไดลำบาก · ลุกจากพื้นลำบาก (Gowers sign)","Pseudohypertrophy of calf: น่องโตผิดปกติ ดูเหมือนกล้ามเนื้อแข็งแรง แต่จริง ๆ เกิดจากการแทนที่ด้วยไขมันและพังผืด"],hi:["Gowers sign","X-linked recessive"]},
+  {id:"m14",t:"Contractures (ภาวะข้อติด/กล้ามเนื้อหดรั้ง)",en:"Physiologic vs Pathologic",cat:"degen",tag:"Muscle",sum:"ภาวะที่กล้ามเนื้อ เอ็น หรือเนื้อเยื่อรอบข้อหดสั้นผิดปกติ (permanent or abnormal shortening) → การเคลื่อนไหวของข้อจำกัด",pts:["1 Physiologic contracture: ไม่มี action potential ใน sarcolemma (sarcolemma ช่วยส่งกระแสประสาท) · เกิดจากความล้มเหลวของ calcium pump มี ATP ไม่เพียงพอ (ATP depletion) → กล้ามเนื้อคลายตัวไม่ได้ · ตัวอย่าง: McArdle disease (muscle myophosphorylase deficiency — ขาดเอนไซม์สลายนํ้าตาลในกล้ามเนื้อ), Malignant hyperthermia (แพ้ยาสลบขั้นรุนแรงทางพันธุกรรม)","2 Pathologic contracture: หดสั้นของกล้ามเนื้ออย่างถาวร (permanent muscle shortening) จาก muscle spasm / muscle weakness · มี ATP เพียงพอ + action potential ปกติ แต่เนื้อเยื่อหดรั้งถาวร · ตัวอย่าง: Achilles tendon contracture (เอ็นร้อยหวายหดรั้ง), Muscular dystrophy, Cerebral palsy, CNS injury"],hi:["ATP depletion","McArdle"]},
+  {id:"m15",t:"Stress-induced muscle tension",en:"ภาวะกล้ามเนื้อตึงจากความเครียด",cat:"degen",tag:"Muscle",sum:"ภาวะที่มีความตึงตัวของกล้ามเนื้อ (muscle tension) เพิ่มขึ้นผิดปกติ สัมพันธ์กับความวิตกกังวลเรื้อรัง (chronic anxiety) และความเครียด (stress)",pts:["อาการที่พบบ่อย: คอตึง (neck stiffness) · ปวดหลัง (back pain) · ปวดศีรษะจากความเครียด (tension headache) · ปวดหรือเมื่อยกล้ามเนื้อเรื้อรัง (chronic muscle pain)"],hi:["Tension headache"]},
+  {id:"m16",t:"Fibromyalgia (FM)",en:"Chronic musculoskeletal syndrome",cat:"degen",tag:"Muscle",sum:"กลุ่มอาการปวดกล้ามเนื้อและกระดูกเรื้อรัง ปวดทั่วร่างกาย (widespread pain)",pts:["อาการ: อ่อนเพลีย (fatigue) · มีจุดกดเจ็บ (tender points) · ความคิดอ่านช้าลง สมาธิและความจำถดถอย","ไม่มีการอักเสบจริง แต่ไวต่อการสัมผัสมากขึ้น","ปัจจัยกระตุ้น: การติดเชื้อไวรัสคล้ายไข้หวัด (flu-like viral illness) · chronic fatigue syndrome · การติดเชื้อ HIV · โรคไลม์ (Lyme disease) · การบาดเจ็บทางร่างกาย (physical trauma) · การกระทบกระเทือนทางจิตใจ (emotional trauma) · การหยุดยาสเตียรอยด์ (steroid withdrawal)","พบได้ทุกช่วงอายุ · พบในผู้หญิงมากกว่าผู้ชาย"],hi:["Tender points"]},
+  {id:"m17",t:"Myositis (การอักเสบของกล้ามเนื้อ)",en:"Skeletal muscle inflammation",cat:"inf",tag:"Muscle",sum:"การอักเสบของกล้ามเนื้อลาย (skeletal muscle inflammation) อาจเกิดจากการติดเชื้อไวรัส แบคทีเรีย หรือปรสิต",pts:["ตรวจเลือดพบเอนไซม์ครีเอตินไคเนส (Creatine kinase – CK)","Pyomyositis: โรคติดเชื้อแบคทีเรียในกล้ามเนื้อโครงร่าง","Toxoplasmosis: การติดเชื้อปรสิตที่เกี่ยวข้อง"],hi:["CK ↑"]}
+ ]}
+]},
+{key:"liver",chapters:[
+ {id:"anat",icon:"🫁",short:"Anatomy & histology",title:"กายวิภาคและเนื้อเยื่อวิทยาของตับ",items:[
+  {id:"h1",t:"ANATOMY & HISTOLOGY ของตับ",en:"Largest organ of the body",cat:"metab",tag:"พื้นฐาน",sum:"ตับเป็นอวัยวะใหญ่สุดในร่างกาย หนัก 1400–1600 g ในชาย และ 1200–1400 g ในหญิง",pts:["มี 2 anatomical lobes หลัก: ขวาและซ้าย — กลีบขวาใหญ่กว่าซ้ายประมาณ 6 เท่า","Hepatic parenchyma ประกอบด้วย numerous hexagonal หรือ pyramidal classical lobules เส้นผ่านศูนย์กลาง 0.5–2 mm","แต่ละ classical lobule มี central tributary ของ hepatic vein อยู่ตรงกลาง","ที่ชายขอบมี 4–5 portal tracts หรือ triads ประกอบด้วย branches ของ bile duct, portal vein และ hepatic artery"],hi:["Portal triad","0.5–2 mm"]}
+ ]},
+ {id:"jaund",icon:"🟡",short:"Jaundice",title:"Jaundice (ดีซ่าน)",items:[
+  {id:"h2",t:"Jaundice — อาการสำคัญของโรคตับ ถุงน้ำดี และท่อน้ำดี",en:"3 กลไกการเกิด",cat:"metab",tag:"Jaundice",sum:"เกิดจากการมี bilirubin ปริมาณมากขึ้นในเลือด สะสมที่ผิวหนังและตาขาว (conjunctiva) → ตัวเหลือง ตาเหลือง มักแบ่งเป็นกลุ่มใหญ่ตามกลไกการเกิด",pts:["Hemolytic jaundice: เกิดจากภาวะที่มีการทำลายเม็ดเลือดแดงมากกว่าปกติ","Hepatocellular jaundice: เกิดจากภาวะที่มีการทำลายเซลล์ตับ → กระทบต่อการสร้างและหลั่ง bilirubin เข้าสู่กระแสเลือด","Obstructive jaundice: เกิดจากภาวะที่มีการอุดกั้นทางเดินน้ำดี → bilirubin คั่งในทางเดินน้ำดี"],hi:["Hemolytic","Hepatocellular","Obstructive"]}
+ ]},
+ {id:"hep",icon:"🦠",short:"Hepatitis",title:"Hepatitis (โรคตับอักเสบ)",items:[
+  {id:"h3",t:"Acute hepatitis",en:"อาการ < 6 เดือน",cat:"inf",tag:"Hepatitis",sum:" Presents as jaundice with dark urine, fever, malaise, nausea และ elevated liver enzymes (symptoms last < 6 months)",pts:["Inflammation involves lobules ของตับและ portal tracts · ลักษณะเด่น = apoptosis of hepatocytes","เซลล์ตับที่มีการอักเสบจะบวมและมีขนาดใหญ่ขึ้น → ตับจึงมีขนาดใหญ่กว่าปกติและคลำขอบตับได้ที่ชายโครงขวา"],hi:["Apoptosis","Hepatomegaly"]},
+  {id:"h4",t:"Chronic hepatitis",en:"อาการ > 6 เดือน",cat:"inf",tag:"Hepatitis",sum:"ลักษณะโดยอาการที่อยู่นาน > 6 เดือน",pts:["Inflammation predominantly involves portal tract","เซลล์ตับที่มีการอักเสบจะถูกทำลาย มีการซ่อมแซมด้วย fibrosis → เกิดเป็นตับแข็ง (cirrhosis)"],hi:["Fibrosis → cirrhosis"]},
+  {id:"h5",t:"Hepatitis A (HAV)",en:"Fecal–oral transmission",cat:"inf",tag:"Hepatitis",sum:"Spread occurs by fecal–oral transmission; parenteral infection does not occur (ติดต่อโดยการกินอาหารและน้ำที่มีเชื้อปนเปื้อนอยู่)",pts:["Incubation period 15 ถึง 45 วัน","HAV does not cause a chronic carrier state หรือ lead to chronic hepatitis · complete recovery almost always occurs","มักหายเป็นปกติ มีเพียงร้อยละ 1 ที่อาจมีอาการรุนแรงจนเกิดภาวะตับวาย (liver failure)","There is no relation to hepatocellular carcinoma"],hi:["15–45 วัน","ไม่สัมพันธ์ HCC"]},
+  {id:"h6",t:"Hepatitis B (HBV)",en:"Dane particle",cat:"inf",tag:"Hepatitis",sum:"HBV ประกอบด้วย central core (viral DNA genome, DNA polymerase, HBcAg, HBeAg) และ outer lipoprotein coat (HBsAg) — complete virion เรียกว่า Dane particle",pts:["Transmission: parenteral, sexual และ vertical (mother to neonate) · increased incidence ใน male homosexuals · มักจากการได้รับเลือด เข็มฉีดยา หรือ secretion ต่าง ๆ","Incubation period เฉลี่ย 60 ถึง 90 วัน","HBV has a major association with hepatocellular carcinoma (HCC)","Infection สัมพันธ์กับ 'ground-glass' appearance ของ hepatocytes","Disease สามารถลงเอยเป็น carrier state หรือ chronic liver disease · ผู้ป่วยเป็น carrier = มีเชื้อในเลือดและตรวจพบ HBsAg ในกระแสเลือด","การอักเสบจากชนิด B มักมีภาวะตับอักเสบเรื้อรังตามมา และมีภาวะตับแข็ง"],hi:["HBsAg","Ground-glass","60–90 วัน"]},
+  {id:"h7",t:"Hepatitis — other infectious agents",en:"Non-viral hepatitis",cat:"inf",tag:"Hepatitis",sum:"นอกจากไวรัส (กลุ่มสำคัญ) ยังอาจเกิดจากแบคทีเรียและ protozoa",pts:["Mycobacterium tuberculosis","Plasmodium falciparum","Entamoeba histolytica","Echinococcus","Bacteria"],hi:["TB","Malaria","Ameba"]},
+  {id:"h8",t:"Alcoholic liver disease",en:"Fatty change",cat:"metab",tag:"Alcohol",sum:"การอักเสบของตับจากแอลกอฮอล์ ทำให้เกิดการเปลี่ยนแปลงของเซลล์ตับ",pts:["พบมีการคั่งของไขมันในเซลล์ตับ (fatty change)","ตับมีขนาดใหญ่ขึ้น สีเหลืองน้ำตาลจนถึงเหลือง"],hi:["Steatosis"]},
+  {id:"h9",t:"Drug-induced liver disease",en:"สารพิษและยา",cat:"metab",tag:"Toxin",sum:"กลุ่มสารพิษและยาที่ทำให้ตับอักเสบ",pts:["Acetaminophen · Tetracycline · Carbon tetrachloride · Chlorpromazine","Halothane · Sulfonamides · Mushroom (เห็ดพิษ)"],hi:["Acetaminophen","Mushroom"]}
+ ]},
+ {id:"cirr",icon:"🫀",short:"Cirrhosis",title:"Cirrhosis (โรคตับแข็ง)",items:[
+  {id:"h10",t:"Types of cirrhosis",en:"จำแนกตามขนาดและสาเหตุ",cat:"metab",tag:"Cirrhosis",sum:"แบ่งประเภทตาม (1) Size และ (2) Cause",pts:["(1) Size: a) Micronodular cirrhosis (0.2–0.3 cm) b) Macronodular cirrhosis (> 0.3 cm) c) Mixed nodular cirrhosis","(2) Cause: a) Alcohol cirrhosis b) Postnecrotic cirrhosis c) Biliary cirrhosis d) Pigmented cirrhosis e) Cryptogenic cirrhosis"],hi:["Micro 0.2–0.3 cm","Macro > 0.3 cm"]},
+  {id:"h11",t:"Alcoholic cirrhosis",en:"Prototype for all forms of cirrhosis",cat:"metab",tag:"Cirrhosis",sum:"Alcoholic cirrhosis เป็นต้นแบบ (prototype) ของ cirrhosis ทุกชนิด",pts:["ลักษณะทางพยาธิวิทยา: ตับมีขนาดเล็กลง ผิวภายนอกขรุขระ เห็นเป็น nodule · เนื้อตับถูกทำลายแทนที่ด้วย fibrosis · สาเหตุจากการดื่มแอลกอฮอล์ · nodule มีขนาดเล็ก สีของตับเป็นสีเหลือง","Clinical manifestations จาก hepatocellular damage และ liver failure","Consequences of intrahepatic scarring + increased portal venous pressure: a) Esophageal varices (often leading to upper gastrointestinal hemorrhage) b) Rectal hemorrhoids c) Periumbilical venous collaterals (caput medusae) d) Splenomegaly"],hi:["Caput medusae","Esophageal varices"]}
+ ]},
+ {id:"tum",icon:"🎗️",short:"Liver tumors",title:"Tumor ของตับ",items:[
+  {id:"h12",t:"Benign tumors ของตับ",en:"Hemangioma & Adenoma",cat:"tumor",tag:"Tumor",sum:"Hemangioma เป็น benign tumor ของตับที่พบบ่อยที่สุด",pts:["Adenoma: incidence สัมพันธ์กับ use of oral contraceptives","เมื่อ adenoma อยู่ subcapsular in location อาจแตก (rupture) → severe intraperitoneal hemorrhage"],hi:["Hemangioma พบบ่อยสุด"]},
+  {id:"h13",t:"Hepatocellular carcinoma (HCC)",en:"Most common primary malignancy of the liver",cat:"tumor",tag:"Tumor",sum:"มะเร็งตับที่พบบ่อยที่สุดและสำคัญที่สุด · พบในชายมากกว่าหญิง",pts:["มักพบร่วมกับภาวะตับแข็งชนิด macronodular cirrhosis","ตับมีขนาดใหญ่ อาจมีสีเขียวปนเหลือง","ก้อนเนื้องอกที่พบมีหลายก้อน ขนาดต่าง ๆ กัน แต่มักมีก้อนหนึ่งใหญ่ที่สุด","พบที่กลีบขวามากกว่ากลีบซ้าย · พบ necrosis และ hemorrhage ในก้อนเนื้องอก"],hi:["Macronodular cirrhosis","กลีบขวา > ซ้าย"]},
+  {id:"h14",t:"Cholangiocarcinoma (CCA)",en:"มะเร็งท่อน้ำดี / Liver fluke",cat:"tumor",tag:"Tumor",sum:"Less common กว่า HCC · พบบ่อยสุดใน Far East สัมพันธ์กับการติดเชื้อพยาธิใบไม้ตับ (Clonorchis sinensis)",pts:["สัมพันธ์กับพยาธิใบไม้ในตับ (liver fluke) ชนิด Opisthorchis viverrini","พบมากในประชาชนภาคตะวันออกเฉียงเหนือ · พบในชายมากกว่าหญิง","ตับจะมีขนาดใหญ่ · มักพบเนื้องอกหลายก้อนกระจายทั่วไป · ก้อนเนื้องอกแข็ง แน่น"],hi:["Opisthorchis viverrini","ภาคอีสาน"]},
+  {id:"h15",t:"Metastasis to liver",en:"Secondary tumors",cat:"tumor",tag:"Tumor",sum:"More common กว่า primary liver tumors",pts:["Most common sources: colon, pancreas, lung และ breast carcinomas","Results in multiple nodules in the liver","Clinically may be detected as hepatomegaly with a nodular free edge of the liver"],hi:["Colon #1"]}
+ ]},
+ {id:"gb",icon:"💚",short:"Gallbladder",title:"Diseases of the Gallbladder",items:[
+  {id:"h16",t:"ANATOMY ของถุงน้ำดี",en:"Pear-shaped organ",cat:"metab",tag:"พื้นฐาน",sum:"ถุงน้ำดีเป็นอวัยวะรูปลูกแพร์ (pear-shaped) ยาว 9 cm ความจุประมาณ 50 mL",pts:["ประกอบด้วย fundus, body และ neck ที่เรียวลงเป็น cystic duct"],hi:["9 cm · 50 mL"]},
+  {id:"h17",t:"Gallstone (Cholelithiasis)",en:"นิ่วถุงน้ำดี",cat:"metab",tag:"Gallstone",sum:"มี incidence สูงในผู้หญิง และมักสัมพันธ์กับ obesity และ multiple pregnancies",pts:["a) Cholesterol stones: มัก solitary และ too large ที่จะเข้า cystic duct หรือ common bile duct","b) Pigment stones: (1) precipitation ของ excess insoluble unconjugated bilirubin (2) association มักรวมถึง hemolytic anemia และ bacterial infection","c) Mixed stones: คิดเป็น most stones (75% ถึง 80%) — ส่วนใหญ่เป็น mixture ของ cholesterol และ calcium salts"],hi:["Mixed 75–80%"]},
+  {id:"h18",t:"Acute cholecystitis",en:"ถุงน้ำดีอักเสบเฉียบพลัน",cat:"inf",tag:"Cholecystitis",sum:"Acute inflammation ของถุงน้ำดี",pts:["มักเกิดกับถุงน้ำดีที่มีก้อนนิ่วและมีการอักเสบแบบเรื้อรังอยู่แล้ว","ถุงน้ำดีมีขนาดใหญ่ ผนังหนากว่าปกติมาก ผิวของเยื่อบุถุงน้ำดีบวมแดงอักเสบและเป็นแผล","Clinical manifestations: nausea, vomiting, fever และ leukocytosis ร่วมกับ right upper quadrant และ epigastric pain"],hi:["RUQ pain"]},
+  {id:"h19",t:"Chronic cholecystitis",en:"ถุงน้ำดีอักเสบเรื้อรัง",cat:"inf",tag:"Cholecystitis",sum:"การอักเสบเรื้อรังของถุงน้ำดี",pts:["a) Chronic inflammation is frequently complicated by gallstones","b) Thickening ของผนังถุงน้ำดีเกิดจาก extensive fibrosis"],hi:["Fibrosis"]},
+  {id:"h20",t:"Tumor ของถุงน้ำดีและท่อน้ำดี",en:"Adenocarcinoma & Ampulla of Vater",cat:"tumor",tag:"Tumor",sum:"Benign tumors ของถุงน้ำดีพบได้ยาก (rare)",pts:["Most common primary tumor ของถุงน้ำดี = adenocarcinoma ซึ่งมักสัมพันธ์กับ gallstones","Carcinoma ของ extrahepatic biliary ducts และ ampulla of Vater (มะเร็งท่อน้ำดี): ก้อนเนื้องอกอาจอุดรูเปิดของท่อน้ำดี · almost always adenocarcinoma","Typical presenting features: progressive, relentless obstructive jaundice","Clinical characteristics: combination ของ jaundice และ palpably enlarged gallbladder"],hi:["Jaundice + palpable GB"]}
+ ]},
+ {id:"panc",icon:"🧫",short:"Pancreas",title:"Diseases of the Exocrine Pancreas",items:[
+  {id:"h21",t:"ANATOMY ของตับอ่อน",en:"3 topographic zones",cat:"metab",tag:"พื้นฐาน",sum:"ตับอ่อนวางตัวเฉียง (obliquely) ใน concavity ของ duodenum ยาวประมาณ 15 cm หนัก 100 g",pts:["1 Head: อยู่ใน concavity ของ duodenum + uncinate process ที่ยื่นจาก head","2 Body: ส่วนหลักของต่อม (main part of the gland)","3 Tail: ส่วนเรียวบางของต่อม มุ่งไปทาง hilum ของม้าม"],hi:["15 cm · 100 g"]},
+  {id:"h22",t:"Pancreatitis — นิยามและสาเหตุ",en:"Autodigestion",cat:"metab",tag:"Pancreatitis",sum:"พยาธิสภาพที่มีการอักเสบของตับอ่อน เป็นผลจาก enzyme ในตับอ่อนย่อยเนื้อเยื่อของตับอ่อนเอง (autodigestion) → เปลี่ยนแปลงรูปร่างและหน้าที่",pts:["สาเหตุที่สำคัญคือ Alcohol และโรคทางเดินน้ำดี (โรคทางเดินน้ำดีที่พบบ่อยคือ นิ่วถุงน้ำดี)","นอกนั้นอาจเกิดจาก อุบัติเหตุ ยา การติดเชื้อไวรัส เช่น Mumps"],hi:["Alcohol + Gallstone"]},
+  {id:"h23",t:"Acute pancreatitis",en:"พยาธิสภาพหลัก 4 อย่าง",cat:"inf",tag:"Pancreatitis",sum:"การอักเสบของตับอ่อนแบบเฉียบพลัน หรืออาจกำเริบจาก chronic pancreatitis",pts:["พยาธิสภาพหลัก 4 อย่าง: 1 Proteolytic destruction 2 Necrosis of blood vessel 3 Necrosis of fat (lipolytic enzyme) 4 Inflammatory reaction","เมื่อดูด้วยตาเปล่า: เนื้อตับอ่อนที่ตายเป็นหย่อม ๆ มีสีเทาขาว นุ่ม สลับกับบริเวณที่เป็น fat necrosis ซึ่งมีสีขาวเหลือง (เนื่องจากมีการสะสมของ calcium)"],hi:["Fat necrosis","Calcium สะสม"]},
+  {id:"h24",t:"Chronic pancreatitis",en:"Progressive fibrosis",cat:"inf",tag:"Pancreatitis",sum:"การอักเสบของตับอ่อนแบบเรื้อรัง มักเกิดจาก mild หรือ subclinical acute pancreatitis ที่เป็นซ้ำ ๆ กัน",pts:["Morphologic characteristics: progressive parenchymal fibrosis · Calcification ซึ่งอาจมองเห็นได้โดยใช้ radiography พบบ่อย · Pseudocysts อาจปรากฏ","There is almost always an association with alcoholism","ผู้ป่วยมักมีอาการปวดท้องเรื้อรัง · ในระยะที่มีการสูญเสียเนื้อเยื่อตับอ่อนถาวร หน้าที่ของ exocrine และ endocrine จะเสียตามไป"],hi:["Calcification","Pseudocyst"]},
+  {id:"h25",t:"Pancreatic carcinoma (Adenocarcinoma)",en:"Common tumor — solid type",cat:"tumor",tag:"Tumor",sum:"Adenocarcinoma ของตับอ่อนเป็น tumor ที่พบบ่อย (Solid type พบได้มากกว่า)",pts:["มักพบในคนอายุ 50 ปีขึ้นไป · พบในเพศชายมากกว่าเพศหญิง","2/3 พบบริเวณ head of pancreas · มีการลุกลามไปอุดตัน common bile duct","มีอาการและอาการแสดงของ obstructive jaundice ร่วมกับน้ำหนักตัวลด","มักไม่มีอาการและอาการแสดงของ cholangitis"],hi:["Head 2/3","Obstructive jaundice + น้ำหนักลด"]}
+ ]}
+]}];
+
+var CATNAME={all:"ทั้งหมด",vasc:"หลอดเลือด",inf:"ติดเชื้อ",trauma:"อุบัติเหตุ/ICP",tumor:"เนื้องอก",degen:"เสื่อม/เรื้อรัง",auto:"ภูมิคุ้มกัน",metab:"เมตาบอลิก/พื้นฐาน",cong:"แต่กำเนิด"};
+
+/* ================= DIAGRAMS ================= */
+function mk(n,x,y){return "<circle class='mkc' cx='"+x+"' cy='"+y+"' r='9.5'/><text class='mkt' x='"+x+"' y='"+(y+3.4)+"' text-anchor='middle'>"+n+"</text>";}
+var DIAG={};
+
+DIAG.neuro=[
+/* --- Neuron --- */
+`<div class="dg"><div class="dg-h"><span>⚡</span><h3>ภาพที่ 1 · Neuron และ A segment of myelinated fiber</h3><span class="dg-tag">สไลด์: THE NERVOUS SYSTEM / PNS</span></div>
+<div class="dg-b"><div class="dg-svg"><svg viewBox="0 0 640 300">
+ <g data-pid="dend"><path d="M62,86 L26,52 M62,86 L20,84 M62,86 L28,116 M64,100 L34,140 M66,72 L40,38 M66,72 L44,24" stroke="#c97a5a" stroke-width="5" fill="none" stroke-linecap="round"/>${mk(1,34,30)}</g>
+ <g data-pid="soma"><circle cx="102" cy="110" r="42" fill="#f2b8a0" stroke="#a05a3a" stroke-width="2.5"/><circle cx="102" cy="110" r="15" fill="#c96a4a"/>${mk(2,102,52)}</g>
+ <g data-pid="axon"><line x1="142" y1="110" x2="560" y2="110" stroke="#e0a070" stroke-width="9" stroke-linecap="round"/>${mk(3,150,140)}</g>
+ <g data-pid="myelin">
+  <rect x="168" y="95" width="62" height="30" rx="14" fill="#ffd98a" stroke="#b98a2a" stroke-width="2"/>
+  <rect x="244" y="95" width="62" height="30" rx="14" fill="#ffd98a" stroke="#b98a2a" stroke-width="2"/>
+  <rect x="320" y="95" width="62" height="30" rx="14" fill="#ffd98a" stroke="#b98a2a" stroke-width="2"/>
+  <rect x="396" y="95" width="62" height="30" rx="14" fill="#ffd98a" stroke="#b98a2a" stroke-width="2"/>
+  <rect x="472" y="95" width="62" height="30" rx="14" fill="#ffd98a" stroke="#b98a2a" stroke-width="2"/>
+  <ellipse cx="199" cy="90" rx="10" ry="5" fill="#8a6a2a"/><ellipse cx="275" cy="90" rx="10" ry="5" fill="#8a6a2a"/><ellipse cx="351" cy="90" rx="10" ry="5" fill="#8a6a2a"/><ellipse cx="427" cy="90" rx="10" ry="5" fill="#8a6a2a"/><ellipse cx="503" cy="90" rx="10" ry="5" fill="#8a6a2a"/>
+  ${mk(4,540,80)}</g>
+ <g data-pid="node"><circle cx="237" cy="110" r="4.5" fill="#ffb454"/><circle cx="313" cy="110" r="4.5" fill="#ffb454"/><circle cx="389" cy="110" r="4.5" fill="#ffb454"/><circle cx="465" cy="110" r="4.5" fill="#ffb454"/>${mk(5,313,152)}</g>
+ <g data-pid="salt"><path d="M199,88 Q237,44 275,88" fill="none" stroke="#39d6cf" stroke-width="2.6" stroke-dasharray="6 4"/><path d="M275,88 Q313,44 351,88" fill="none" stroke="#39d6cf" stroke-width="2.6" stroke-dasharray="6 4"/><path d="M351,88 Q389,44 427,88" fill="none" stroke="#39d6cf" stroke-width="2.6" stroke-dasharray="6 4"/>${mk(7,237,52)}</g>
+ <g data-pid="term"><path d="M560,110 L598,88 M560,110 L606,110 M560,110 L598,132" stroke="#c97a5a" stroke-width="4.5" stroke-linecap="round"/><circle cx="600" cy="87" r="6" fill="#c97a5a"/><circle cx="608" cy="110" r="6" fill="#c97a5a"/><circle cx="600" cy="133" r="6" fill="#c97a5a"/>${mk(6,600,66)}</g>
+ <g data-pid="mus"><rect x="586" y="170" width="46" height="70" rx="16" fill="#e08a8a" stroke="#a04a4a" stroke-width="2"/><path d="M592,182 h34 M592,196 h34 M592,210 h34 M592,224 h34" stroke="#a04a4a" stroke-width="1.6" opacity=".55"/><path d="M606,150 L606,168" stroke="#c97a5a" stroke-width="3.5"/>${mk(8,624,254)}</g>
+ <text class="lb" x="70" y="285">เซลล์ประสาท (Neuron) ที่เชื่อมต่อไปยังกล้ามเนื้อ (Myocytes) — สัญญาณวิ่งจาก dendrite → cell body → axon → ปลายประสาท</text>
+</svg></div>
+<div class="dg-side"><ol class="dg-legend">
+ <li data-pid="dend" data-desc="เส้นใยที่ยื่นออกจากเซลล์ประสาท รับสัญญาณเข้าสู่ cell body"><span class="no">1</span><span class="lt">Dendrites (เดนไดรต์)</span></li>
+ <li data-pid="soma" data-desc="ตัวเซลล์ประสาท มีนิวเคลียสอยู่ตรงกลาง — เซลล์ประสาทสั่งการ (motor neuron) ตั้งอยู่ในสมอง/ไขสันหลัง"><span class="no">2</span><span class="lt">Cell body (Soma) + นิวเคลียส</span></li>
+ <li data-pid="axon" data-desc="เส้นยาวที่ยื่นออกจากเซลล์ประสาท ส่งสัญญาณไฟฟ้าไปยังกล้ามเนื้อ"><span class="no">3</span><span class="lt">Axon (แอกซอน)</span></li>
+ <li data-pid="myelin" data-desc="ชั้นหุ้มรอบแอกซอน สร้างโดย Schwann cells (เซลล์ชวาน) ใน PNS — ช่วยให้ส่งสัญญาณเร็วขึ้น"><span class="no">4</span><span class="lt">Myelin sheath (ปลอกไมอีลิน)</span></li>
+ <li data-pid="node" data-desc="ช่องว่างระหว่าง myelin ช่วยให้สัญญาณวิ่งแบบกระโดดเร็วขึ้น (saltatory conduction)"><span class="no">5</span><span class="lt">Node of Ranvier</span></li>
+ <li data-pid="term" data-desc="ปลายแอกซอนเชื่อมต่อกับกล้ามเนื้อ/เซลล์อื่น ผ่านรอยต่อประสาท–กล้ามเนื้อ (NMJ)"><span class="no">6</span><span class="lt">Axon terminals</span></li>
+ <li data-pid="salt" data-desc="การนำสัญญาณแบบกระโดดข้ามปลอก — ถ้าปลอกถูกทำลาย (เช่น MS) การนำกระแสประสาทช้าลง เกิดอาการผิดปกติ"><span class="no">7</span><span class="lt">Saltatory conduction</span></li>
+ <li data-pid="mus" data-desc="กล้ามเนื้อลาย (Myocytes) รับสัญญาณจาก neuron ผ่าน NMJ แล้วหดตัว"><span class="no">8</span><span class="lt">Muscle fibers (กล้ามเนื้อ)</span></li>
+</ol><div class="dg-info">✨ แตะที่ตัวเลขในภาพ หรือหัวข้อด้านข้าง เพื่อดูคำอธิบาย</div></div></div></div>`,
+/* --- Brain herniation --- */
+`<div class="dg"><div class="dg-h"><span>🧠</span><h3>ภาพที่ 2 · สมองในกะโหลก & Brain herniation 3 ชนิด</h3><span class="dg-tag">สไลด์: Causes of increased ICP / Brain Herniation</span></div>
+<div class="dg-b"><div class="dg-svg"><svg viewBox="0 0 560 360">
+ <g data-pid="skull"><path d="M70,170 C70,75 160,28 285,28 C410,28 498,75 498,170 C498,238 452,283 384,294 L360,336 L302,336 L290,298 C165,292 70,250 70,170 Z" fill="#e8ddcf" stroke="#8a7a5a" stroke-width="3"/>${mk(1,105,58)}</g>
+ <g data-pid="cerebrum"><path d="M92,165 C92,92 172,48 285,48 C398,48 476,92 476,165 C476,222 430,256 372,264 C340,268 318,264 300,262 C180,256 92,230 92,165 Z" fill="#d9a0a0" stroke="#a06a6a" stroke-width="2"/><path d="M130,100 q20,-16 40,0 M185,78 q20,-16 40,0 M245,68 q20,-14 40,2 M310,78 q20,-14 38,2 M370,100 q18,-14 34,2 M120,150 q20,-14 38,2 M175,135 q20,-14 40,0 M240,128 q20,-12 40,2 M305,132 q20,-12 38,2 M365,150 q16,-12 32,2 M140,200 q20,-12 38,2 M210,192 q20,-12 40,2 M285,190 q20,-12 38,2" stroke="#a86a6a" stroke-width="3" fill="none" opacity=".65"/>${mk(2,285,36)}</g>
+ <g data-pid="falx"><line x1="285" y1="50" x2="285" y2="140" stroke="#7a4a3a" stroke-width="4"/>${mk(4,300,58)}</g>
+ <g data-pid="mass"><circle cx="172" cy="118" r="36" fill="#c0392b" opacity=".88" stroke="#7a1f16" stroke-width="2"/><path d="M158,104 q14,-8 28,4 M156,124 q16,10 32,-2" stroke="#7a1f16" stroke-width="2" fill="none" opacity=".6"/>${mk(3,148,86)}</g>
+ <g data-pid="tent"><path d="M318,244 L480,228" stroke="#8a5a4a" stroke-width="5"/>${mk(5,462,214)}</g>
+ <g data-pid="cere"><ellipse cx="412" cy="262" rx="54" ry="26" fill="#c98a8a" stroke="#96605f" stroke-width="2"/><path d="M372,256 q10,-10 20,0 M396,252 q10,-10 20,0 M420,254 q10,-10 20,0 M380,270 q10,8 20,0 M406,272 q10,8 20,0" stroke="#96605f" stroke-width="2" fill="none"/><path d="M296,240 L296,332 L320,332 L320,240 Z" fill="#d9b0a0" stroke="#a07a6a" stroke-width="2"/>${mk(6,438,296)}</g>
+ <g data-pid="fm"><path d="M292,330 L292,342 M324,330 L324,342" stroke="#8a7a5a" stroke-width="5"/><path d="M280,336 L336,336" stroke="#5a4a2a" stroke-width="2.5" stroke-dasharray="4 3"/>${mk(7,268,336)}</g>
+ <g data-pid="subf"><line x1="212" y1="88" x2="332" y2="88" stroke="#ffb454" stroke-width="4.5"/><polygon points="340,88 326,81 326,95" fill="#ffb454"/>${mk(8,206,70)}</g>
+ <g data-pid="uncal"><line x1="352" y1="222" x2="372" y2="268" stroke="#ff6b7a" stroke-width="4.5"/><polygon points="376,276 364,266 374,260" fill="#ff6b7a"/>${mk(9,338,214)}</g>
+ <g data-pid="tons"><line x1="336" y1="298" x2="336" y2="338" stroke="#a78bfa" stroke-width="4.5"/><polygon points="336,348 329,334 343,334" fill="#a78bfa"/>${mk(10,356,300)}</g>
+ <text class="lb" x="80" y="330">The displacement of brain tissue from one compartment to another in response to increased ICP</text>
+</svg></div>
+<div class="dg-side"><ol class="dg-legend">
+ <li data-pid="skull" data-desc="กะโหลกศีรษะและโพรงกระดูกสันหลังเป็นโครงสร้างแข็ง ปกป้อง CNS แต่จำกัดพื้นที่ขยายตัว → volume เพิ่ม → ICP สูง"><span class="no">1</span><span class="lt">Skull (กะโหลกศีรษะ)</span></li>
+ <li data-pid="cerebrum" data-desc="สมอง (brain) ร่วมกับไขสันหลัง (spinal cord) ประกอบเป็นระบบประสาทส่วนกลาง (CNS)"><span class="no">2</span><span class="lt">Cerebrum (สมองใหญ่)</span></li>
+ <li data-pid="mass" data-desc="ก้อน/รอยโรค เช่น brain tumor, abscess, hemorrhage, hematoma — เพิ่มปริมาตรในกะโหลก ดันเนื้อสมองให้เคลื่อนที่"><span class="no">3</span><span class="lt">Mass lesion (ก้อนในสมอง)</span></li>
+ <li data-pid="falx" data-desc="แผ่นเยื่อดูราที่ยื่นลึกระหว่างสมองสองซีก"><span class="no">4</span><span class="lt">Falx cerebri</span></li>
+ <li data-pid="tent" data-desc="เยื่อดูรากั้นระหว่าง cerebrum กับ cerebellum"><span class="no">5</span><span class="lt">Tentorium cerebelli</span></li>
+ <li data-pid="cere" data-desc="cerebellum + ก้านสมอง (brainstem) อยู่ใต้ tentorium ต่อเนื่องลงไขสันหลัง"><span class="no">6</span><span class="lt">Cerebellum & Brainstem</span></li>
+ <li data-pid="fm" data-desc="ช่องที่กะโหลกฐานซึ่งไขสันหลังลอดออก — จุดเกิด tonsillar herniation"><span class="no">7</span><span class="lt">Foramen magnum</span></li>
+ <li data-pid="subf" data-desc="สมองถูกดันลอดใต้ falx cerebri ไปอีกซีกหนึ่ง"><span class="no">8</span><span class="lt">Subfalcine herniation</span></li>
+ <li data-pid="uncal" data-desc="Uncus ของ temporal lobe ถูกดันลอดผ่าน tentorial notch → กดทับก้านสมอง"><span class="no">9</span><span class="lt">Uncal (transtentorial) herniation</span></li>
+ <li data-pid="tons" data-desc="Cerebellar tonsils ถูกดันลงผ่าน foramen magnum → กด brainstem อันตรายถึงชีวิต"><span class="no">10</span><span class="lt">Tonsillar herniation</span></li>
+</ol><div class="dg-info">✨ แตะที่ตัวเลขในภาพ หรือหัวข้อด้านข้าง เพื่อดูคำอธิบาย</div></div></div></div>`,
+/* --- NMJ --- */
+`<div class="dg"><div class="dg-h"><span>🛡️</span><h3>ภาพที่ 3 · รอยต่อประสาท–กล้ามเนื้อ (NMJ) ปกติ vs Myasthenia gravis</h3><span class="dg-tag">สไลด์: Myasthenia gravis</span></div>
+<div class="dg-b"><div class="dg-svg"><svg viewBox="0 0 560 300">
+ <text class="lb2" x="130" y="24" text-anchor="middle">ปกติ (Normal)</text>
+ <text class="lb2" x="420" y="24" text-anchor="middle">Myasthenia gravis</text>
+ <line x1="280" y1="36" x2="280" y2="280" stroke="currentColor" opacity=".2" stroke-dasharray="5 5"/>
+ <g data-pid="term"><path d="M100,40 C80,60 80,96 104,110 L156,110 C180,96 180,60 160,40 Z" fill="#9fc6e8" stroke="#4a7aa5" stroke-width="2.5"/><circle cx="130" cy="72" r="9" fill="#5a8ab5"/>${mk(1,86,52)}
+  <path d="M390,40 C370,60 370,96 394,110 L446,110 C470,96 470,60 450,40 Z" fill="#9fc6e8" stroke="#4a7aa5" stroke-width="2.5"/><circle cx="420" cy="72" r="9" fill="#5a8ab5"/></g>
+ <g data-pid="ach"><circle cx="112" cy="128" r="5" fill="#ffd166"/><circle cx="130" cy="134" r="5" fill="#ffd166"/><circle cx="148" cy="128" r="5" fill="#ffd166"/><circle cx="122" cy="142" r="5" fill="#ffd166"/><circle cx="140" cy="144" r="5" fill="#ffd166"/>${mk(2,168,132)}
+  <circle cx="404" cy="128" r="5" fill="#ffd166"/><circle cx="430" cy="132" r="5" fill="#ffd166"/><circle cx="416" cy="142" r="5" fill="#ffd166"/><circle cx="444" cy="126" r="5" fill="#ffd166"/></g>
+ <g data-pid="rec">
+  <rect x="104" y="162" width="12" height="14" rx="4" fill="#5ee08a" stroke="#1d6e3d"/><rect x="124" y="158" width="12" height="14" rx="4" fill="#5ee08a" stroke="#1d6e3d"/><rect x="144" y="162" width="12" height="14" rx="4" fill="#5ee08a" stroke="#1d6e3d"/>${mk(3,164,168)}
+  <rect x="400" y="160" width="12" height="14" rx="4" fill="#5ee08a" stroke="#1d6e3d"/>
+  <path d="M420,158 l14,14 M434,158 l-14,14" stroke="#ff6b7a" stroke-width="3"/><path d="M444,158 l14,14 M458,158 l-14,14" stroke="#ff6b7a" stroke-width="3"/></g>
+ <g data-pid="ab"><path d="M424,130 l-6,14 M424,130 l6,14 M424,130 v-8" stroke="#ff6b7a" stroke-width="3" fill="none"/><path d="M450,126 l-6,14 M450,126 l6,14 M450,126 v-8" stroke="#ff6b7a" stroke-width="3" fill="none"/><path d="M437,122 l-6,14 M437,122 l6,14 M437,122 v-8" stroke="#ff6b7a" stroke-width="3" fill="none"/>${mk(5,478,124)}</g>
+ <g data-pid="mus"><path d="M60,182 h140 v86 h-140 Z" fill="#e08a8a" stroke="#a04a4a" stroke-width="2"/><path d="M70,182 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14" fill="#e08a8a" stroke="#a04a4a" stroke-width="2"/>${mk(4,66,254)}
+  <path d="M350,182 h140 v86 h-140 Z" fill="#e08a8a" stroke="#a04a4a" stroke-width="2"/><path d="M360,182 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14 l8,14 l8,-14" fill="#e08a8a" stroke="#a04a4a" stroke-width="2"/>
+  <text class="lb" x="130" y="242" text-anchor="middle" fill="#4a1a1a">กล้ามเนื้อหดตัวปกติ</text>
+  <text class="lb" x="420" y="242" text-anchor="middle" fill="#4a1a1a">กล้ามเนื้ออ่อนแรงเป็น ๆ หาย ๆ</text></g>
+ <g data-pid="weak"><text class="lb" x="420" y="290" text-anchor="middle">หนังตาตก · ภาพซ้อน → กลืนลำบาก สำลัก → หายใจล้มเหลว</text>${mk(6,500,284)}</g>
+</svg></div>
+<div class="dg-side"><ol class="dg-legend">
+ <li data-pid="term" data-desc="ปลายเส้นประสาท (axon terminal) ปล่อยสารสื่อประสาท acetylcholine ลงใน synaptic cleft"><span class="no">1</span><span class="lt">ปลายเส้นประสาท (Nerve terminal)</span></li>
+ <li data-pid="ach" data-desc="สารสื่อประสาท acetylcholine จับกับตัวรับบนเยื่อหุ้มกล้ามเนื้อ → เกิดการหดตัว"><span class="no">2</span><span class="lt">Acetylcholine (ACh)</span></li>
+ <li data-pid="rec" data-desc="ตัวรับ acetylcholine ที่รอยต่อระหว่างเส้นประสาทกับกล้ามเนื้อ — ใน MG จำนวนตัวรับลดลง การส่งสัญญาณผิดปกติ"><span class="no">3</span><span class="lt">Acetylcholine receptor (AChR)</span></li>
+ <li data-pid="mus" data-desc="เยื่อหุ้มกล้ามเนื้อพร้อม junctional folds เพิ่มพื้นที่รับสัญญาณ"><span class="no">4</span><span class="lt">เยื่อหุ้มกล้ามเนื้อ (Sarcolemma)</span></li>
+ <li data-pid="ab" data-desc="ร่างกายสร้างแอนติบอดีผิดปกติต่อ ACh receptor — สัมพันธ์กับความผิดปกติของต่อมไทมัส และอาจพบร่วมกับ SLE, RA"><span class="no">5</span><span class="lt">Autoantibody ต่อ AChR (ใน MG)</span></li>
+ <li data-pid="weak" data-desc="เริ่มที่กล้ามเนื้อมัดเล็กบริเวณใบหน้าและดวงตา (หนังตาตก ภาพซ้อน) → ลุกลามทั่วร่างกาย กลืนลำบาก สำลัก รายรุนแรงหายใจล้มเหลว"><span class="no">6</span><span class="lt">ผล: กล้ามเนื้ออ่อนแรง</span></li>
+</ol><div class="dg-info">✨ แตะที่ตัวเลขในภาพ หรือหัวข้อด้านข้าง เพื่อดูคำอธิบาย</div></div></div></div>`
+];
+
+DIAG.msk=[
+/* --- Bone cells --- */
+`<div class="dg"><div class="dg-h"><span>🦴</span><h3>ภาพที่ 1 · Bone cells — เซลล์กระดูก 3 ชนิด</h3><span class="dg-tag">สไลด์: Bone Cell table</span></div>
+<div class="dg-b"><div class="dg-svg"><svg viewBox="0 0 520 300">
+ <rect x="40" y="66" width="440" height="170" rx="16" fill="#e9dcc3" stroke="#8a7a55" stroke-width="3"/>
+ <path d="M60,110 q40,14 80,2 t80,4 t80,-6 t80,8 t60,-4" stroke="#c9b98a" stroke-width="2.5" fill="none" opacity=".8"/>
+ <path d="M60,170 q40,14 80,2 t80,4 t80,-6 t80,8 t60,-4" stroke="#c9b98a" stroke-width="2.5" fill="none" opacity=".8"/>
+ <g data-pid="oblast"><g>
+  <rect x="120" y="42" width="20" height="24" rx="7" fill="#7fb3d5" stroke="#3a6a95" stroke-width="2"/>
+  <rect x="146" y="42" width="20" height="24" rx="7" fill="#7fb3d5" stroke="#3a6a95" stroke-width="2"/>
+  <rect x="172" y="42" width="20" height="24" rx="7" fill="#7fb3d5" stroke="#3a6a95" stroke-width="2"/>
+  <rect x="198" y="42" width="20" height="24" rx="7" fill="#7fb3d5" stroke="#3a6a95" stroke-width="2"/>
+  <circle cx="130" cy="54" r="4" fill="#2a4a6a"/><circle cx="156" cy="54" r="4" fill="#2a4a6a"/><circle cx="182" cy="54" r="4" fill="#2a4a6a"/><circle cx="208" cy="54" r="4" fill="#2a4a6a"/>
+  <path d="M130,66 L130,80 M156,66 L156,80 M182,66 L182,80 M208,66 L208,80" stroke="#3a6a95" stroke-width="2.5" stroke-dasharray="3 3"/>
+ </g>${mk(1,104,48)}</g>
+ <g data-pid="ocyte"><g>
+  <circle cx="130" cy="120" r="12" fill="#fff" stroke="#8a7a55" stroke-width="2"/><ellipse cx="130" cy="120" rx="6" ry="5" fill="#9b7fd4"/>
+  <path d="M118,120 l-8,-4 M142,120 l8,4 M130,108 l2,-8 M130,132 l-2,8" stroke="#8a7a55" stroke-width="1.6"/>
+  <circle cx="250" cy="140" r="12" fill="#fff" stroke="#8a7a55" stroke-width="2"/><ellipse cx="250" cy="140" rx="6" ry="5" fill="#9b7fd4"/>
+  <path d="M238,140 l-8,-4 M262,140 l8,4 M250,128 l2,-8 M250,152 l-2,8" stroke="#8a7a55" stroke-width="1.6"/>
+  <circle cx="370" cy="118" r="12" fill="#fff" stroke="#8a7a55" stroke-width="2"/><ellipse cx="370" cy="118" rx="6" ry="5" fill="#9b7fd4"/>
+  <path d="M358,118 l-8,-4 M382,118 l8,4 M370,106 l2,-8 M370,130 l-2,8" stroke="#8a7a55" stroke-width="1.6"/>
+ </g>${mk(2,130,96)}${mk(4,250,116)}</g>
+ <g data-pid="oclast"><g>
+  <path d="M280,236 C280,206 310,192 344,192 C378,192 408,206 408,236 L408,240 L280,240 Z" fill="#e08a7a" stroke="#a04a3a" stroke-width="2.5"/>
+  <circle cx="316" cy="218" r="7" fill="#7a2a1a"/><circle cx="344" cy="212" r="7" fill="#7a2a1a"/><circle cx="372" cy="218" r="7" fill="#7a2a1a"/>
+  <path d="M296,240 q6,-8 12,0 q6,-8 12,0 q6,-8 12,0 q6,-8 12,0 q6,-8 12,0 q6,-8 12,0 q6,-8 12,0 q6,-8 12,0 q6,-8 12,0" fill="none" stroke="#a04a3a" stroke-width="2.5"/>
+ </g>${mk(3,420,214)}</g>
+ <g data-pid="pit"><path d="M280,236 C280,236 300,262 344,262 C388,262 408,236 408,236 L480,236 L480,262 C480,272 470,282 458,282 L40,282 C28,282 20,272 20,262 L20,236 Z" fill="#d9c9a8" stroke="#8a7a55" stroke-width="0" opacity="0"/><path d="M282,238 C296,258 316,266 344,266 C372,266 392,258 406,238" fill="#c9b98a" stroke="#8a7a55" stroke-width="2.5"/>${mk(5,344,282)}</g>
+ <text class="lb" x="260" y="24" text-anchor="middle">Bone remodeling: สร้าง (osteoblast) ↔ สลาย (osteoclast) · osteocyte ควบคุม matrix</text>
+</svg></div>
+<div class="dg-side"><ol class="dg-legend">
+ <li data-pid="oblast" data-desc="สร้างกระดูก (bone formation) — เรียงตัวเป็นแถวบนผิวกระดูก สร้าง matrix ใหม่"><span class="no">1</span><span class="lt">Osteoblast</span></li>
+ <li data-pid="ocyte" data-desc="ดูแลและควบคุมการทำงานของกระดูก (maintain bone matrix) — อยู่ใน lacuna มีแขนงเชื่อมต่อกัน"><span class="no">2</span><span class="lt">Osteocyte</span></li>
+ <li data-pid="oclast" data-desc="สลายกระดูก (bone resorption) — เซลล์ขนาดใหญ่หลายนิวเคลียส ทำงานเพิ่มใน hyperparathyroidism และ osteolytic phase ของ Paget disease"><span class="no">3</span><span class="lt">Osteoclast</span></li>
+ <li data-pid="pit" data-desc="ร่องที่ osteoclast กัดกินเนื้อกระดูก (resorption lacuna)"><span class="no">5</span><span class="lt">Resorption pit</span></li>
+ <li data-pid="ocyte" data-desc="ช่องว่างใน bone matrix ที่ osteocyte อาศัยอยู่"><span class="no">4</span><span class="lt">Lacuna & Bone matrix</span></li>
+</ol><div class="dg-info">✨ แตะที่ตัวเลขในภาพ หรือหัวข้อด้านข้าง เพื่อดูคำอธิบาย</div></div></div></div>`,
+/* --- Joint OA vs RA --- */
+`<div class="dg"><div class="dg-h"><span>🦵</span><h3>ภาพที่ 2 · Synovial joint — OA (ข้อเสื่อม) vs RA (รูมาตอยด์)</h3><span class="dg-tag">สไลด์: Disorders of Joints</span></div>
+<div class="dg-b"><div class="dg-svg"><svg viewBox="0 0 640 320">
+ <text class="lb2" x="160" y="24" text-anchor="middle">Osteoarthritis (OA)</text>
+ <text class="lb2" x="480" y="24" text-anchor="middle">Rheumatoid arthritis (RA)</text>
+ <line x1="320" y1="36" x2="320" y2="300" stroke="currentColor" opacity=".2" stroke-dasharray="5 5"/>
+ <g data-pid="boneU"><path d="M96,40 h128 v56 c0,10 -22,18 -64,18 c-42,0 -64,-8 -64,-18 Z" fill="#efe6d2" stroke="#8a7a55" stroke-width="2.5"/><path d="M416,40 h128 v56 c0,10 -22,18 -64,18 c-42,0 -64,-8 -64,-18 Z" fill="#efe6d2" stroke="#8a7a55" stroke-width="2.5"/>${mk(6,84,52)}</g>
+ <g data-pid="cart"><path d="M96,112 q64,10 128,0 l0,14 q-64,12 -128,0 Z" fill="#cfe8f5" stroke="#5a8ab5" stroke-width="1.5" opacity=".95"/><path d="M104,124 l6,8 M128,126 l4,9 M160,126 l-4,9 M186,125 l-6,8" stroke="#5a8ab5" stroke-width="1.6"/>${mk(1,110,146)}
+  <path d="M416,112 q64,10 128,0 l0,12 q-64,10 -128,0 Z" fill="#cfe8f5" stroke="#5a8ab5" stroke-width="1.5" opacity=".5"/></g>
+ <g data-pid="space"><path d="M100,140 h120 v36 h-120 Z" fill="none"/><path d="M104,150 L216,150" stroke="#5ee08a" stroke-width="2" stroke-dasharray="6 4"/><path d="M104,166 L216,166" stroke="#5ee08a" stroke-width="2" stroke-dasharray="6 4"/><text class="lb" x="160" y="162" text-anchor="middle" font-size="9">ช่องข้อแคบลง</text>${mk(2,232,152)}
+  <path d="M420,138 h120 v44 h-120 Z" fill="#f7eaea" opacity=".6"/></g>
+ <g data-pid="ophyte"><path d="M96,110 l-14,-6 l12,-4 Z" fill="#d9c08a" stroke="#8a7a55" stroke-width="1.6"/><path d="M224,110 l14,-6 l-12,-4 Z" fill="#d9c08a" stroke="#8a7a55" stroke-width="1.6"/>${mk(3,74,92)}</g>
+ <g data-pid="boneL"><path d="M96,286 h128 v-52 c0,-12 -22,-20 -64,-20 c-42,0 -64,8 -64,20 Z" fill="#efe6d2" stroke="#8a7a55" stroke-width="2.5"/><path d="M416,286 h128 v-52 c0,-12 -22,-20 -64,-20 c-42,0 -64,8 -64,-20 Z" fill="#efe6d2" stroke="#8a7a55" stroke-width="0"/>
+  <path d="M416,286 h128 v-52 c0,-12 -22,-20 -64,-20 c-42,0 -64,8 -64,20 Z" fill="#efe6d2" stroke="#8a7a55" stroke-width="2.5"/>
+  <path d="M416,112 q64,10 128,0 l0,16 q-64,12 -128,0 Z" fill="#cfe8f5" stroke="#5a8ab5" stroke-width="1.5" opacity=".5"/></g>
+ <g data-pid="pannus"><path d="M414,126 C440,150 430,168 452,178 C474,188 496,172 512,182 C528,190 540,170 546,140 C548,128 544,120 540,114 C500,124 450,122 414,112 Z" fill="#c0392b" opacity=".8" stroke="#7a1f16" stroke-width="1.6"/>${mk(4,556,132)}</g>
+ <g data-pid="eros"><path d="M424,214 l10,12 l10,-12 M500,214 l10,12 l10,-12" fill="#a08a6a" stroke="#7a1f16" stroke-width="2"/>${mk(5,540,226)}</g>
+ <g data-pid="ank"><text class="lb" x="480" y="270" text-anchor="middle">→ ข้อผิดรูป → Ankylosis (ข้อยึดติด)</text>${mk(7,566,264)}</g>
+ <text class="lb" x="160" y="310" text-anchor="middle">ปวดข้อ ข้อฝืด เคลื่อนไหวลำบาก</text>
+</svg></div>
+<div class="dg-side"><ol class="dg-legend">
+ <li data-pid="cart" data-desc="OA: กระดูกอ่อนผิวข้อเสื่อมและบางลง ผิวขรุขระ (fibrillation) จาก chondrocytes สลาย matrix มากกว่าสร้าง · RA: ถูก pannus กัดกร่อน"><span class="no">1</span><span class="lt">Articular cartilage (กระดูกอ่อนผิวข้อ)</span></li>
+ <li data-pid="space" data-desc="OA: กระดูกอ่อนบางลงทำให้ช่องข้อแคบลง กระดูกใต้ผิวข้อรับแรงมากขึ้น"><span class="no">2</span><span class="lt">Joint space (ช่องข้อ)</span></li>
+ <li data-pid="ophyte" data-desc="OA: เกิดกระดูกงอก (osteophyte) ที่ขอบข้อ → ข้อผิดรูป"><span class="no">3</span><span class="lt">Osteophyte (กระดูกงอก)</span></li>
+ <li data-pid="pannus" data-desc="RA: เยื่อบุข้ออักเสบหนาตัวเป็น pannus → ทำลายกระดูกอ่อนและกระดูก · symmetrical polyarthritis ปวด บวม แดง ร้อน ข้อฝืดเช้า >1 ชม."><span class="no">4</span><span class="lt">Synovium / Pannus (RA)</span></li>
+ <li data-pid="eros" data-desc="RA: รอยกร่อนของกระดูก (bone erosion) จากรอยโรค pannus"><span class="no">5</span><span class="lt">Bone erosion (RA)</span></li>
+ <li data-pid="boneU" data-desc="กระดูกใต้ข้อ — ใน Paget disease จะหนาแต่พรุน คุณภาพไม่ดี แข็งแต่เปราะ"><span class="no">6</span><span class="lt">Bone (กระดูก)</span></li>
+ <li data-pid="ank" data-desc="ผลท้ายของ RA: ข้อผิดรูปและอาจเกิด ankylosis (ข้อยึดติด)"><span class="no">7</span><span class="lt">Ankylosis</span></li>
+</ol><div class="dg-info">✨ แตะที่ตัวเลขในภาพ หรือหัวข้อด้านข้าง เพื่อดูคำอธิบาย</div></div></div></div>`,
+/* --- Fracture healing --- */
+`<div class="dg"><div class="dg-h"><span>🩹</span><h3>ภาพที่ 3 · ขั้นตอนการหายของกระดูกหัก (Bone healing 5 ระยะ)</h3><span class="dg-tag">สไลด์: Fractures</span></div>
+<div class="dg-b" style="grid-template-columns:1fr"><div class="dg-svg"><svg viewBox="0 0 720 190">
+ <g data-pid="s1"><rect x="12" y="60" width="52" height="24" rx="6" fill="#efe6d2" stroke="#8a7a55" stroke-width="2"/><rect x="76" y="60" width="52" height="24" rx="6" fill="#efe6d2" stroke="#8a7a55" stroke-width="2"/><ellipse cx="70" cy="72" rx="14" ry="12" fill="#a83232" opacity=".85"/>${mk(1,70,38)}<text class="lb" x="70" y="108" text-anchor="middle">1 Hematoma</text><text class="lb" x="70" y="122" text-anchor="middle" font-size="9">formation</text></g>
+ <g data-pid="s2"><rect x="156" y="60" width="52" height="24" rx="6" fill="#efe6d2" stroke="#8a7a55" stroke-width="2"/><rect x="220" y="60" width="52" height="24" rx="6" fill="#efe6d2" stroke="#8a7a55" stroke-width="2"/><ellipse cx="214" cy="72" rx="14" ry="12" fill="#a83232" opacity=".45"/><circle cx="204" cy="64" r="3" fill="#e8a33d"/><circle cx="222" cy="66" r="3" fill="#e8a33d"/><circle cx="212" cy="82" r="3" fill="#e8a33d"/><circle cx="228" cy="80" r="3" fill="#e8a33d"/>${mk(2,214,38)}<text class="lb" x="214" y="108" text-anchor="middle">2 Inflammatory</text><text class="lb" x="214" y="122" text-anchor="middle" font-size="9">phase</text></g>
+ <g data-pid="s3"><rect x="300" y="60" width="52" height="24" rx="6" fill="#efe6d2" stroke="#8a7a55" stroke-width="2"/><rect x="364" y="60" width="52" height="24" rx="6" fill="#efe6d2" stroke="#8a7a55" stroke-width="2"/><ellipse cx="358" cy="72" rx="26" ry="18" fill="#9fc6e8" opacity=".85" stroke="#5a8ab5" stroke-width="1.5"/>${mk(3,358,38)}<text class="lb" x="358" y="108" text-anchor="middle">3 Soft callus</text><text class="lb" x="358" y="122" text-anchor="middle" font-size="9">(≈ 1 สัปดาห์)</text></g>
+ <g data-pid="s4"><rect x="444" y="60" width="52" height="24" rx="6" fill="#efe6d2" stroke="#8a7a55" stroke-width="2"/><rect x="508" y="60" width="52" height="24" rx="6" fill="#efe6d2" stroke="#8a7a55" stroke-width="2"/><ellipse cx="502" cy="72" rx="28" ry="19" fill="#d9c08a" stroke="#8a7a55" stroke-width="2"/>${mk(4,502,38)}<text class="lb" x="502" y="108" text-anchor="middle">4 Bony callus</text><text class="lb" x="502" y="122" text-anchor="middle" font-size="9">(≈ 2 สัปดาห์)</text></g>
+ <g data-pid="s5"><rect x="584" y="60" width="60" height="24" rx="6" fill="#efe6d2" stroke="#8a7a55" stroke-width="2"/><rect x="648" y="60" width="60" height="24" rx="6" fill="#efe6d2" stroke="#8a7a55" stroke-width="2"/><ellipse cx="646" cy="72" rx="18" ry="14" fill="#d9c08a" stroke="#8a7a55" stroke-width="2" opacity=".7"/>${mk(5,646,38)}<text class="lb" x="646" y="108" text-anchor="middle">5 Remodeling</text><text class="lb" x="646" y="122" text-anchor="middle" font-size="9">(หลายเดือน–หลายปี)</text></g>
+ <text class="lb" x="360" y="152" text-anchor="middle">woven bone → lamellar bone: กระดูกกลับมาแข็งแรงและใกล้เคียงรูปร่างเดิม</text>
+ <line x1="20" y1="166" x2="700" y2="166" stroke="currentColor" opacity=".15"/>
+</svg></div>
+<div class="dg-side"><ol class="dg-legend" style="grid-template-columns:1fr 1fr;display:grid">
+ <li data-pid="s1" data-desc="หลอดเลือดฉีกขาด เลือดออกเกิดก้อนเลือด (hematoma) — ลิ่มเลือดเป็นโครงร่างให้เซลล์ซ่อมแซมเข้ามา"><span class="no">1</span><span class="lt">Hematoma formation</span></li>
+ <li data-pid="s2" data-desc="เซลล์อักเสบและเกล็ดเลือดหลั่ง growth factors → กระตุ้น osteoblasts และ osteoclasts"><span class="no">2</span><span class="lt">Inflammatory phase</span></li>
+ <li data-pid="s3" data-desc="สร้างเนื้อเยื่อเกี่ยวพันและกระดูกอ่อน เชื่อมปลายกระดูกชั่วคราว (≈ 1 สัปดาห์)"><span class="no">3</span><span class="lt">Soft callus</span></li>
+ <li data-pid="s4" data-desc="Soft callus เปลี่ยนเป็นกระดูกใหม่ (woven bone) มีการสะสมแคลเซียม กระดูกแข็งแรงขึ้น (≈ 2 สัปดาห์)"><span class="no">4</span><span class="lt">Bony callus</span></li>
+ <li data-pid="s5" data-desc="ปรับกระดูกจาก woven bone เป็น lamellar bone → กลับมาแข็งแรงและใกล้เคียงรูปร่างเดิม"><span class="no">5</span><span class="lt">Remodeling</span></li>
+</ol><div class="dg-info">✨ แตะที่แต่ละระยะในภาพเพื่อดูคำอธิบาย</div></div></div></div>`
+];
+
+DIAG.liver=[
+/* --- Figure 1 anatomy --- */
+`<div class="dg"><div class="dg-h"><span>🫁</span><h3>Figure 1 · Anatomy of the liver and its relationship to the gallbladder, pancreas and duodenum</h3><span class="dg-tag">สไลด์: Diseases of Liver, GB & Pancreas</span></div>
+<div class="dg-b"><div class="dg-svg"><svg viewBox="0 0 600 400">
+ <defs><clipPath id="dgLivClip"><path d="M66,128 C60,78 128,42 226,40 C330,38 410,58 430,92 C442,114 424,142 372,158 C300,178 150,180 96,164 C74,157 68,144 66,128 Z"/></clipPath></defs>
+ <path d="M66,128 C60,78 128,42 226,40 C330,38 410,58 430,92 C442,114 424,142 372,158 C300,178 150,180 96,164 C74,157 68,144 66,128 Z" fill="#9a5240" stroke="#5a2d22" stroke-width="2.5"/>
+ <g data-pid="rlobe"><rect x="60" y="30" width="190" height="160" fill="#ffffff" opacity=".10" clip-path="url(#dgLivClip)"/>${mk(1,96,64)}</g>
+ <g data-pid="llobe"><rect x="252" y="30" width="190" height="140" fill="#ffffff" opacity=".16" clip-path="url(#dgLivClip)"/>${mk(2,404,64)}</g>
+ <line x1="248" y1="42" x2="244" y2="170" stroke="#e8d8c8" stroke-width="3" stroke-dasharray="6 4"/>
+ <text class="lb" x="150" y="100" fill="#fff" opacity=".85">Right lobe</text>
+ <text class="lb" x="320" y="90" fill="#fff" opacity=".85">Left lobe</text>
+ <g data-pid="gb"><path d="M128,166 C110,176 108,206 132,216 C158,226 180,206 176,182 C173,168 150,158 128,166 Z" fill="#4d9e63" stroke="#20522e" stroke-width="2.5"/>${mk(3,110,220)}<text class="lb" x="150" y="240" text-anchor="middle">gallbladder</text></g>
+ <g data-pid="cystic"><path d="M172,176 C192,160 204,152 214,146" stroke="#2e8b57" stroke-width="5" fill="none" stroke-linecap="round"/>${mk(4,196,140)}</g>
+ <g data-pid="cbd"><path d="M214,146 C238,168 300,204 356,238 C372,248 386,256 394,264" stroke="#2e8b57" stroke-width="5" fill="none" stroke-linecap="round"/>${mk(5,262,170)}<text class="lb" x="270" y="162">common bile duct</text></g>
+ <g data-pid="duo"><path d="M432,138 C486,156 506,218 480,276 C462,316 408,334 368,320" stroke="#d98a92" stroke-width="30" fill="none" stroke-linecap="round"/><path d="M432,138 C486,156 506,218 480,276 C462,316 408,334 368,320" stroke="#f0c8c4" stroke-width="14" fill="none" stroke-linecap="round"/>${mk(6,506,200)}<text class="lb" x="512" y="240">duodenum</text></g>
+ <g data-pid="phead"><ellipse cx="374" cy="298" rx="28" ry="22" fill="#e8c98a" stroke="#b08a4a" stroke-width="2.5"/><path d="M360,314 C352,332 334,334 328,320 C338,312 350,310 360,314 Z" fill="#e8c98a" stroke="#b08a4a" stroke-width="2"/>${mk(7,410,318)}<text class="lb" x="374" y="352" text-anchor="middle">head + uncinate process</text></g>
+ <g data-pid="pbody"><path d="M350,296 C300,314 240,310 196,294" stroke="#e8c98a" stroke-width="24" fill="none" stroke-linecap="round"/>${mk(8,266,330)}<text class="lb" x="262" y="352" text-anchor="middle">body</text></g>
+ <g data-pid="ptail"><path d="M196,294 C182,288 172,284 162,280" stroke="#e8c98a" stroke-width="18" fill="none" stroke-linecap="round"/>${mk(9,178,306)}</g>
+ <g data-pid="spleen"><ellipse cx="120" cy="266" rx="36" ry="25" fill="#a05a8a" stroke="#6a3a5a" stroke-width="2.5" transform="rotate(-18 120 266)"/>${mk(10,78,246)}<text class="lb" x="112" y="306" text-anchor="middle">spleen</text></g>
+ <g data-pid="amp"><circle cx="398" cy="270" r="7" fill="#ffd166" stroke="#b07800" stroke-width="2"/>${mk(11,430,252)}</g>
+ <text class="lb" x="470" y="370" text-anchor="middle">ตับอ่อนยาว ~15 cm หนัก ~100 g วางเฉียงใน concavity ของ duodenum</text>
+</svg></div>
+<div class="dg-side"><ol class="dg-legend">
+ <li data-pid="rlobe" data-desc="ตับเป็นอวัยวะใหญ่สุดในร่างกาย หนัก 1400–1600 g (ชาย) / 1200–1400 g (หญิง) · กลีบขวาใหญ่กว่าซ้ายประมาณ 6 เท่า · HCC พบที่กลีบขวามากกว่า"><span class="no">1</span><span class="lt">Right lobe (กลีบขวา)</span></li>
+ <li data-pid="llobe" data-desc="กลีบซ้ายขนาดเล็กกว่าglีบขวาประมาณ 6 เท่า"><span class="no">2</span><span class="lt">Left lobe (กลีบซ้าย)</span></li>
+ <li data-pid="gb" data-desc="อวัยวะรูปลูกแพร์ ยาว 9 cm ความจุประมาณ 50 mL — พบบในหญิง สัมพันธ์ obesity + multiple pregnancies (gallstones)"><span class="no">3</span><span class="lt">Gallbladder (ถุงน้ำดี)</span></li>
+ <li data-pid="cystic" data-desc="คอถุงน้ำดี (neck) เรียวลงเป็น cystic duct · cholesterol stones มักใหญ่เกินจะเข้าท่อนี้"><span class="no">4</span><span class="lt">Cystic duct</span></li>
+ <li data-pid="cbd" data-desc="ท่อน้ำดีหลัก — pancreatic carcinoma ที่ head มักลุกลามมาอุด → obstructive jaundice"><span class="no">5</span><span class="lt">Common bile duct</span></li>
+ <li data-pid="duo" data-desc="ลำไส้เล็กส่วนต้น โค้งโอบหัวตับอ่อน — รับน้ำดีและน้ำย่อยผ่าน ampulla of Vater"><span class="no">6</span><span class="lt">Duodenum</span></li>
+ <li data-pid="phead" data-desc="Head อยู่ใน concavity ของ duodenum + uncinate process ยื่นจาก head · 2/3 ของ pancreatic carcinoma พบที่นี่"><span class="no">7</span><span class="lt">Head of pancreas + Uncinate process</span></li>
+ <li data-pid="pbody" data-desc="Body = ส่วนหลักของต่อม (main part of the gland)"><span class="no">8</span><span class="lt">Body of pancreas</span></li>
+ <li data-pid="ptail" data-desc="Tail = ส่วนเรียวบาง มุ่งไปทาง hilum ของม้าม"><span class="no">9</span><span class="lt">Tail of pancreas</span></li>
+ <li data-pid="spleen" data-desc="ม้าม — tail ของตับอ่อนชี้ไปทาง hilum ของม้าม · cirrhosis + portal HTN ทำให้ splenomegaly"><span class="no">10</span><span class="lt">Spleen (ม้าม)</span></li>
+ <li data-pid="amp" data-desc="รูเปิดร่วมของท่อน้ำดีและท่อตับอ่อนที่ duodenum — carcinoma ของ ampulla of Vater เกือบทั้งหมดเป็น adenocarcinoma ก้อนอาจอุดรูเปิด → progressive relentless obstructive jaundice"><span class="no">11</span><span class="lt">Ampulla of Vater</span></li>
+</ol><div class="dg-info">✨ แตะที่ตัวเลขในภาพ หรือหัวข้อด้านข้าง เพื่อดูคำอธิบาย</div></div></div></div>`,
+/* --- Lobule --- */
+`<div class="dg"><div class="dg-h"><span>🔬</span><h3>ภาพที่ 2 · Classical hepatic lobule & Portal triad</h3><span class="dg-tag">สไลด์: HISTOLOGY of the liver</span></div>
+<div class="dg-b"><div class="dg-svg"><svg viewBox="0 0 440 360">
+ <path d="M330,170 L270,274 L150,274 L90,170 L150,66 L270,66 Z" fill="#b5714f" opacity=".38" stroke="#8a4b3a" stroke-width="3"/>
+ <g data-pid="lob"><path d="M330,170 L270,274 L150,274 L90,170 L150,66 L270,66 Z" fill="none" stroke="#8a4b3a" stroke-width="3" stroke-dasharray="8 5"/>${mk(1,210,44)}</g>
+ <g data-pid="sin"><path d="M300,120 L235,158 M150,100 L190,148 M120,215 L185,190 M165,250 L200,205 M285,240 L235,198 M310,190 L240,178" stroke="#c96a6a" stroke-width="2.4" stroke-dasharray="5 4" opacity=".85"/><polygon points="228,166 242,158 236,172" fill="#c96a6a"/><polygon points="192,150 186,164 200,158" fill="#c96a6a"/>${mk(7,318,110)}<text class="lb" x="352" y="96" font-size="9.5">เลือด: portal triad</text><text class="lb" x="352" y="108" font-size="9.5">→ sinusoids → central vein</text></g>
+ <g data-pid="cv"><circle cx="210" cy="170" r="17" fill="#4a6fa5" stroke="#2a4a75" stroke-width="2.5"/><path d="M210,187 L210,214 L226,230" stroke="#4a6fa5" stroke-width="6" fill="none"/>${mk(2,210,140)}</g>
+ <g data-pid="triad">
+  <g><circle cx="150" cy="66" r="10" fill="#4a6fa5" stroke="#2a4a75" stroke-width="1.6"/><circle cx="164" cy="56" r="6.5" fill="#c0392b"/><circle cx="138" cy="52" r="7.5" fill="none" stroke="#2e8b57" stroke-width="3.4"/></g>
+  <g><circle cx="330" cy="170" r="10" fill="#4a6fa5" stroke="#2a4a75" stroke-width="1.6"/><circle cx="342" cy="158" r="6.5" fill="#c0392b"/><circle cx="344" cy="182" r="7.5" fill="none" stroke="#2e8b57" stroke-width="3.4"/></g>
+  <g><circle cx="150" cy="274" r="10" fill="#4a6fa5" stroke="#2a4a75" stroke-width="1.6"/><circle cx="136" cy="286" r="6.5" fill="#c0392b"/><circle cx="160" cy="290" r="7.5" fill="none" stroke="#2e8b57" stroke-width="3.4"/></g>
+  ${mk(3,368,166)}</g>
+ <g data-pid="bd"><circle cx="138" cy="52" r="7.5" fill="none" stroke="#2e8b57" stroke-width="3.4"/><circle cx="344" cy="182" r="7.5" fill="none" stroke="#2e8b57" stroke-width="3.4"/><circle cx="160" cy="290" r="7.5" fill="none" stroke="#2e8b57" stroke-width="3.4"/>${mk(4,120,34)}</g>
+ <g data-pid="pv"><circle cx="150" cy="66" r="10" fill="#4a6fa5" stroke="#2a4a75" stroke-width="1.6"/><circle cx="330" cy="170" r="10" fill="#4a6fa5" stroke="#2a4a75" stroke-width="1.6"/><circle cx="150" cy="274" r="10" fill="#4a6fa5" stroke="#2a4a75" stroke-width="1.6"/>${mk(5,150,96)}</g>
+ <g data-pid="ha"><circle cx="164" cy="56" r="6.5" fill="#c0392b"/><circle cx="342" cy="158" r="6.5" fill="#c0392b"/><circle cx="136" cy="286" r="6.5" fill="#c0392b"/>${mk(6,182,42)}</g>
+ <g data-pid="bile"><path d="M250,150 L290,120 M240,190 L290,210 M190,205 L170,240" stroke="#2e8b57" stroke-width="2.2" opacity=".9"/><polygon points="292,118 280,120 288,130" fill="#2e8b57"/><polygon points="292,212 282,204 280,216" fill="#2e8b57"/><polygon points="168,242 176,232 164,232" fill="#2e8b57"/>${mk(8,266,206)}<text class="lb" x="210" y="330" text-anchor="middle">น้ำดีไหลสวนทางเลือด → เข้าสู่ bile duct ที่ portal triad</text></g>
+</svg></div>
+<div class="dg-side"><ol class="dg-legend">
+ <li data-pid="lob" data-desc="Hepatic parenchyma ประกอบด้วย numerous hexagonal หรือ pyramidal classical lobules เส้นผ่านศูนย์กลาง 0.5 ถึง 2 mm"><span class="no">1</span><span class="lt">Classical lobule (หกเหลี่ยม/พีระมิด)</span></li>
+ <li data-pid="cv" data-desc="แต่ละ classical lobule มี central tributary ของ hepatic vein อยู่ตรงกลาง — เลือดจาก sinusoids ไหลรวมที่นี่"><span class="no">2</span><span class="lt">Central vein (hepatic vein tributary)</span></li>
+ <li data-pid="triad" data-desc="ที่ชายขอบ lobule มี 4 ถึง 5 portal tracts หรือ triads ประกอบด้วย branches ของ bile duct, portal vein และ hepatic artery"><span class="no">3</span><span class="lt">Portal tract / triad</span></li>
+ <li data-pid="bd" data-desc="ท่อน้ำดีใน portal triad — ใน obstructive jaundice ทางเดินนี้ถูกอุดกั้น → bilirubin คั่ง"><span class="no">4</span><span class="lt">Bile duct</span></li>
+ <li data-pid="pv" data-desc="หลอดเลือดดำพอร์ทัลนำเลือด (และ bilirubin จากม้าม) เข้าสู่ lobule"><span class="no">5</span><span class="lt">Portal vein</span></li>
+ <li data-pid="ha" data-desc="หลอดเลือดแดงของตับ ให้เลือด giàuออกซิเจน — ใน acute hepatitis เซลล์ตับอักเสบ/บวม (apoptosis of hepatocytes)"><span class="no">6</span><span class="lt">Hepatic artery</span></li>
+ <li data-pid="sin" data-desc="ทางเดินเลือดระหว่าง trabeculae ของ hepatocytes ไหลจากขอบ lobule เข้าสู่ central vein"><span class="no">7</span><span class="lt">Sinusoids (ทิศทางการไหลของเลือด)</span></li>
+ <li data-pid="bile" data-desc="น้ำดีที่ hepatocytes สร้าง ไหลสวนทางกับเลือดออกสู่ bile duct ที่ portal triads"><span class="no">8</span><span class="lt">ทิศทางการไหลของน้ำดี</span></li>
+</ol><div class="dg-info">✨ แตะที่ตัวเลขในภาพ หรือหัวข้อด้านข้าง เพื่อดูคำอธิบาย</div></div></div></div>`,
+/* --- Jaundice pathway --- */
+`<div class="dg"><div class="dg-h"><span>🟡</span><h3>ภาพที่ 3 · ทางเดินของ Bilirubin & จุดเกิด Jaundice 3 กลไก</h3><span class="dg-tag">สไลด์: Jaundice</span></div>
+<div class="dg-b"><div class="dg-svg"><svg viewBox="0 0 660 320">
+ <g data-pid="rbc"><circle cx="70" cy="60" r="26" fill="#c0392b" stroke="#7a1f16" stroke-width="2"/><circle cx="70" cy="60" r="10" fill="#e08a7a"/>${mk(1,70,24)}<text class="lb" x="70" y="102" text-anchor="middle">RBC แก่/ถูกทำลาย</text></g>
+ <path d="M100,60 L156,60" stroke="currentColor" stroke-width="2.5" opacity=".5"/><polygon points="162,60 150,54 150,66" fill="currentColor" opacity=".5"/>
+ <g data-pid="unc"><rect x="166" y="34" width="150" height="52" rx="12" fill="#ffd16622" stroke="#ffd166" stroke-width="2"/>${mk(7,196,26)}<text class="lb" x="241" y="56" text-anchor="middle">① Macrophage (ม้าม)</text><text class="lb" x="241" y="72" text-anchor="middle">→ Unconjugated bilirubin</text><text class="lb" x="241" y="102" text-anchor="middle" font-size="9">จับ albumin เข้าสู่กระแสเลือด</text></g>
+ <path d="M320,60 L376,60" stroke="currentColor" stroke-width="2.5" opacity=".5"/><polygon points="382,60 370,54 370,66" fill="currentColor" opacity=".5"/>
+ <g data-pid="liver"><rect x="386" y="30" width="140" height="60" rx="12" fill="#9a524044" stroke="#9a5240" stroke-width="2.5"/>${mk(8,414,22)}<text class="lb" x="456" y="56" text-anchor="middle">② ตับ (Hepatocytes)</text><text class="lb" x="456" y="72" text-anchor="middle">conjugation + หลั่ง</text></g>
+ <path d="M456,94 L456,146" stroke="currentColor" stroke-width="2.5" opacity=".5"/><polygon points="456,152 450,140 462,140" fill="currentColor" opacity=".5"/>
+ <g data-pid="duct"><rect x="386" y="156" width="140" height="50" rx="12" fill="#2e8b5733" stroke="#2e8b57" stroke-width="2.5"/>${mk(9,414,148)}<text class="lb" x="456" y="178" text-anchor="middle">③ ทางเดินน้ำดี</text><text class="lb" x="456" y="194" text-anchor="middle">(bile duct → duodenum)</text></g>
+ <path d="M456,210 L456,250" stroke="currentColor" stroke-width="2.5" opacity=".5"/><polygon points="456,256 450,244 462,244" fill="currentColor" opacity=".5"/>
+ <g data-pid="gut"><rect x="380" y="260" width="152" height="46" rx="12" fill="#8a5a3433" stroke="#8a5a34" stroke-width="2"/>${mk(5,410,252)}<text class="lb" x="456" y="280" text-anchor="middle">ลำไส้ → stercobilin</text><text class="lb" x="456" y="296" text-anchor="middle" font-size="9">อุจจาระสีน้ำตาล (obstructive → ซีด)</text></g>
+ <path d="M386,182 L280,182 L280,230" stroke="currentColor" stroke-width="2.5" opacity=".5" fill="none"/><polygon points="280,236 274,224 286,224" fill="currentColor" opacity=".5"/>
+ <g data-pid="urine"><rect x="196" y="240" width="168" height="46" rx="12" fill="#f5d76e33" stroke="#d9a72a" stroke-width="2"/>${mk(6,222,232)}<text class="lb" x="280" y="260" text-anchor="middle">urobilinogen → ปัสสาวะ</text><text class="lb" x="280" y="276" text-anchor="middle" font-size="9">hepato/obstructive → ปัสสาวะเข้ม</text></g>
+ <text class="lb2" x="70" y="160" font-size="11">จุดเกิดดีซ่าน:</text>
+ <text class="lb" x="70" y="180" font-size="9.5" fill="#ffd166">① Hemolytic: ทำลาย RBC มากกว่าปกติ</text>
+ <text class="lb" x="70" y="196" font-size="9.5" fill="#ff6b7a">② Hepatocellular: ทำลายเซลล์ตับ</text>
+ <text class="lb" x="70" y="212" font-size="9.5" fill="#2e8b57">③ Obstructive: อุดกั้นทางเดินน้ำดี</text>
+ <text class="lb" x="70" y="240" font-size="9.5">bilirubin ในเลือดมาก → สะสมที่ผิวหนัง</text>
+ <text class="lb" x="70" y="256" font-size="9.5">และตาขาว (conjunctiva) → ตัวเหลือง ตาเหลือง</text>
+ <g data-pid="rbc2"><circle cx="42" cy="42" r="8" fill="#c0392b" opacity=".5"/><circle cx="98" cy="40" r="8" fill="#c0392b" opacity=".5"/><circle cx="46" cy="86" r="8" fill="#c0392b" opacity=".5"/>${mk(2,110,84)}</g>
+ <g data-pid="conj"><rect x="166" y="112" width="150" height="30" rx="10" fill="#39d6cf22" stroke="#39d6cf" stroke-width="1.6"/><text class="lb" x="241" y="132" text-anchor="middle" font-size="9.5">Conjugated (direct) bilirubin</text>${mk(3,330,120)}</g>
+</svg></div>
+<div class="dg-side"><ol class="dg-legend">
+ <li data-pid="rbc" data-desc="เม็ดเลือดแดงเก่าถูกทำลายโดย macrophage (ที่ม้ามเป็นหลัก) → heme → bilirubin"><span class="no">1</span><span class="lt">การทำลายเม็ดเลือดแดง</span></li>
+ <li data-pid="rbc2" data-desc="Hemolytic jaundice: ภาวะที่มีการทำลายเม็ดเลือดแดงมากกว่าปกติ → unconjugated bilirubin ล้นเกินความสามารถของตับ"><span class="no">2</span><span class="lt">① Hemolytic jaundice</span></li>
+ <li data-pid="conj" data-desc="bilirubin ที่ผ่าน conjugation ที่ตับแล้ว (direct bilirubin) ละลายน้ำได้ → พบในปัสสาวะได้เมื่อคั่ง"><span class="no">3</span><span class="lt">Conjugated bilirubin</span></li>
+ <li data-pid="unc" data-desc="Unconjugated (indirect) bilirubin จับ albumin เดินทางมาที่ตับ"><span class="no">7</span><span class="lt">Unconjugated bilirubin</span></li>
+ <li data-pid="liver" data-desc="Hepatocellular jaundice: ภาวะที่มีการทำลายเซลล์ตับ → กระทบต่อการสร้างและหลั่ง bilirubin เข้าสู่กระแสเลือด (พบใน hepatitis, cirrhosis, ยา/สารพิษ)"><span class="no">8</span><span class="lt">② ตับ / Hepatocellular jaundice</span></li>
+ <li data-pid="duct" data-desc="Obstructive jaundice: ภาวะที่มีการอุดกั้นทางเดินน้ำดี → bilirubin คั่งในทางเดินน้ำดี (นิ่ว, มะเร็งท่อน้ำดี/หัวตับอ่อน)"><span class="no">9</span><span class="lt">③ ทางเดินน้ำดี / Obstructive</span></li>
+ <li data-pid="gut" data-desc="bilirubin ถูกเปลี่ยนเป็น stercobilin ให้สีน้ำตาลของอุจจาระ — ถ้าอุดกั้นสมบูรณ์อุจจาระจะซีด (clay-colored)"><span class="no">5</span><span class="lt">อุจจาระ (stercobilin)</span></li>
+ <li data-pid="urine" data-desc="urobilinogen ถูกขับทางปัสสาวะ — hepatocellular/obstructive ทำให้ปัสสาวะสีเข้ม (dark urine)"><span class="no">6</span><span class="lt">ปัสสาวะ (urobilinogen)</span></li>
+</ol><div class="dg-info">✨ แตะที่ตัวเลขในภาพ หรือหัวข้อด้านข้าง เพื่อดูคำอธิบาย</div></div></div></div>`,
+/* --- Gallbladder & stones --- */
+`<div class="dg"><div class="dg-h"><span>💎</span><h3>ภาพที่ 4 · Gallbladder (fundus·body·neck) & Gallstone 3 ชนิด</h3><span class="dg-tag">สไลด์: Diseases of the Gallbladder</span></div>
+<div class="dg-b"><div class="dg-svg"><svg viewBox="0 0 560 270">
+ <g data-pid="fundus"><path d="M150,24 C104,30 80,66 84,106 C88,146 118,174 150,174 C182,174 212,146 216,106 C220,66 196,30 150,24 Z" fill="#4d9e63" stroke="#20522e" stroke-width="3"/>${mk(1,96,168)}<text class="lb" x="150" y="200" text-anchor="middle">รูปลูกแพร์ ยาว 9 cm จุ ~50 mL</text></g>
+ <g data-pid="body"><ellipse cx="138" cy="118" rx="30" ry="34" fill="#5eae73" opacity=".55"/>${mk(2,80,120)}</g>
+ <g data-pid="neck"><path d="M186,52 C196,40 204,32 214,26" stroke="#20522e" stroke-width="9" fill="none" stroke-linecap="round"/>${mk(3,204,52)}</g>
+ <g data-pid="cystic"><path d="M214,26 C236,16 258,16 274,24 C286,32 290,48 288,64" stroke="#2e8b57" stroke-width="7" fill="none" stroke-linecap="round"/>${mk(4,292,20)}<text class="lb" x="330" y="22">cystic duct → common bile duct</text></g>
+ <g data-pid="mix"><circle cx="128" cy="96" r="11" fill="#b8963f" stroke="#6a5220" stroke-width="1.6"/><circle cx="124" cy="92" r="3" fill="#e8d44f" opacity=".8"/><circle cx="132" cy="100" r="2.4" fill="#7a6a3a"/><circle cx="152" cy="112" r="9" fill="#b8963f" stroke="#6a5220" stroke-width="1.6"/><circle cx="149" cy="109" r="2.6" fill="#e8d44f" opacity=".8"/><circle cx="138" cy="130" r="8" fill="#b8963f" stroke="#6a5220" stroke-width="1.6"/>${mk(7,110,80)}</g>
+ <g data-pid="chol"><circle cx="420" cy="80" r="34" fill="#e8d44f" stroke="#a08a20" stroke-width="2.5"/><path d="M400,72 q20,-10 40,4 M402,90 q18,8 36,-4" stroke="#c9b030" stroke-width="2" fill="none"/>${mk(5,452,54)}<text class="lb" x="420" y="132" text-anchor="middle">Cholesterol stone</text><text class="lb" x="420" y="146" text-anchor="middle" font-size="9">มักก้อนเดียว ใหญ่เกินเข้า cystic/CBD</text></g>
+ <g data-pid="pig"><circle cx="510" cy="88" r="9" fill="#3a2a1c"/><circle cx="528" cy="76" r="7" fill="#3a2a1c"/><circle cx="524" cy="100" r="8" fill="#3a2a1c"/><circle cx="504" cy="70" r="6" fill="#3a2a1c"/>${mk(6,492,58)}<text class="lb" x="516" y="132" text-anchor="middle">Pigment stones</text><text class="lb" x="516" y="146" text-anchor="middle" font-size="9">hemolytic anemia + infection</text></g>
+ <text class="lb" x="420" y="186" font-size="10">Mixed stones = 75–80% (cholesterol + calcium salts)</text>
+ <text class="lb" x="240" y="230" font-size="10">Cholecystitis: ถุงน้ำดีโต ผนังหนา เยื่อบุบวมแดงเป็นแผล (acute)</text>
+ <text class="lb" x="240" y="248" font-size="10">chronic: ผนังหนาจาก extensive fibrosis + มักมีนิ่วแทรก</text>
+</svg></div>
+<div class="dg-side"><ol class="dg-legend">
+ <li data-pid="fundus" data-desc="ส่วนปลายสุดของถุงน้ำดี — คลำได้/มองเห็นบน imaging เมื่อโตจาก acute cholecystitis"><span class="no">1</span><span class="lt">Fundus</span></li>
+ <li data-pid="body" data-desc="ส่วนของถุงน้ำดีระหว่าง fundus กับ neck — เป็นแหล่งเก็บน้ำดี (ความจุ ~50 mL) และเกิดนิ่ว"><span class="no">2</span><span class="lt">Body</span></li>
+ <li data-pid="neck" data-desc="ส่วนที่เรียวลง (tapers) ต่อเข้ากับ cystic duct"><span class="no">3</span><span class="lt">Neck</span></li>
+ <li data-pid="cystic" data-desc="ท่อจากคอถุงน้ำดีไปรวมเป็น common bile duct — cholesterol stones มัก too large ที่จะเข้าท่อนี้"><span class="no">4</span><span class="lt">Cystic duct</span></li>
+ <li data-pid="chol" data-desc="Often solitary และ too large to enter the cystic duct or the common bile duct · สัมพันธ์ obesity, multiple pregnancies, เพศหญิง"><span class="no">5</span><span class="lt">Cholesterol stones</span></li>
+ <li data-pid="pig" data-desc="Precipitation ของ excess insoluble unconjugated bilirubin · association มักรวมถึง hemolytic anemia และ bacterial infection"><span class="no">6</span><span class="lt">Pigment stones</span></li>
+ <li data-pid="mix" data-desc="Account for most stones (75% ถึง 80%) — ส่วนใหญ่เป็น mixture ของ cholesterol และ calcium salts"><span class="no">7</span><span class="lt">Mixed stones</span></li>
+</ol><div class="dg-info">✨ แตะที่ตัวเลขในภาพ หรือหัวข้อด้านข้าง เพื่อดูคำอธิบาย</div></div></div></div>`
+];
+
+/* ================= RENDER FILES ================= */
+function getState(id){var raw=store("psl_"+id);if(raw){try{return JSON.parse(raw);}catch(e){}}return{star:false,read:false};}
+function setState(id,patch){var s=getState(id);for(var k in patch)s[k]=patch[k];store("psl_"+id,JSON.stringify(s));}
+function cardHTML(d,sys){
+  var st=getState(d.id);
+  var pts=d.pts?"<ul>"+d.pts.map(function(p){return "<li>"+p+"</li>";}).join("")+"</ul>":"";
+  var hi=d.hi?"<div class='hi'>"+d.hi.map(function(h){return "<span>"+h+"</span>";}).join("")+"</div>":"";
+  return "<article class='card"+(st.read?" read":"")+"' id='card-"+d.id+"' data-id='"+d.id+"' data-sys='"+sys+"'>"+
+    "<div class='card-tools'>"+
+      "<button class='tool' data-act='star' title='ดาว'>"+(st.star?"★":"☆")+"</button>"+
+      "<button class='tool' data-act='read' title='อ่านแล้ว'>"+(st.read?"✓":"○")+"</button>"+
+    "</div>"+
+    "<button class='card-toggle' data-act='toggle' aria-expanded='false'>"+
+      "<span class='chip chip-"+d.cat+"'>"+d.tag+"</span>"+
+      "<span class='card-tt'><strong>"+d.t+"</strong><em>"+(d.en||"")+"</em></span>"+
+      "<span class='chev'>▾</span>"+
+    "</button>"+
+    "<p class='sum'>"+d.sum+"</p>"+
+    "<div class='card-body'>"+pts+hi+"</div>"+
+  "</article>";
+}
+function renderFile(f){
+  var nav=$("nav-"+f.key);
+  nav.innerHTML="<button class='chipf' data-jump='dg-"+f.key+"'>🖼️ ภาพจำลอง</button>"+
+    f.chapters.map(function(c){return "<button class='chipf' data-jump='"+f.key+"-"+c.id+"'>"+c.icon+" "+c.short+"</button>";}).join("");
+  nav.addEventListener("click",function(e){
+    var b=e.target.closest("[data-jump]");if(!b)return;
+    var el=$(b.getAttribute("data-jump"));
+    if(el)el.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+  $("chapters-"+f.key).innerHTML=f.chapters.map(function(c){
+    return "<section class='chap' id='"+f.key+"-"+c.id+"'>"+
+      "<div class='sec-h'><h2>"+c.icon+" "+c.title+"</h2><span class='sub'>"+c.items.length+" หัวข้อ</span></div>"+
+      "<div class='cards'>"+c.items.map(function(d){return cardHTML(d,f.key);}).join("")+"</div></section>";
+  }).join("");
+  $("dg-"+f.key).innerHTML=DIAG[f.key].join("");
+  var cats=[];
+  f.chapters.forEach(function(c){c.items.forEach(function(d){if(cats.indexOf(d.cat)<0)cats.push(d.cat);});});
+  $("chips-"+f.key).innerHTML=["all"].concat(cats).map(function(c,i){
+    return "<button class='chipf"+(i===0?" on":"")+"' data-cat='"+c+"'>"+CATNAME[c]+"</button>";
+  }).join("");
+  $("chips-"+f.key).addEventListener("click",function(e){
+    var b=e.target.closest(".chipf[data-cat]");if(!b)return;
+    document.querySelectorAll("#chips-"+f.key+" .chipf").forEach(function(x){x.classList.remove("on");});
+    b.classList.add("on");applyFilter(f.key);
+  });
+  $("f-"+f.key).addEventListener("input",function(){applyFilter(f.key);});
+  $("view-"+f.key).addEventListener("click",function(e){
+    var btn=e.target.closest("[data-act]");if(!btn)return;
+    var card=btn.closest(".card");var id=card.getAttribute("data-id");var act=btn.getAttribute("data-act");
+    if(act==="toggle"){var open=card.classList.toggle("open");btn.setAttribute("aria-expanded",open?"true":"false");}
+    else if(act==="star"){var s1=getState(id);setState(id,{star:!s1.star});btn.textContent=!s1.star?"★":"☆";refreshStats();}
+    else if(act==="read"){var s2=getState(id);setState(id,{read:!s2.read});btn.textContent=!s2.read?"✓":"○";card.classList.toggle("read",!s2.read);refreshStats();}
+  });
+  applyFilter(f.key);
+}
+function applyFilter(sys){
+  var q=($("f-"+sys).value||"").trim().toLowerCase();
+  var on=document.querySelector("#chips-"+sys+" .chipf.on");
+  var cat=on?on.getAttribute("data-cat"):"all";
+  var n=0;
+  document.querySelectorAll("#view-"+sys+" .card").forEach(function(el){
+    var hay=el.textContent.toLowerCase();
+    var ok=(cat==="all"||el.querySelector(".chip").className.indexOf("chip-"+cat)>=0)&&(!q||hay.indexOf(q)>=0);
+    el.style.display=ok?"":"none";
+    if(ok)n++;
+  });
+  document.querySelectorAll("#view-"+sys+" .chap").forEach(function(sec){
+    var any=Array.prototype.some.call(sec.querySelectorAll(".card"),function(c){return c.style.display!=="none";});
+    sec.style.display=any?"":"none";
+  });
+  $("count-"+sys).textContent=n+" หัวข้อ";
+}
+FILES.forEach(renderFile);
+function wireDiagrams(){
+  document.querySelectorAll(".dg").forEach(function(dg){
+    var info=dg.querySelector(".dg-info");
+    var groups=dg.querySelectorAll("[data-pid]");
+    function hl(pid,on){groups.forEach(function(g){if(g.getAttribute("data-pid")===pid)g.classList.toggle("hl",on);});}
+    var lis=dg.querySelectorAll(".dg-legend li");
+    lis.forEach(function(li){
+      var pid=li.getAttribute("data-pid");
+      li.addEventListener("mouseenter",function(){hl(pid,true);});
+      li.addEventListener("mouseleave",function(){hl(pid,false);});
+      li.addEventListener("click",function(){
+        lis.forEach(function(x){x.classList.remove("on");});
+        li.classList.add("on");
+        info.innerHTML="<b>"+li.querySelector(".lt").textContent+"</b> — "+li.getAttribute("data-desc");
+        hl(pid,true);
+      });
+    });
+    dg.querySelectorAll("svg g[data-pid]").forEach(function(g){
+      g.addEventListener("click",function(){
+        var pid=g.getAttribute("data-pid");
+        var li=dg.querySelector(".dg-legend li[data-pid='"+pid+"']");
+        if(li)li.click();
+      });
+    });
+  });
+}
+wireDiagrams();
+
+/* ================= TABS ================= */
+function goTab(name){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-tab")===name);});
+  document.querySelectorAll(".view").forEach(function(v){v.classList.toggle("on",v.id==="view-"+name);});
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(name==="lab"){sizeCanvases();}
+}
+$("tabs").addEventListener("click",function(e){var t=e.target.closest(".tab");if(t)goTab(t.getAttribute("data-tab"));});
+document.querySelectorAll("[data-go]").forEach(function(el){el.addEventListener("click",function(){goTab(el.getAttribute("data-go"));});});
+
+/* ================= THEME/FONT ================= */
+var fs=1;
+function setTheme(t){document.documentElement.setAttribute("data-theme",t);store("psl_theme",t);$("btnTheme").textContent=t==="dark"?"🌙":"☀️";}
+setTheme(store("psl_theme")||"dark");
+$("btnTheme").addEventListener("click",function(){setTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");});
+$("btnFontPlus").addEventListener("click",function(){fs=clamp(fs+0.08,0.85,1.5);document.documentElement.style.setProperty("--fs",fs);});
+$("btnFontMinus").addEventListener("click",function(){fs=clamp(fs-0.08,0.85,1.5);document.documentElement.style.setProperty("--fs",fs);});
+
+/* ================= SEARCH ================= */
+var ALL=[];
+FILES.forEach(function(f){f.chapters.forEach(function(c){c.items.forEach(function(d){ALL.push({sys:f.key,d:d,chap:c});});});});
+var FILELABEL={neuro:"📕 ไฟล์ 1 · ระบบประสาท",msk:"📗 ไฟล์ 2 · MSK",liver:"📘 ไฟล์ 3 · ตับ·GB·ตับอ่อน"};
+var qEl=$("q"),sp=$("searchPanel");
+qEl.addEventListener("input",function(){
+  var q=qEl.value.trim().toLowerCase();
+  if(q.length<2){sp.classList.remove("on");sp.innerHTML="";return;}
+  var res=ALL.filter(function(o){
+    var hay=(o.d.t+" "+o.d.en+" "+o.d.sum+" "+(o.d.pts||[]).join(" ")+" "+(o.d.hi||[]).join(" ")).toLowerCase();
+    return hay.indexOf(q)>=0;
+  }).slice(0,12);
+  sp.innerHTML=res.length?res.map(function(o){
+    return "<div class='sres' data-id='"+o.d.id+"' data-sys='"+o.sys+"'><span class='chip chip-"+o.d.cat+"'>"+o.d.tag+"</span><div><b>"+o.d.t+"</b><small>"+FILELABEL[o.sys]+" · "+(o.d.en||"")+"</small></div></div>";
+  }).join(""):"<div class='sres'><small>ไม่พบผลลัพธ์</small></div>";
+  sp.classList.add("on");
+});
+sp.addEventListener("click",function(e){
+  var r=e.target.closest(".sres");if(!r||!r.getAttribute("data-id"))return;
+  var sys=r.getAttribute("data-sys"),id=r.getAttribute("data-id");
+  goTab(sys);sp.classList.remove("on");qEl.value="";
+  var card=$("card-"+id);
+  if(card){card.classList.add("open");card.classList.add("flash");
+    setTimeout(function(){card.classList.remove("flash");},1400);
+    setTimeout(function(){card.scrollIntoView({behavior:"smooth",block:"center"});},150);}
+});
+document.addEventListener("click",function(e){if(!e.target.closest(".searchbox"))sp.classList.remove("on");});
+
+/* ================= STATS ================= */
+function refreshStats(){
+  $("statDisease").textContent=ALL.length;
+  var nd=0;Object.keys(DIAG).forEach(function(k){nd+=DIAG[k].length;});
+  $("statDiag").textContent=nd;
+  $("statQuiz").textContent=QUIZ.length;
+  var read=0,star=0;
+  ALL.forEach(function(o){var s=getState(o.d.id);if(s.read)read++;if(s.star)star++;});
+  $("statRead").textContent=read+" / "+star;
+}
+$("btnReset").addEventListener("click",function(){
+  if(!confirm("ล้างดาว/สถานะอ่านทั้งหมด?"))return;
+  try{Object.keys(localStorage).forEach(function(k){if(k.indexOf("psl_")===0&&k!=="psl_theme")localStorage.removeItem(k);});}catch(e){}
+  FILES.forEach(renderFile);wireDiagrams();refreshStats();
+});
+
+/* ================= LABS ================= */
+var anims=[];
+function sizeCanvases(){
+  ["icpGraph","myCanvas"].forEach(function(id){
+    var c=$(id);if(!c)return;
+    var w=c.parentElement.clientWidth;
+    c.width=Math.max(240,w);
+  });
+  drawIcpGraph();
+}
+window.addEventListener("resize",function(){if($("view-lab").classList.contains("on"))sizeCanvases();});
+
+/* Lab1 jaundice */
+function updJaundice(){
+  var hemo=+$("jHemo").value,hep=+$("jHep").value,duct=+$("jDuct").value;
+  $("jHemoV").textContent=hemo;$("jHepV").textContent=hep;$("jDuctV").textContent=duct;
+  var load=0.6+hemo*0.045;
+  var uptake=hep/100;
+  var capacity=1.0*uptake+0.15;
+  var conj=Math.min(load*0.95,capacity);
+  var unconj=Math.max(0,load-conj);
+  var excreted=conj*(duct/100)*(0.35+0.65*uptake);
+  var retained=Math.max(0,conj-excreted);
+  var total=(unconj+retained)*4.5;
+  var direct=retained*4.5,indirect=unconj*4.5;
+  $("jTotal").textContent=total.toFixed(1);
+  $("jDirect").textContent=direct.toFixed(1);
+  $("jIndirect").textContent=indirect.toFixed(1);
+  var devHep=Math.max(0,90-hep)/90,devDuct=Math.max(0,90-duct)/90,devHemo=Math.max(0,hemo-15)/85;
+  $("jAlt").textContent=Math.round(35+devHep*880);
+  $("jAlp").textContent=Math.round(90+devDuct*720);
+  $("roTotal").className="ro "+(total>1.2?"bad":"good");
+  var yel=clamp((total-1.0)/12,0,1);
+  $("jFaceSkin").setAttribute("fill","rgb("+Math.round(lerp(243,240,yel))+","+Math.round(lerp(201,196,yel))+","+Math.round(lerp(160,60,yel))+")");
+  var sc=yel>0.05?"rgb(255,"+Math.round(lerp(255,214,yel))+","+Math.round(lerp(255,60,yel))+")":"rgb(255,255,255)";
+  $("jScleraL").setAttribute("fill",sc);$("jScleraR").setAttribute("fill",sc);
+  var uc=clamp(retained/1.0,0,1);
+  $("jUrineFill").setAttribute("fill","rgb("+Math.round(lerp(245,120,uc))+","+Math.round(lerp(215,70,uc))+","+Math.round(lerp(110,20,uc))+")");
+  var stn=clamp(excreted/1.0,0,1);
+  $("jStoolFill").setAttribute("fill","rgb("+Math.round(lerp(225,138,stn))+","+Math.round(lerp(215,90,stn))+","+Math.round(lerp(190,52,stn))+")");
+  $("jFlowUcj").setAttribute("width",6+unconj*8);
+  $("jFlowCj").setAttribute("width",6+retained*8);
+  $("jFlowEx").setAttribute("width",6+excreted*8);
+  var v=$("jType"),note=$("jNote");
+  if(total<1.3){v.className="verdict good";v.textContent="ปกติ — ไม่พบดีซ่าน";note.textContent="Bilirubin สะสมที่ผิวหนังและตาขาว (conjunctiva) เมื่อปริมาณในเลือดมากเกิน — ตอนนี้ยังอยู่ในเกณฑ์ปกติ";return;}
+  var mx=Math.max(devHemo,devHep,devDuct);
+  var mixed=[devHemo,devHep,devDuct].filter(function(x){return x>0.7*mx&&x>0.15;}).length>1;
+  if(mixed){v.className="verdict warn";v.textContent="Mixed jaundice";note.textContent="หลายกลไกร่วมกัน — พิจารณาทั้ง hepatocellular + obstructive (เช่น cirrhosis รุนแรง)";}
+  else if(mx===devHemo){v.className="verdict warn";v.textContent="Hemolytic jaundice";note.textContent="ทำลายเม็ดเลือดแดงมากกว่าปกติ → indirect (unconjugated) สูง · ปัสสาวะสีปกติ · อุจจาระเข้ม";}
+  else if(mx===devDuct){v.className="verdict bad";v.textContent="Obstructive jaundice";note.textContent="อุดกั้นทางเดินน้ำดี → bilirubin คั่ง · direct สูง · ปัสสาวะเข้ม · อุจจาระซีด · ALP สูง";}
+  else{v.className="verdict bad";v.textContent="Hepatocellular jaundice";note.textContent="เซลล์ตับถูกทำลาย → กระทบการสร้าง/หลั่ง bilirubin · ทั้ง direct + indirect สูง · ALT/AST สูง";}
+}
+["jHemo","jHep","jDuct"].forEach(function(id){$(id).addEventListener("input",updJaundice);});
+
+/* Lab2 cirrhosis */
+var rndF=seeded(7),FAT=[],FIB=[],NODM=[],NODX=[];
+(function(){
+  for(var i=0;i<46;i++)FAT.push([70+rndF()*280,55+rndF()*125,2+rndF()*3.5]);
+  for(var j=0;j<14;j++)FIB.push([60+rndF()*290,55+rndF()*120,40+rndF()*80]);
+  for(var k=0;k<30;k++)NODM.push([62+rndF()*295,50+rndF()*135,4+rndF()*4]);
+  for(var m=0;m<13;m++)NODX.push([70+rndF()*280,55+rndF()*125,9+rndF()*8]);
+})();
+var STAGE_NAME=["0 — ปกติ","1 — Fatty change","2 — Fibrosis","3 — Cirrhosis (micronodular/mixed)","4 — Cirrhosis (decompensated)"];
+function updCirrhosis(){
+  var st=+$("cStage").value,cause=$("cCause").value;
+  $("cStageV").textContent=STAGE_NAME[st];
+  var cols=[["#9a5240","#6e3527"],["#c99a4e","#8f6a2e"],["#b98d5c","#7d5a34"],["#b39066","#7a5c3c"],["#a98a63","#6d5236"]][st];
+  $("livG1").setAttribute("stop-color",cols[0]);$("livG2").setAttribute("stop-color",cols[1]);
+  var sc=st>=3?(st===3?0.94:0.86):(st===1?1.05:1);
+  $("livGroup").setAttribute("transform","translate("+(210-210*sc)+","+(120-120*sc)+") scale("+sc+")");
+  $("livFat").innerHTML=st>=1?FAT.slice(0,st===1?46:20).map(function(p){
+    return "<circle cx='"+p[0].toFixed(1)+"' cy='"+p[1].toFixed(1)+"' r='"+p[2].toFixed(1)+"' fill='#f0d78c' opacity='"+(st===1?0.75:0.4)+"'/>";
+  }).join(""):"";
+  $("livFib").setAttribute("opacity",st>=2?(st===2?0.55:0.8):0);
+  $("livFib").innerHTML=FIB.map(function(p){
+    return "<path d='M"+p[0].toFixed(0)+","+p[1].toFixed(0)+" q "+(p[2]*0.4).toFixed(0)+",10 "+p[2].toFixed(0)+",2' stroke='#e6d6b4' stroke-width='1.6' fill='none'/>";
+  }).join("");
+  var nod=st>=3?(cause==="viral"?NODX:NODM):[];
+  $("livNod").innerHTML=nod.map(function(p){
+    return "<circle cx='"+p[0].toFixed(1)+"' cy='"+p[1].toFixed(1)+"' r='"+p[2].toFixed(1)+"' fill='"+cols[0]+"' stroke='#4a2a1c' stroke-width='1.4' opacity='0.95'/>";
+  }).join("");
+  var sizes=["ปกติ (1400–1600 g)","โต (hepatomegaly)","เริ่มเล็กลง","เล็กลง","เล็กลงมาก (shrunken)"];
+  var surfs=["เรียบ","เรียบมัน สีเหลืองน้ำตาล (fatty)","เริ่มขรุขระ","ขรุขระ เห็นเป็น nodule เล็ก สีเหลือง","ขรุขระมาก nodule + fibrosis แทนที่เนื้อตับ"];
+  $("cSize").textContent=sizes[st];$("cSurface").textContent=surfs[st];
+  var portal=[7,9,12,17,24][st];
+  $("cPortal").textContent=portal;
+  $("roPortal").className="ro "+(portal>10?"bad":"good");
+  var risk=[2,3,6,18,35][st]+(cause==="viral"?8:0);
+  $("cRisk").textContent=risk+"%";
+  $("roRisk").className="ro "+(risk>10?"bad":risk>5?"warn":"good");
+  document.querySelectorAll("#compChips .cchip").forEach(function(c){c.classList.toggle("on",st>=+c.getAttribute("data-lv"));});
+  var notes=[
+    "ตับปกติ: ผิวเรียบ · 2 lobes (ขวาใหญ่กว่าซ้าย ~6 เท่า) · lobule 0.5–2 mm มี central vein + 4–5 portal triads",
+    "Fatty change: คั่งของไขมันในเซลล์ตับ (alcoholic liver disease) — ตับขนาดใหญ่ขึ้น สีเหลืองน้ำตาลจนถึงเหลือง",
+    "Fibrosis: การซ่อมแซมหลังเซลล์ตับถูกทำลาย (chronic hepatitis > 6 เดือน → cirrhosis)",
+    "Cirrhosis: เนื้อตับถูกทำลายแทนที่ด้วย fibrosis · ตับเล็กลง ผิวขรุขระเห็นเป็น nodule · alcoholic = prototype ของทุกชนิด",
+    "Decompensated: hepatocellular damage + liver failure · portal venous pressure สูง → varices/hemorrhoids/caput medusae/splenomegaly"
+  ];
+  $("cNote").textContent=notes[st];
+}
+$("cStage").addEventListener("input",updCirrhosis);
+$("cCause").addEventListener("change",updCirrhosis);
+
+/* Lab3 ICP */
+function icpOf(vol){return Math.min(150,10*Math.exp(vol/38));}
+function drawIcpGraph(){
+  var c=$("icpGraph");if(!c||!c.width)return;
+  var ctx=c.getContext("2d");if(!ctx)return;
+  var W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  ctx.strokeStyle=dark?"#ffffff14":"#00000012";ctx.lineWidth=1;
+  for(var gx=0;gx<=4;gx++){ctx.beginPath();ctx.moveTo(gx*W/4,0);ctx.lineTo(gx*W/4,H);ctx.stroke();}
+  for(var gy=0;gy<=3;gy++){ctx.beginPath();ctx.moveTo(0,gy*H/3);ctx.lineTo(W,gy*H/3);ctx.stroke();}
+  ctx.fillStyle="#ff6b7a22";ctx.fillRect(0,0,W,H*(1-40/150));
+  ctx.fillStyle="#ffd16622";ctx.fillRect(0,H*(1-40/150),W,H*(20/150));
+  ctx.strokeStyle=dark?"#39d6cf":"#0aa79f";ctx.lineWidth=2.4;ctx.beginPath();
+  for(var v=0;v<=140;v+=2){
+    var x=v/140*W,y=H-(icpOf(v)/150)*H;
+    if(v===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  var vol=+$("iVol").value;
+  var px=vol/140*W,py=H-(icpOf(vol)/150)*H;
+  ctx.fillStyle="#ffb454";ctx.beginPath();ctx.arc(px,py,5,0,7);ctx.fill();
+  ctx.fillStyle=dark?"#9db0d4":"#5a6c8c";ctx.font="10px sans-serif";
+  ctx.fillText("ICP (mmHg)",6,12);ctx.fillText("volume (mL) →",W-86,H-6);
+}
+function updIcp(){
+  var vol=+$("iVol").value,map=+$("iMap").value;
+  $("iVolV").textContent=vol;$("iMapV").textContent=map;
+  var icp=icpOf(vol),cpp=map-icp;
+  $("iIcp").textContent=Math.round(icp);
+  $("iCpp").textContent=Math.round(cpp);
+  $("roIcp").className="ro "+(icp>20?"bad":icp>15?"warn":"good");
+  $("roCpp").className="ro "+(cpp<50?"bad":cpp<60?"warn":"good");
+  $("iCbf").textContent=cpp<50?"ลดลงมาก":cpp<60?"ลดลง":"ปกติ";
+  $("roCbf").className="ro "+(cpp<50?"bad":cpp<60?"warn":"good");
+  var v=$("iRisk");
+  if(icp<=15){v.className="verdict good";v.textContent="ICP ปกติ (5–15 mmHg) — ยังชดเชยได้";}
+  else if(icp<=20){v.className="verdict warn";v.textContent="ICP สูงเล็กน้อย — เริ่มสูญเสีย compliance";}
+  else if(icp<=40){v.className="verdict bad";v.textContent="ICP สูง — perfusion ลดลง เสี่ยง herniation!";}
+  else{v.className="verdict bad";v.textContent="ICP สูงวิกฤต — Cushing triad / brain herniation / เสียชีวิตได้";}
+  $("iNote").textContent=cpp<50?"High ICP reduces blood flow to the brain → decreased perfusion → possible serious injury or death!":"CPP = MAP − ICP · เป้าหมายปกติ 60–70 mmHg";
+  var r=Math.sqrt(vol)*2.4;
+  $("icpMass").setAttribute("r",r.toFixed(1));
+  var shift=clamp(vol/140,0,1)*26;
+  $("icpMid").setAttribute("x1",(200+shift).toFixed(1));$("icpMid").setAttribute("x2",(200+shift).toFixed(1));
+  var comp=clamp(1-vol/170,0.25,1);
+  $("icpVentL").setAttribute("transform","translate("+(168-168*comp).toFixed(1)+",0) scale("+comp.toFixed(2)+",1)");
+  drawIcpGraph();
+}
+$("iVol").addEventListener("input",updIcp);
+$("iMap").addEventListener("input",updIcp);
+
+/* Lab4 BEFAST */
+var bfOn={},bfStart=null,bfInt=null;
+function bfTick(){
+  if(bfStart===null)return;
+  var s=Math.floor((Date.now()-bfStart)/1000);
+  var mm=String(Math.floor(s/60)).padStart(2,"0"),ss=String(s%60).padStart(2,"0");
+  $("bfTimer").textContent=mm+":"+ss;
+  var hrs=s/3600;
+  var win=hrs<=4.5?(4.5-hrs).toFixed(1)+" ชม. (thrombolysis)":hrs<=24?(24-hrs).toFixed(1)+" ชม. (thrombectomy)":"พ้น window";
+  $("bfWindow").textContent=win;
+  $("roWindow").className="ro "+(hrs<=4.5?"good":hrs<=24?"warn":"bad");
+  var cx=20+clamp(hrs/24,0,1)*320;
+  $("bfCursor").setAttribute("x1",cx);$("bfCursor").setAttribute("x2",cx);
+}
+function updBF(){
+  var n=Object.keys(bfOn).filter(function(k){return bfOn[k];}).length;
+  $("bfCount").textContent=n;
+  var v=$("bfAlert");
+  if(n===0){v.className="verdict good";v.textContent="ยังไม่พบอาการสงสัย stroke";}
+  else{
+    v.className="verdict bad";
+    v.textContent="⚠ พบ "+n+" อาการ → สงสัย stroke — T: เวลา คือชีวิต รีบโทร 1669 ทันที!";
+    if(bfStart===null){bfStart=Date.now();if(!bfInt)bfInt=setInterval(bfTick,500);}
+  }
+  if(n===0&&bfStart!==null){bfStart=null;$("bfTimer").textContent="00:00";$("bfWindow").textContent="–";$("bfCursor").setAttribute("x1",20);$("bfCursor").setAttribute("x2",20);}
+  bfTick();
+}
+$("bfGrid").addEventListener("click",function(e){
+  var b=e.target.closest(".bfbtn");if(!b)return;
+  var k=b.getAttribute("data-bf");bfOn[k]=!bfOn[k];b.classList.toggle("on",bfOn[k]);updBF();
+});
+$("bfReset").addEventListener("click",function(){
+  bfOn={};bfStart=null;
+  document.querySelectorAll(".bfbtn").forEach(function(b){b.classList.remove("on");});
+  updBF();
+});
+$("bfType").addEventListener("change",function(){
+  $("bfNote").textContent=$("bfType").value==="ischemic"
+    ?"Ischemic: Atherosclerosis (ไขมันเกาะ) / Embolism — ก้อนเลือดไหลมาตามกระแสเลือดแล้วอุดหลอดเลือดสมอง · รักษาด้วย thrombolysis ใน ≤4.5 ชม."
+    :"Hemorrhagic: หลอดเลือดแตก → เลือดออกในสมอง จากความดันสูง / หลอดเลือดเปราะ · ห้ามให้ thrombolysis";
+});
+
+/* Lab5 myelin */
+var myPos=0,myLast=0;
+function updMyelin(){
+  var it=+$("mInt").value;
+  $("mIntV").textContent=it+"%";
+  var vel=Math.round(it*0.7);
+  $("mVel").textContent=vel;
+  $("roVel").className="ro "+(vel<20?"bad":vel<45?"warn":"good");
+  $("mSeg").textContent=Math.round((1-it/100)*8)+"/8";
+  $("mSig").textContent=it>70?"แรง":it>35?"อ่อน":"เกือบไม่มี";
+  $("roSig").className="ro "+(it>70?"good":it>35?"warn":"bad");
+  var v=$("mNote");
+  if(it>85){v.className="verdict good";v.textContent="Saltatory conduction ปกติ — สัญญาณวิ่งกระโดดตาม Node of Ranvier";}
+  else if(it>40){v.className="verdict warn";v.textContent="Demyelination บางส่วน — การนำกระแสประสาทช้าลง";}
+  else{v.className="verdict bad";v.textContent="Demyelination รุนแรง (MS plaque) — transient/progressive loss of neurologic function";}
+}
+$("mInt").addEventListener("input",updMyelin);
+anims.push({el:$("myCanvas"),fn:function(t){
+  var c=$("myCanvas");if(!c||!c.width)return;
+  var ctx=c.getContext("2d");if(!ctx)return;
+  var W=c.width,H=c.height;
+  var it=+$("mInt").value;
+  var dt=(t-myLast)/1000;myLast=t;if(dt>0.1)dt=0.1;
+  myPos+=dt*(60+it*2.4);
+  if(myPos>W+40)myPos=-30;
+  ctx.clearRect(0,0,W,H);
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  var y=H*0.45;
+  ctx.strokeStyle=dark?"#9db0d4":"#5a6c8c";ctx.lineWidth=5;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(30,y);ctx.lineTo(W-30,y);ctx.stroke();
+  var segs=8,sw=(W-80)/segs;
+  var dmg=Math.round((1-it/100)*segs);
+  for(var i=0;i<segs;i++){
+    var x=40+i*sw;
+    var broken=i<dmg;
+    ctx.fillStyle=broken?"#ff6b7a55":"#39d6cf66";
+    ctx.strokeStyle=broken?"#ff6b7a":"#39d6cf";
+    ctx.lineWidth=1.6;
+    var hh=broken?8:16;
+    ctx.beginPath();
+    if(ctx.roundRect){ctx.roundRect(x+4,y-hh,sw-14,hh*2,8);}else{ctx.rect(x+4,y-hh,sw-14,hh*2);}
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle=dark?"#ffb454":"#d97b00";
+    ctx.beginPath();ctx.arc(x+sw-5,y,3,0,7);ctx.fill();
+  }
+  var amp=0.25+0.75*(it/100);
+  var px=myPos;
+  var segIdx=clamp(Math.floor((px-40)/sw),0,segs-1);
+  if(segIdx<dmg)amp*=0.45;
+  ctx.fillStyle="#ffd166";
+  ctx.beginPath();ctx.arc(px,y,6*amp+2,0,7);ctx.fill();
+  ctx.strokeStyle="#ffd16688";ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(px,y,12*amp+3,0,7);ctx.stroke();
+  ctx.fillStyle=dark?"#9db0d4":"#5a6c8c";ctx.font="10px sans-serif";
+  ctx.fillText("axon",34,y-26);ctx.fillText("myelin sheath (Schwann cells)",W/2-70,y+36);ctx.fillText("Node of Ranvier",W-130,y-26);
+  var fill=$("mMuscleFill");
+  fill.style.width=(px>W-40?Math.round(amp*100):Math.max(0,Math.round(amp*100*(px/(W-40)))))+"%";
+}});
+
+/* Lab6 bone density */
+function updBone(){
+  var t=+$("bT").value;
+  $("bTV").textContent=t.toFixed(1);
+  var cls,v=$("bNote"),risk;
+  if(t>=-1){cls="ปกติ";v.className="verdict good";v.textContent="มวลกระดูกปกติ (T-score ≥ −1)";risk=Math.round(4+(1-((t+1)/3.5))*4);}
+  else if(t>-2.5){cls="Osteopenia";v.className="verdict warn";v.textContent="Osteopenia: ค่า T-score อยู่ระหว่าง −1 ถึง −2.5 SD";risk=Math.round(10+((-1-t)/1.5)*15);}
+  else{cls="Osteoporosis";v.className="verdict bad";v.textContent="Osteoporosis: T-score ≤ −2.5 SD → เพิ่มความเสี่ยงต่อการเกิดกระดูกหัก (fracture)";risk=Math.round(28+((-2.5-t)/1.5)*30);}
+  var secN=document.querySelectorAll("#bSec .cchip.on").length;
+  risk=clamp(risk+secN*4,2,80);
+  $("bClass").textContent=cls;$("bRisk").textContent=risk+"%";
+  $("roBClass").className="ro "+(cls==="ปกติ"?"good":cls==="Osteopenia"?"warn":"bad");
+  $("roBRisk").className="ro "+(risk>30?"bad":risk>12?"warn":"good");
+  var dens=clamp((t+4)/6.5,0.08,1);
+  var rnd=seeded(21),lines="";
+  var n=Math.round(dens*26);
+  for(var i=0;i<n;i++){
+    var x1=80+rnd()*140,y1=40+rnd()*120,x2=x1+(rnd()*40-20),y2=y1+(rnd()*40-20);
+    lines+="<line x1='"+x1.toFixed(0)+"' y1='"+y1.toFixed(0)+"' x2='"+x2.toFixed(0)+"' y2='"+y2.toFixed(0)+"'/>";
+  }
+  $("vertTrab").innerHTML=lines;
+  $("vertTrab").setAttribute("opacity",(0.35+0.6*dens).toFixed(2));
+}
+$("bT").addEventListener("input",updBone);
+$("bSec").addEventListener("click",function(e){
+  var c=e.target.closest(".cchip");if(!c)return;c.classList.toggle("on");updBone();
+});
+
+/* Lab7 fracture */
+var frPlaying=false;
+function piece(d,a,b,c,e){
+  if(d<a||d>e)return 0;
+  if(d<b)return (d-a)/Math.max(0.001,(b-a));
+  if(d<=c)return 1;
+  return 1-(d-c)/Math.max(0.001,(e-c));
+}
+function updFracture(){
+  var d=+$("frDay").value;
+  $("frDayV").textContent=d;
+  var hema=piece(d,0,1,4,12);
+  var infl=piece(d,1,3,8,16);
+  var soft=piece(d,4,10,24,45);
+  var bony=piece(d,14,28,90,200);
+  var rem=d>56?clamp((d-56)/300,0,1):0;
+  $("frHematoma").setAttribute("opacity",(hema*0.85).toFixed(2));
+  $("frInflam").setAttribute("opacity",(infl*0.9).toFixed(2));
+  if(!$("frInflam").childElementCount){
+    var rnd=seeded(5),s="";
+    for(var i=0;i<16;i++)s+="<circle cx='"+(176+rnd()*48).toFixed(0)+"' cy='"+(70+rnd()*40).toFixed(0)+"' r='"+(2+rnd()*2).toFixed(1)+"' fill='#e8a33d'/>";
+    $("frInflam").innerHTML=s;
+  }
+  $("frSoft").setAttribute("opacity",(soft*0.8*(1-bony*0.9)).toFixed(2));
+  $("frBony").setAttribute("opacity",(bony*0.95).toFixed(2));
+  $("frBony").setAttribute("rx",(46*(1-rem*0.55)).toFixed(1));$("frBony").setAttribute("ry",(30*(1-rem*0.6)).toFixed(1));
+  $("frSoft").setAttribute("rx",(46*soft).toFixed(1));$("frSoft").setAttribute("ry",(30*soft).toFixed(1));
+  var st,vv=$("frStage");
+  if(d<3){st="1) Hematoma formation — หลอดเลือดฉีกขาด เลือดออกเป็นก้อนเลือด (โครงร่างให้เซลล์ซ่อมแซม)";vv.className="verdict bad";}
+  else if(d<7){st="2) Inflammatory phase — เซลล์อักเสบ+เกล็ดเลือดหลั่ง growth factors กระตุ้น osteoblasts/osteoclasts";vv.className="verdict warn";}
+  else if(d<21){st="3) Soft callus (≈ 1 สัปดาห์) — เนื้อเยื่อเกี่ยวพัน+กระดูกอ่อนเชื่อมปลายกระดูกชั่วคราว";vv.className="verdict warn";}
+  else if(d<60){st="4) Bony callus (≈ 2 สัปดาห์+) — woven bone สะสมแคลเซียม กระดูกแข็งแรงขึ้น";vv.className="verdict good";}
+  else{st="5) Remodeling ("+(rem*100).toFixed(0)+"%) — woven bone → lamellar bone กลับมาแข็งแรง/รูปร่างเดิม";vv.className="verdict good";}
+  vv.textContent=st;
+}
+$("frDay").addEventListener("input",function(){frPlaying=false;$("frPlay").textContent="▶ เล่น";updFracture();});
+$("frReset").addEventListener("click",function(){frPlaying=false;$("frPlay").textContent="▶ เล่น";$("frDay").value=0;updFracture();});
+$("frPlay").addEventListener("click",function(){frPlaying=!frPlaying;$("frPlay").textContent=frPlaying?"⏸ หยุด":"▶ เล่น";});
+anims.push({el:$("view-lab"),fn:function(){
+  if(!frPlaying)return;
+  var d=+$("frDay").value+0.9;
+  if(d>365){d=365;frPlaying=false;$("frPlay").textContent="▶ เล่น";}
+  $("frDay").value=d;updFracture();
+}});
+
+/* Lab8 gallstone */
+function updGall(){
+  var ch=+$("gChol").value,bi=+$("gBili").value,stv=+$("gStasis").value;
+  $("gCholV").textContent=ch;$("gBiliV").textContent=bi;$("gStasisV").textContent=stv;
+  var score=ch*0.45+bi*0.3+stv*0.25;
+  var v=$("gType");
+  if(score<28){v.className="verdict good";v.textContent="น้ำดีปกติ — ยังไม่เกิดนิ่ว";$("gbStones").innerHTML="";
+    $("gNote").textContent="Mixed stones คิดเป็น most stones (75% ถึง 80%) · Cholesterol stones มัก solitary และ too large to enter the cystic duct or CBD";return;}
+  var type,col;
+  if(ch>bi*1.4&&ch>55){type="Cholesterol stones";col="#e8d44f";}
+  else if(bi>ch*1.2&&bi>50){type="Pigment stones";col="#3a2a1c";}
+  else{type="Mixed stones (75–80%)";col="#b8963f";}
+  v.className="verdict warn";v.textContent="เกิดนิ่ว: "+type;
+  var n=clamp(Math.round(score/12),1,9);
+  var rnd=seeded(n*3+ch);
+  var s="";
+  for(var i=0;i<n;i++){
+    var r=4+rnd()*8;
+    var cx=108+rnd()*84,cy=70+rnd()*90;
+    s+="<circle cx='"+cx.toFixed(0)+"' cy='"+cy.toFixed(0)+"' r='"+r.toFixed(1)+"' fill='"+col+"' stroke='#00000055' stroke-width='1.2'/>";
+  }
+  $("gbStones").innerHTML=s;
+  $("gNote").textContent=type.indexOf("Pigment")===0
+    ?"Pigment stones: precipitation ของ excess insoluble unconjugated bilirubin · association: hemolytic anemia + bacterial infection"
+    :type.indexOf("Cholesterol")===0
+      ?"Cholesterol stones: often solitary และ too large ที่จะเข้า cystic duct/CBD · สัมพันธ์ obesity + multiple pregnancies + เพศหญิง"
+      :"Mixed stones: mixture ของ cholesterol และ calcium salts — พบบ่อยที่สุด 75–80%";
+}
+["gChol","gBili","gStasis"].forEach(function(id){$(id).addEventListener("input",updGall);});
+$("gSc1").addEventListener("click",function(){$("gChol").value=85;$("gBili").value=25;$("gStasis").value=70;updGall();});
+$("gSc2").addEventListener("click",function(){$("gChol").value=25;$("gBili").value=88;$("gStasis").value=35;updGall();});
+
+/* ================= QUIZ ================= */
+var QUIZ=[
+ {q:"ดีซ่านชนิดใดเกิดจาก 'ภาวะที่มีการทำลายเม็ดเลือดแดงมากกว่าปกติ'?",o:["Hepatocellular jaundice","Hemolytic jaundice","Obstructive jaundice","Neonatal jaundice"],a:1,e:"Hemolytic jaundice เกิดจากภาวะที่มีการทำลายเม็ดเลือดแดงมากกว่าปกติ → indirect (unconjugated) bilirubin สูง"},
+ {q:"Hepatitis A (HAV) ติดต่อทางใด?",o:["Parenteral","Sexual","Fecal–oral","Vertical (mother to neonate)"],a:2,e:"HAV spread by fecal–oral transmission (กินอาหาร/น้ำปนเปื้อน) · parenteral infection does not occur · incubation 15–45 วัน"},
+ {q:"Complete virion ของ HBV ที่มี core (DNA genome, DNA polymerase, HBcAg, HBeAg) + outer coat (HBsAg) เรียกว่าอะไร?",o:["Dane particle","Berry body","Lewy body","Ground-glass particle"],a:0,e:"The complete virion is known as the Dane particle · carrier ตรวจพบ HBsAg ในกระแสเลือด"},
+ {q:"Cholangiocarcinoma (CCA) สัมพันธ์กับพยาธิชนิดใด?",o:["Echinococcus","Opisthorchis viverrini / Clonorchis sinensis","Plasmodium falciparum","Entamoeba histolytica"],a:1,e:"CCA สัมพันธ์ liver fluke: Opisthorchis viverrini (พบมากในภาคอีสาน) / Clonorchis sinensis (Far East)"},
+ {q:"นิ่วถุงน้ำดีชนิดใดพบบ่อยที่สุด (75–80%)?",o:["Cholesterol stones","Pigment stones","Mixed stones","Calcium stones"],a:2,e:"Mixed stones account for most stones (75–80%) — ส่วนใหญ่เป็น mixture ของ cholesterol และ calcium salts"},
+ {q:"สาเหตุสำคัญที่สุดของ acute pancreatitis คือข้อใด?",o:["Alcohol และโรคทางเดินน้ำดี (นิ่วถุงน้ำดี)","Hypercalcemia เท่านั้น","ไวรัส HIV","Corticosteroids"],a:0,e:"สาเหตุที่สำคัญคือ Alcohol และโรคทางเดินน้ำดี (ที่พบบ่อยคือ นิ่วถุงน้ำดี) · นอกนั้น: อุบัติเหตุ ยา ไวรัสเช่น Mumps"},
+ {q:"Pancreatic adenocarcinoma พบที่ตำแหน่งใดบ่อยที่สุด (2/3)?",o:["Tail","Body","Head of pancreas","Uncinate process"],a:2,e:"2/3 พบบริเวณ head of pancreas → ลุกลามอุด common bile duct → obstructive jaundice + น้ำหนักลด · มักไม่มีอาการของ cholangitis"},
+ {q:"Esophageal varices, caput medusae, splenomegaly เป็นผลจากภาวะใดใน alcoholic cirrhosis?",o:["Hepatic encephalopathy","Intrahepatic scarring + increased portal venous pressure","Fat necrosis","Biliary obstruction"],a:1,e:"Consequences of intrahepatic scarring with increased portal venous pressure: esophageal varices (→ upper GI hemorrhage), rectal hemorrhoids, caput medusae, splenomegaly"},
+ {q:"Benign tumor ของตับที่พบบ่อยที่สุด?",o:["Adenoma","Hemangioma","Focal nodular hyperplasia","Lipoma"],a:1,e:"Hemangioma is the most common benign tumor of the liver · Adenoma สัมพันธ์ oral contraceptives และถ้าอยู่ subcapsular อาจแตก → severe intraperitoneal hemorrhage"},
+ {q:"สมองบวมชนิด vasogenic edema เกิดจากกลไกใด?",o:["ATP depletion ในเซลล์ประสาท","Blood–brain barrier เสียหาย","Hyponatremia","การดูดซึม CSF ลดลง"],a:1,e:"Vasogenic: integrity ของ blood–brain barrier ถูก disrupt → fluid shift จาก vascular compartment สู่ extracellular spaces (จาก inflammation & tumor)"},
+ {q:"ใน BEFAST ตัวอักษร 'E' หมายถึงอะไร?",o:["Edema","Eyes — การมองเห็น ตามัว/ภาพซ้อน","Epilepsy","Emesis"],a:1,e:"E – Eyes การมองเห็น ตามัว มองเห็นภาพซ้อน · เจออาการเหล่านี้รีบโทร 1669 ทันที"},
+ {q:"Spinal shock สิ้นสุดเมื่อใด?",o:["เมื่อความดันโลหิตกลับปกติ","เมื่อมี reflex กลับมา: bulbocavernosus / anal wink reflex","เมื่อครบ 7 วัน","เมื่อผ่าตัดเสร็จ"],a:1,e:"Spinal shock มักเกิดภายใน 48 ชม. และสิ้นสุดเมื่อมี reflex กลับมา (bulbocavernosus reflex, anal wink reflex)"},
+ {q:"Bell's palsy เป็นการอักเสบของเส้นประสาทสมองคู่ที่เท่าใด?",o:["คู่ที่ 3 (Oculomotor)","คู่ที่ 5 (Trigeminal)","คู่ที่ 7 (Facial)","คู่ที่ 10 (Vagus)"],a:2,e:"โรคใบหน้าเบี้ยวครึ่งซีก = อักเสบของเส้นประสาทสมองคู่ที่ 7 (facial nerve) — ความผิดปกติอยู่ที่ตัวเส้นประสาท ไม่ได้อยู่ในเนื้อสมอง"},
+ {q:"Myasthenia gravis เกิดจากแอนติบอดีผิดปกติต่อสิ่งใด?",o:["Dystrophin","Acetylcholine receptor ที่รอยต่อประสาท–กล้ามเนื้อ","Myelin sheath","FGFR3"],a:1,e:"ร่างกายสร้างแอนติบอดีผิดปกติต่อ acetylcholine receptor ที่ NMJ → จำนวนตัวรับลดลง → ส่งสัญญาณผิดปกติ → กล้ามเนื้ออ่อนแรงเป็น ๆ หาย ๆ"},
+ {q:"Parkinson's disease เกิดจากการลดลงของสารสื่อประสาทใด?",o:["Serotonin","Dopamine","Acetylcholine","GABA"],a:1,e:"ความเสื่อมของเซลล์ประสาทบริเวณก้านสมอง (substantia nigra depigmented) → dopamine ลดลง · Lewy body ย้อมติดสีชมพู · α-synuclein/tau accumulation"},
+ {q:"พยาธิสภาพเด่นของ Alzheimer's disease คืออะไร?",o:["Lewy body","Plaques (central core of amyloid) + neurofibrillary tangles (tau)","Demyelination plaque","Fat necrosis"],a:1,e:"Plaques contain a central core of amyloid และ surrounding dystrophic neurites · Neurons containing tangles (tau) · Aβ immunohistochemistry"},
+ {q:"Achondroplasia เกิดจากการกลายพันธุ์ของยีนใด และถ่ายทอดแบบใด?",o:["COL1A1 · Autosomal recessive","FGFR3 · Autosomal dominant","Dystrophin · X-linked recessive","FGF2 · X-linked dominant"],a:1,e:"FGFR3 mutation ถ่ายทอดแบบ Autosomal dominant · FGF/FGFR3 มียับยั้งการสร้างกระดูกอ่อน · Rhizomelic shortening (humerus, femur)"},
+ {q:"Osteogenesis imperfecta มีความผิดปกติของการสร้างสารใด?",o:["Type I collagen","Type II collagen","Dystrophin","Elastin"],a:0,e:"ความผิดปกติในการสร้าง Type I collagen (COL1A1/COL1A2 mutation) → too little bone, bone fragility · blue sclera, hearing loss, dentinogenesis imperfecta"},
+ {q:"ค่า T-score ใดใช้วินิจฉัย Osteoporosis?",o:["≥ −1","−1 ถึง −2.5","≤ −2.5","≤ −1"],a:2,e:"Osteoporosis: T-score ≤ −2.5 SD → เพิ่มความเสี่ยง fracture · Osteopenia: −1 ถึง −2.5 SD"},
+ {q:"ระยะแรกของ Paget disease of bone คือระยะใด?",o:["Osteosclerotic (burned-out)","Mixed osteoclastic–osteoblastic","Osteolytic","Remodeling"],a:2,e:"1 Osteolytic (osteoclasts เพิ่มมาก resorption รุนแรง) → 2 Mixed (disorganized woven bone) → 3 Osteosclerotic/burned-out (หนาแน่นแต่เปราะ)"},
+ {q:"Gout เกิดจากการสะสมของผลึกใดในข้อ?",o:["Calcium pyrophosphate","Monosodium urate crystals","Calcium oxalate","Cholesterol crystals"],a:1,e:"ผลึกกรดยูริก (monosodium urate) สะสมในข้อ+เนื้อเยื่อรอบข้อ · Hyperuricemia > 6.8 mg/dL · Podagra (ข้อโคนนิ้วหัวแม่เท้า)"},
+ {q:"Duchenne muscular dystrophy ถ่ายทอดแบบใด และเริ่มแสดงอาการช่วงอายุใด?",o:["Autosomal dominant · 20–40 ปี","X-linked recessive · ประมาณ 2–6 ปี","Autosomal recessive · แรกเกิด","X-linked dominant · >50 ปี"],a:1,e:"X-linked recessive · ยีน dystrophin · เริ่มแสดงอาการวัยเด็ก ~2–6 ปี · พบ ~1:3,500 เด็กชายที่มีชีวิต · Gowers sign + pseudohypertrophy of calf"},
+ {q:"Physiologic contracture เกิดจากกลไกใด?",o:["ATP depletion → calcium pump ล้มเหลว ไม่มี action potential ใน sarcolemma","Muscle spasm ถาวรทั้งที่ ATP ปกติ","Cerebral palsy","Achilles tendon หดรั้ง"],a:0,e:"Physiologic: ไม่มี action potential ใน sarcolemma + ATP ไม่เพียงพอ → กล้ามเนื้อคลายตัวไม่ได้ (McArdle disease, malignant hyperthermia)"},
+ {q:"Rheumatoid arthritis มีลักษณะข้ออักเสบแบบใด?",o:["ข้อใหญ่ข้อเดียว","Symmetrical polyarthritis ข้อฝืดตอนเช้านาน > 1 ชั่วโมง","ข้อสะโพกข้างเดียว","กระดูกสันหลังเท่านั้น"],a:1,e:"ข้ออักเสบหลายข้อแบบสมมาตร ปวด บวม แดง ร้อน ข้อฝืดตอนเช้า >1 ชม. พบบที่ข้อนิ้วมือ ข้อมือ เท้า · pannus ทำลายข้อ → ankylosis"},
+ {q:"Bony callus ในการหายของกระดูกหักเกิดประมาณช่วงเวลาใด?",o:["24 ชั่วโมง","3 วัน","≈ 2 สัปดาห์","1 ปี"],a:2,e:"Hematoma → Inflammatory → Soft callus (≈1 สัปดาห์) → Bony callus (≈2 สัปดาห์, woven bone + สะสมแคลเซียม) → Remodeling (woven → lamellar bone)"},
+ {q:"Hepatocellular carcinoma (HCC) มักพบร่วมกับภาวะใด?",o:["Micronodular cirrhosis","Macronodular cirrhosis","Biliary cirrhosis เท่านั้น","ไม่สัมพันธ์กับ cirrhosis"],a:1,e:"HCC มักพบร่วมกับ macronodular cirrhosis · พบในชายมากกว่าหญิง · ก้อนหลายก้อน มักมีก้อนหนึ่งใหญ่ที่สุด · พบบที่กลีบขวา · มี necrosis + hemorrhage ในก้อน"},
+ {q:"Acute pancreatitis มีพยาธิสภาพหลักกี่อย่าง?",o:["2","3","4","5"],a:2,e:"4 อย่าง: 1 Proteolytic destruction 2 Necrosis of blood vessel 3 Necrosis of fat (lipolytic enzyme) 4 Inflammatory reaction · fat necrosis เห็นเป็นสีขาวเหลืองจาก calcium สะสม"},
+ {q:"Hyperparathyroidism ส่งผลต่อกระดูกอย่างไร?",o:["Osteoblast activity เพิ่มขึ้นอย่างเดียว","Osteoclast activity ↑ → bone resorption → bone loss","ไม่มีผลต่อกระดูก","เพิ่ม bone mineralization"],a:1,e:"PTH มากเกิน (autonomous หรือ compensatory จากแคลเซียมต่ำ) → osteoclast activity เพิ่ม → สลายกระดูก → bone loss"},
+ {q:"Typical presenting feature ของ carcinoma of extrahepatic biliary ducts / ampulla of Vater คืออะไร?",o:["Progressive relentless obstructive jaundice + palpably enlarged gallbladder","Hematemesis","Ascites อย่างเดียว","Hypoglycemia"],a:0,e:"ก้อนอาจอุดรูเปิดของท่อน้ำดี → progressive relentless obstructive jaundice · clinical characteristics: jaundice + palpably enlarged gallbladder"},
+ {q:"Global cerebral ischemia มักเกิดจากภาวะใด?",o:["Plaque ที่ carotid artery","Severe systemic hypotension (systolic < 50 mmHg) เช่น cardiac arrest, shock","Atrial fibrillation","AVM"],a:1,e:"Global: ภาวะความดันโลหิตต่ำรุนแรงทั้งร่างกาย โดยเฉพาะ systolic < 50 mmHg (cardiac arrest, shock) · Focal: embolic/thrombotic"}
+];
+var qOrder=[],qIdx=0,qScore=0,qLog=[];
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function startQuiz(){
+  qOrder=shuffle(QUIZ.map(function(_,i){return i;}));qIdx=0;qScore=0;qLog=[];
+  $("quizStart").style.display="none";$("quizEnd").style.display="none";$("quizRun").style.display="block";
+  showQ();
+}
+function showQ(){
+  var item=QUIZ[qOrder[qIdx]];
+  $("quizProg").style.width=(qIdx/qOrder.length*100)+"%";
+  $("quizIdx").textContent="ข้อ "+(qIdx+1)+" / "+qOrder.length;
+  $("quizScoreLive").textContent="คะแนน "+qScore;
+  $("quizQ").textContent=item.q;
+  $("quizExp").style.display="none";$("btnQuizNext").style.display="none";
+  var box=$("quizOpts");box.innerHTML="";
+  item.o.forEach(function(opt,i){
+    var b=document.createElement("button");b.className="qopt";b.textContent=String.fromCharCode(65+i)+". "+opt;
+    b.addEventListener("click",function(){
+      Array.prototype.forEach.call(box.children,function(x){x.disabled=true;});
+      var ok=i===item.a;
+      b.classList.add(ok?"right":"wrong");
+      if(!ok)box.children[item.a].classList.add("right");
+      if(ok)qScore++;
+      qLog.push({q:item.q,ok:ok,ans:item.o[item.a]});
+      var ex=$("quizExp");ex.style.display="block";
+      ex.className="verdict "+(ok?"good":"bad");
+      ex.textContent=(ok?"✅ ถูกต้อง! ":"❌ เฉลย: "+item.o[item.a]+" — ")+item.e;
+      $("btnQuizNext").style.display="inline-block";
+      $("btnQuizNext").textContent=qIdx===qOrder.length-1?"ดูผลรวม →":"ถัดไป →";
+    });
+    box.appendChild(b);
+  });
+}
+$("btnQuizNext").addEventListener("click",function(){
+  qIdx++;
+  if(qIdx>=qOrder.length)endQuiz();else showQ();
+});
+function endQuiz(){
+  $("quizRun").style.display="none";$("quizEnd").style.display="block";
+  $("quizFinal").textContent=qScore+" / "+qOrder.length;
+  $("quizPct").textContent=Math.round(qScore/qOrder.length*100)+"%";
+  $("quizReview").innerHTML=qLog.map(function(l){
+    return "<div style='margin:.3rem 0;padding:.4rem .6rem;border-radius:10px;border:1px solid var(--line);background:var(--card)'>"+(l.ok?"✅":"❌")+" <b>"+l.q+"</b>"+(l.ok?"":"<br><span style='color:var(--acc)'>เฉลย: "+l.ans+"</span>")+"</div>";
+  }).join("");
+}
+$("btnQuizStart").addEventListener("click",startQuiz);
+$("btnQuizAgain").addEventListener("click",startQuiz);
+
+/* ================= INIT ================= */
+updJaundice();updCirrhosis();updIcp();updBF();updMyelin();updBone();updFracture();updGall();
+refreshStats();
+setTimeout(sizeCanvases,80);
+requestAnimationFrame(function loop(t){
+  for(var i=0;i<anims.length;i++){
+    var a=anims[i];
+    if(a.el&&a.el.offsetParent!==null){try{a.fn(t);}catch(e){}}
+  }
+  requestAnimationFrame(loop);
+});
+</script>
+</body>
+</html>

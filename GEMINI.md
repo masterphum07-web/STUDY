@@ -13,3 +13,4 @@
 ## 3. 3D Procedural Modeling Standard (`img2threejs`)
 - Always construct 3D models using **code-only procedural Three.js** based on `img2threejs` principles (organic geometry, PBR shaders, interactive 3D pins, cross-section cutaway capability, and live telemetry HUD).
 - Include graceful error recovery (`vite:preloadError` listener and reload mechanism) so chunk cache invalidations on GitHub Pages never disrupt the 3D experience.
+

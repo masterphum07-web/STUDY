@@ -10,10 +10,14 @@ import respiratoryPhysiologyChapter from './subjects/physiology/chapters/respira
 import giTractPhysiologyChapter from './subjects/physiology/chapters/gi-tract-physiology';
 import physiologyRespiratoryGiChapter from './subjects/physiology/chapters/physiology-respiratory-gi';
 
-// Import Chapter definitions (Pathology: Disease of Reproductive System)
+// Import Chapter definitions (Pathology: Reproductive, Neuro, MSK, Hepatobiliary & Labs)
 import reproductiveMaleChapter from './subjects/pathology/chapters/reproductive-male';
 import reproductiveFemaleBreastChapter from './subjects/pathology/chapters/reproductive-female-breast';
 import reproductiveAtlasChapter from './subjects/pathology/chapters/reproductive-atlas';
+import neuropathologyChapter from './subjects/pathology/chapters/neuropathology';
+import musculoskeletalChapter from './subjects/pathology/chapters/musculoskeletal';
+import hepatobiliaryPancreasChapter from './subjects/pathology/chapters/hepatobiliary-pancreas';
+import pathologyMultiLabChapter from './subjects/pathology/chapters/pathology-multi-lab';
 
 // Internal in-memory registry maps
 const subjectsRegistry = new Map<string, Subject>();
@@ -28,6 +32,10 @@ const initialChapters = [
   reproductiveMaleChapter,
   reproductiveFemaleBreastChapter,
   reproductiveAtlasChapter,
+  neuropathologyChapter,
+  musculoskeletalChapter,
+  hepatobiliaryPancreasChapter,
+  pathologyMultiLabChapter,
 ];
 
 initialSubjects.forEach((sub) => {

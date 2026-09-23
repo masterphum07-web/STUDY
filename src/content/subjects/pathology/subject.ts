@@ -5,7 +5,7 @@ export const pathologySubject: Subject = {
   title: 'พยาธิวิทยาทางการแพทย์ (Medical Pathology)',
   shortTitle: 'พยาธิวิทยา',
   description:
-    'คลังสรุปพยาธิวิทยาระบบสืบพันธุ์ชายและหญิง (Disease of Reproductive System) ฉบับสมบูรณ์ 32 บทเรียน พร้อมแบบจำลอง 3D รอยโรคสมจริง และระบบวินิจฉัยเคสคลินิกขับเคลื่อนด้วย TypeSafe JEV AI 80%',
+    'คลังสรุปพยาธิวิทยาทางการแพทย์ฉบับสมบูรณ์: ระบบสืบพันธุ์ (Reproductive System), ระบบประสาท (Neuropathology & Monro-Kellie), กระดูกและข้อ (Musculoskeletal), ตับ ถุงน้ำดี และตับอ่อน (Hepatobiliary & Pancreas) พร้อมแบบจำลอง 3D รอยโรคสมจริง และห้องทดลองจำลอง 8 สถานการณ์คลินิก',
   icon: 'Activity',
   color: '#be123c',
   bgGradient: 'linear-gradient(135deg, #9f1239 0%, #e11d48 100%)',
@@ -14,6 +14,10 @@ export const pathologySubject: Subject = {
     'pathology-reproductive-male',
     'pathology-reproductive-female-breast',
     'pathology-reproductive-atlas',
+    'pathology-neuropathology',
+    'pathology-musculoskeletal',
+    'pathology-hepatobiliary-pancreas',
+    'pathology-multi-lab',
   ],
 };
 
