@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type FC } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {
@@ -84,7 +84,7 @@ const PATHOLOGY_PINS: PathologyLandmark[] = [
   },
 ];
 
-export const RealisticPathology3DSim: React.FC = () => {
+export const RealisticPathology3DSim: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import { Sparkles, CheckCircle2, AlertTriangle, Send, Loader2, Award, Zap } from 'lucide-react';
 import { evaluatePhysiologyAnswer } from '../../integrations/typesafe/typesafeService';
 import type { JevEvaluationResult } from '../../integrations/typesafe/typesafeService';
@@ -39,7 +39,7 @@ const PRESET_QUESTIONS: PresetQuestion[] = [
   },
 ];
 
-export const JevPhysioExaminer: React.FC = () => {
+export const JevPhysioExaminer: FC = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);

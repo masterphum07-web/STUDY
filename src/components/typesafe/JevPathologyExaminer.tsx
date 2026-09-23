@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import {
   Sparkles,
   Send,
@@ -80,7 +80,7 @@ interface Props {
   };
 }
 
-export const JevPathologyExaminer: React.FC<Props> = ({ initialParams }) => {
+export const JevPathologyExaminer: FC<Props> = ({ initialParams }) => {
   const initialIndex = initialParams?.defaultCaseIndex ?? 0;
   const [selectedCaseIdx, setSelectedCaseIdx] = useState<number>(initialIndex);
   const [studentDiagnosis, setStudentDiagnosis] = useState<string>('');

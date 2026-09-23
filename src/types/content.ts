@@ -125,7 +125,7 @@ export interface Chapter {
   sections: ChapterSection[];
   simulationIds?: string[];
   quiz?: QuizQuestion[];
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface Subject {
