@@ -45,6 +45,33 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch }) => {
             <Link to="/" className={styles.navLink}>
               หน้าแรก
             </Link>
+            <Link
+              to="/subject/pathology"
+              className={styles.navLink}
+              style={{
+                color: '#be123c',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <span>พยาธิวิทยา</span>
+              <span
+                style={{
+                  fontSize: '0.65rem',
+                  padding: '1px 5px',
+                  borderRadius: '4px',
+                  background: 'rgba(190, 18, 60, 0.15)',
+                  color: '#be123c',
+                }}
+              >
+                NEW
+              </span>
+            </Link>
+            <Link to="/subject/physiology" className={styles.navLink}>
+              สรีรวิทยา
+            </Link>
             <Link to="/bookmarks" className={styles.navLink}>
               บุ๊กมาร์ก ({bookmarks.length})
             </Link>

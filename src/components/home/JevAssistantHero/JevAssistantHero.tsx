@@ -6,11 +6,12 @@ import { getChapterById } from '../../../content/registry';
 import styles from './JevAssistantHero.module.css';
 
 const QUICK_CHIPS = [
+  'ช็อกโกแลตซีสต์เกิดจากอะไร?',
+  'เนื้องอกมดลูก Leiomyoma',
   'ปอดข้างไหนมี 3 กลีบ?',
   'ทำไมสำลักลงปอดขวาบ่อยกว่า?',
   'การเคลื่อนที่แบบโพรเจกไทล์',
   'สูตรกราฟพาราโบลา',
-  'โครงสร้างเซลล์สัตว์',
 ];
 
 export const JevAssistantHero: React.FC = () => {

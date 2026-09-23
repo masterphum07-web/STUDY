@@ -22,6 +22,16 @@ import styles from './HomePage.module.css';
 
 const FEATURED_SIMULATIONS = [
   {
+    id: 'sim-3d-pathology',
+    title: 'แบบจำลอง 3D พยาธิวิทยาระบบสืบพันธุ์สตรีและรอยโรค',
+    subtitle: 'Three.js 3D Procedural Studio',
+    desc: 'หมุนสำรวจ 360° รอยโรค Leiomyoma, ช็อกโกแลตซีสต์ Endometriosis, ท้องนอกมดลูก, เดอร์มอยด์ซีสต์ และหน้าตัด Cross-section',
+    path: '/chapter/pathology/pathology-reproductive-female-breast',
+    tag: '3D Pathology',
+    tagColor: '#be123c',
+    icon: '🔬',
+  },
+  {
     id: 'sim-3d-lungs',
     title: 'แบบจำลอง 3D สรีรวิทยาปอดและระบบหายใจ',
     subtitle: 'Three.js 3D Procedural Studio',
@@ -32,6 +42,16 @@ const FEATURED_SIMULATIONS = [
     icon: '🫁',
   },
   {
+    id: 'sim-patho-atlas',
+    title: 'คลังบทเรียนพยาธิวิทยาระบบสืบพันธุ์ 32 หัวข้อฉบับสมบูรณ์',
+    subtitle: 'Qwen Interactive Suite',
+    desc: '32 Sections, 121 Slides, Slide Navigator และระบบตรวจวิเคราะห์เคสทางคลินิกขับเคลื่อนด้วย JEV AI 80%',
+    path: '/chapter/pathology/pathology-reproductive-atlas',
+    tag: 'Pathology Suite',
+    tagColor: '#9f1239',
+    icon: '📚',
+  },
+  {
     id: 'sim-physio-rs',
     title: 'Physio-RS คลังแบบจำลองทางเดินหายใจ 12 โมเดล',
     subtitle: 'Qwen Interactive Suite',
@@ -39,7 +59,7 @@ const FEATURED_SIMULATIONS = [
     path: '/chapter/physiology/respiratory-physiology',
     tag: 'Qwen Suite',
     tagColor: '#7c3aed',
-    icon: '🔬',
+    icon: '🧪',
   },
   {
     id: 'sim-projectile',

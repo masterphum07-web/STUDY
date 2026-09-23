@@ -1,0 +1,365 @@
+.container {
+  position: relative;
+  width: 100%;
+  height: 640px;
+  background: radial-gradient(circle at 50% 40%, #1e131d 0%, #0d070e 100%);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(225, 29, 72, 0.25);
+  font-family: inherit;
+  user-select: none;
+}
+
+.container:fullscreen,
+.container:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  border: none;
+}
+
+.canvasWrapper {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+.canvasWrapper:active {
+  cursor: grabbing;
+}
+
+/* Header overlay */
+.topBar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.badgeGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.titleBadge {
+  background: rgba(15, 10, 15, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(225, 29, 72, 0.35);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.titleBadge span {
+  background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.engineBadge {
+  background: rgba(124, 58, 237, 0.25);
+  border: 1px solid rgba(124, 58, 237, 0.5);
+  color: #c084fc;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.topRightActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.iconBtn {
+  background: rgba(20, 10, 20, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f3e8ff;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background: rgba(225, 29, 72, 0.4);
+  border-color: #f43f5e;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Pathology HUD telemetry */
+.hudPanel {
+  position: absolute;
+  top: 68px;
+  right: 16px;
+  width: 270px;
+  background: rgba(15, 10, 18, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(225, 29, 72, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  color: #f1f5f9;
+  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-size: 0.8rem;
+  pointer-events: auto;
+}
+
+.hudHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #fda4af;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.hudRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.hudLabel {
+  color: #94a3b8;
+}
+
+.hudVal {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.hudTag {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.tagBenign {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.tagEmergency {
+  background: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Bottom Controls */
+.bottomControls {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 10;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filterGroup {
+  display: flex;
+  gap: 6px;
+  background: rgba(15, 10, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 4px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  pointer-events: auto;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.775rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filterBtn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.filterBtnActive {
+  background: linear-gradient(135deg, #be123c 0%, #e11d48 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(190, 18, 60, 0.4);
+}
+
+.toolsGroup {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.toggleBtn {
+  background: rgba(15, 10, 18, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.toggleBtn:hover {
+  background: rgba(225, 29, 72, 0.3);
+  border-color: #f43f5e;
+}
+
+.toggleBtnActive {
+  background: #be123c;
+  border-color: #f43f5e;
+  color: #ffffff;
+}
+
+/* Landmark Detail Modal/Drawer */
+.detailCard {
+  position: absolute;
+  bottom: 74px;
+  left: 16px;
+  max-width: 380px;
+  width: calc(100% - 32px);
+  background: rgba(15, 10, 18, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  color: #ffffff;
+  z-index: 20;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.detailTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+}
+
+.detailSubtitle {
+  font-size: 0.775rem;
+  color: #fda4af;
+  margin-top: 2px;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.closeBtn:hover {
+  color: #ffffff;
+}
+
+.detailDesc {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 8px 0;
+}
+
+.clinicalCallout {
+  background: rgba(225, 29, 72, 0.15);
+  border-left: 3px solid #f43f5e;
+  padding: 8px 12px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.8rem;
+  color: #ffe4e6;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .container {
+    height: 520px;
+  }
+  .hudPanel {
+    display: none;
+  }
+  .filterGroup {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+}

@@ -14,6 +14,8 @@ const registry: Record<string, ComponentType<any>> = {
   'quadratic-grapher': lazy(() => import('./demos/QuadraticGrapherSim/QuadraticGrapherSim')),
   'realistic-lungs-3d': lazy(() => import('./demos/RealisticLungs3DSim/RealisticLungs3DSim')),
   'jev-physio-examiner': lazy(() => import('../components/typesafe/JevPhysioExaminer')),
+  'realistic-pathology-3d': lazy(() => import('./demos/RealisticPathology3DSim/RealisticPathology3DSim')),
+  'jev-pathology-examiner': lazy(() => import('../components/typesafe/JevPathologyExaminer')),
 };
 
 /**

@@ -1,24 +1,33 @@
 import type { Subject, Chapter } from '../types/content';
 import { validateSubject, validateChapter } from './schema';
 
-// Import Subject definitions (Real Medical Physiology)
+// Import Subject definitions (Real Medical Physiology & Pathology)
 import physiologySubject from './subjects/physiology/subject';
+import pathologySubject from './subjects/pathology/subject';
 
 // Import Chapter definitions (Real Physiology content from Qwen / PhysioStudy)
 import respiratoryPhysiologyChapter from './subjects/physiology/chapters/respiratory-physiology';
 import giTractPhysiologyChapter from './subjects/physiology/chapters/gi-tract-physiology';
 import physiologyRespiratoryGiChapter from './subjects/physiology/chapters/physiology-respiratory-gi';
 
+// Import Chapter definitions (Pathology: Disease of Reproductive System)
+import reproductiveMaleChapter from './subjects/pathology/chapters/reproductive-male';
+import reproductiveFemaleBreastChapter from './subjects/pathology/chapters/reproductive-female-breast';
+import reproductiveAtlasChapter from './subjects/pathology/chapters/reproductive-atlas';
+
 // Internal in-memory registry maps
 const subjectsRegistry = new Map<string, Subject>();
 const chaptersRegistry = new Map<string, Chapter>();
 
 // Register initial data with validation
-const initialSubjects = [physiologySubject];
+const initialSubjects = [physiologySubject, pathologySubject];
 const initialChapters = [
   respiratoryPhysiologyChapter,
   giTractPhysiologyChapter,
   physiologyRespiratoryGiChapter,
+  reproductiveMaleChapter,
+  reproductiveFemaleBreastChapter,
+  reproductiveAtlasChapter,
 ];
 
 initialSubjects.forEach((sub) => {
