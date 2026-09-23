@@ -27,11 +27,25 @@ export class SimulationErrorBoundary extends Component<Props, State> {
   }
 
   private handleReset = () => {
-    this.setState({ hasError: false, error: null });
+    const isChunkError =
+      this.state.error?.message?.includes('preload') ||
+      this.state.error?.message?.includes('fetch') ||
+      this.state.error?.message?.includes('dynamically imported');
+
+    if (isChunkError) {
+      window.location.reload();
+    } else {
+      this.setState({ hasError: false, error: null });
+    }
   };
 
   public render(): ReactNode {
     if (this.state.hasError) {
+      const isChunkError =
+        this.state.error?.message?.includes('preload') ||
+        this.state.error?.message?.includes('fetch') ||
+        this.state.error?.message?.includes('dynamically imported');
+
       return (
         <div
           role="alert"
@@ -48,11 +62,13 @@ export class SimulationErrorBoundary extends Component<Props, State> {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--danger)', marginBottom: '8px' }}>
             <AlertTriangle size={24} />
             <h4 style={{ margin: 0, color: 'var(--danger)' }}>
-              {this.props.fallbackTitle || 'แบบจำลองไม่สามารถแสดงผลได้'}
+              {isChunkError ? 'มีการอัปเดตเวอร์ชันใหม่ของแบบจำลอง 3D' : (this.props.fallbackTitle || 'แบบจำลองไม่สามารถแสดงผลได้')}
             </h4>
           </div>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-            {this.state.error?.message || 'เกิดข้อผิดพลาดในการรันโค้ดแบบจำลอง แต่ส่วนอื่นของบทเรียนยังอ่านได้ตามปกติ'}
+            {isChunkError
+              ? 'ระบบตรวจพบไฟล์คอมไพล์เวอร์ชันใหม่จาก GitHub Pages กรุณากดปุ่มเพื่อโหลดไฟล์ล่าสุดทันที'
+              : (this.state.error?.message || 'เกิดข้อผิดพลาดในการรันโค้ดแบบจำลอง แต่ส่วนอื่นของบทเรียนยังอ่านได้ตามปกติ')}
           </p>
           <button
             onClick={this.handleReset}
@@ -66,10 +82,12 @@ export class SimulationErrorBoundary extends Component<Props, State> {
               color: '#ffffff',
               fontSize: '0.875rem',
               fontWeight: 500,
+              cursor: 'pointer',
+              border: 'none',
             }}
           >
             <RefreshCw size={16} />
-            ลองโหลดแบบจำลองใหม่
+            {isChunkError ? 'รีเฟรชเพื่อโหลดไฟล์ล่าสุด' : 'ลองโหลดแบบจำลองใหม่'}
           </button>
         </div>
       );

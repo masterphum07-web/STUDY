@@ -106,18 +106,8 @@ export const reproductiveFemaleBreastChapter: Chapter = {
       },
     },
     {
-      id: 'sec-female-jev-evaluator',
-      heading: '5. JEV AI Pathology Case Evaluator: ตรวจวินิจฉัยเคสพยาธิวิทยาเพศหญิง (80% Clinical AI Engine)',
-      type: 'simulation',
-      content: {
-        simulationId: 'jev-pathology-examiner',
-        title: 'TypeSafe JEV 1.13 — ระบบตรวจและวิเคราะห์เคสพยาธิวิทยาทางนรีเวช',
-        initialParams: { defaultCaseIndex: 0 },
-      },
-    },
-    {
       id: 'sec-female-qwen-reader',
-      heading: '6. สไลด์และเนื้อหาฉบับเต็ม: Female Reproductive & Breast Pathology (Qwen Reader)',
+      heading: '5. สไลด์และเนื้อหาฉบับเต็ม: Female Reproductive & Breast Pathology (Qwen Reader)',
       type: 'legacy-html',
       content: {
         modulePath: '/qwen-modules/pathology/reproductive/index.html',

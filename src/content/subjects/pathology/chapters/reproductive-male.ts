@@ -96,18 +96,8 @@ export const reproductiveMaleChapter: Chapter = {
       },
     },
     {
-      id: 'sec-male-jev-evaluator',
-      heading: '5. JEV AI Clinical Diagnostic Suite: วิเคราะห์และตรวจเคสผู้ป่วยพยาธิวิทยา (80% AI Decision Engine)',
-      type: 'simulation',
-      content: {
-        simulationId: 'jev-pathology-examiner',
-        title: 'TypeSafe JEV 1.13 — ระบบตรวจและวิเคราะห์เคสพยาธิวิทยาทางคลินิก',
-        initialParams: { defaultCaseIndex: 3 },
-      },
-    },
-    {
       id: 'sec-male-qwen-reader',
-      heading: '6. สไลด์และเนื้อหาฉบับเต็ม: Male Reproductive Pathology (Qwen Interactive Suite)',
+      heading: '5. สไลด์และเนื้อหาฉบับเต็ม: Male Reproductive Pathology (Qwen Interactive Suite)',
       type: 'legacy-html',
       content: {
         modulePath: '/qwen-modules/pathology/reproductive/index.html',

@@ -57,15 +57,6 @@ export const reproductiveAtlasChapter: Chapter = {
         ],
       },
     },
-    {
-      id: 'sec-atlas-jev-examiner',
-      heading: '4. ศูนย์ตรวจวิเคราะห์เคสผู้ป่วยพยาธิวิทยาด้วย JEV 1.13 (Universal Clinical Reasoner)',
-      type: 'simulation',
-      content: {
-        simulationId: 'jev-pathology-examiner',
-        title: 'TypeSafe JEV 1.13 — ศูนย์วิเคราะห์เคสพยาธิวิทยาครอบคลุมทุกระบบ',
-      },
-    },
   ],
   updatedAt: '2026-09-23',
 };
