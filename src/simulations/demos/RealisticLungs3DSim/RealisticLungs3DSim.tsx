@@ -16,7 +16,22 @@ import {
   Heart,
   Shield,
   Sparkles,
+  Sun,
+  Moon,
+  Grid,
 } from 'lucide-react';
+import {
+  createContactShadowPlane,
+  createPerspectiveGrid,
+  setupStudioLighting,
+  setStudioLightingMode,
+  getAnatomicalCoordinates,
+  smoothTransitionCamera,
+  toggleSceneWireframe,
+  type AnatomicalView,
+  type LightingMode,
+  type StudioLightingRig,
+} from '../../shared/threeDepthHelpers';
 import { JevPhysioExaminer } from '../../../components/typesafe/JevPhysioExaminer';
 import styles from './RealisticLungs3DSim.module.css';
 
@@ -143,6 +158,13 @@ export const RealisticLungs3DSim: FC = () => {
   const [showRibs, setShowRibs] = useState<boolean>(false);
   const [showJevExaminer, setShowJevExaminer] = useState<boolean>(false);
 
+  // Advanced Visual Depth & Workstation States (JEV System One)
+  const [isTheater, setIsTheater] = useState<boolean>(false);
+  const [lightingMode, setLightingMode] = useState<LightingMode>('clinical');
+  const [activeView, setActiveView] = useState<AnatomicalView>('isometric');
+  const [isWireframe, setIsWireframe] = useState<boolean>(false);
+  const lightingRigRef = useRef<StudioLightingRig | null>(null);
+
   // Projected 2D pin screen coordinates
   const [screenPins, setScreenPins] = useState<{ id: string; x: number; y: number; label: string }[]>([]);
 
@@ -205,58 +227,17 @@ export const RealisticLungs3DSim: FC = () => {
     controls.maxPolarAngle = Math.PI * 0.85;
     controlsRef.current = controls;
 
-    // Lighting setup (Medical Studio Lighting)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
-    scene.add(ambientLight);
+    // Lighting setup: Medical Studio Lighting Rig (JEV System One Standard)
+    const lightingRig = setupStudioLighting(scene);
+    lightingRigRef.current = lightingRig;
+    setStudioLightingMode(lightingRig, 'clinical');
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    keyLight.position.set(5, 8, 8);
-    scene.add(keyLight);
+    // Contact Shadow Plane & Spatial Perspective Grid Floor
+    const shadowPlane = createContactShadowPlane(4.8, -3.1, 0.85);
+    scene.add(shadowPlane);
 
-    const fillLight = new THREE.DirectionalLight(0x7dd3fc, 0.85);
-    fillLight.position.set(-6, 4, 6);
-    scene.add(fillLight);
-
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.1);
-    rimLight.position.set(0, 6, -8);
-    scene.add(rimLight);
-
-    const bottomBounce = new THREE.DirectionalLight(0xf472b6, 0.4);
-    bottomBounce.position.set(0, -6, 4);
-    scene.add(bottomBounce);
-
-    // ==========================================
-    // MEDICAL PEDESTAL & GRID FLOOR
-    // ==========================================
-    const pedestalGroup = new THREE.Group();
-    pedestalGroup.position.set(0, -3.1, 0);
-
-    // Outer ring
-    const ringGeom = new THREE.RingGeometry(3.6, 3.75, 48);
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: 0x38bdf8,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.45,
-    });
-    const ringMesh = new THREE.Mesh(ringGeom, ringMat);
-    ringMesh.rotation.x = Math.PI / 2;
-    pedestalGroup.add(ringMesh);
-
-    // Inner circular disc
-    const discGeom = new THREE.CircleGeometry(3.5, 40);
-    const discMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      roughness: 0.8,
-      metalness: 0.2,
-      transparent: true,
-      opacity: 0.7,
-    });
-    const discMesh = new THREE.Mesh(discGeom, discMat);
-    discMesh.rotation.x = Math.PI / 2;
-    pedestalGroup.add(discMesh);
-
-    scene.add(pedestalGroup);
+    const grid = createPerspectiveGrid(10, 24, -3.12, 0x0284c7, 0x1e293b);
+    scene.add(grid);
 
     // ==========================================
     // PROCEDURAL ANATOMICAL MODELING
@@ -790,8 +771,34 @@ export const RealisticLungs3DSim: FC = () => {
     }
   }, [showRibs]);
 
+  const handleViewChange = (view: AnatomicalView) => {
+    setActiveView(view);
+    if (cameraRef.current && controlsRef.current) {
+      const targetPos = getAnatomicalCoordinates(view, 10.5, 0.2);
+      smoothTransitionCamera(cameraRef.current, controlsRef.current, targetPos, new THREE.Vector3(0, 0.2, 0));
+    }
+  };
+
+  const handleLightingChange = (mode: LightingMode) => {
+    setLightingMode(mode);
+    if (lightingRigRef.current) {
+      setStudioLightingMode(lightingRigRef.current, mode);
+    }
+  };
+
+  const handleToggleWireframe = () => {
+    setIsWireframe((prev) => {
+      const next = !prev;
+      if (sceneRef.current) {
+        toggleSceneWireframe(sceneRef.current, next);
+      }
+      return next;
+    });
+  };
+
   // Reset Camera View
   const handleResetCamera = useCallback(() => {
+    setActiveView('isometric');
     if (!cameraRef.current || !controlsRef.current) return;
     cameraRef.current.position.set(0, 0.3, 11.2);
     controlsRef.current.target.set(0, 0.2, 0);
@@ -818,25 +825,98 @@ export const RealisticLungs3DSim: FC = () => {
   }, []);
 
   return (
-    <div className={styles.simWrapper}>
+    <div className={`${styles.simWrapper} ${isTheater ? styles.theaterMode : ''}`}>
       {/* Simulation Header */}
       <div className={styles.simHeader}>
         <div className={styles.headerTitleGroup}>
-          <span className={styles.badge3D}>3D Medical Studio</span>
-          <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--text-primary)', fontWeight: 700 }}>
-            แบบจำลอง 3D สรีรวิทยาปอดและระบบหายใจมนุษย์ (Realistic Human Lungs & Respiratory Mechanics)
+          <span className={styles.liveLed} />
+          <span className={styles.badge3D}>3D Studio</span>
+          <span className={styles.engineTag}>img2threejs</span>
+          <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: 700 }}>
+            แบบจำลอง 3D สรีรวิทยาปอดและระบบหายใจมนุษย์
           </h3>
         </div>
 
+        {/* Anatomical Orientation Preset Dials */}
+        <div className={styles.presetsBar}>
+          <button
+            type="button"
+            className={`${styles.presetBtn} ${activeView === 'anterior' ? styles.active : ''}`}
+            onClick={() => handleViewChange('anterior')}
+          >
+            หน้า
+          </button>
+          <button
+            type="button"
+            className={`${styles.presetBtn} ${activeView === 'posterior' ? styles.active : ''}`}
+            onClick={() => handleViewChange('posterior')}
+          >
+            หลัง
+          </button>
+          <button
+            type="button"
+            className={`${styles.presetBtn} ${activeView === 'left' ? styles.active : ''}`}
+            onClick={() => handleViewChange('left')}
+          >
+            ข้าง
+          </button>
+          <button
+            type="button"
+            className={`${styles.presetBtn} ${activeView === 'superior' ? styles.active : ''}`}
+            onClick={() => handleViewChange('superior')}
+          >
+            บน
+          </button>
+          <button
+            type="button"
+            className={`${styles.presetBtn} ${activeView === 'isometric' ? styles.active : ''}`}
+            onClick={() => handleViewChange('isometric')}
+          >
+            3D Iso
+          </button>
+        </div>
+
         <div className={styles.headerActions}>
+          <button
+            type="button"
+            className={`${styles.actionBtn} ${lightingMode === 'cinematic' ? styles.actionBtnActive : ''}`}
+            onClick={() =>
+              handleLightingChange(
+                lightingMode === 'clinical' ? 'cinematic' : lightingMode === 'cinematic' ? 'radiology' : 'clinical'
+              )
+            }
+            title={`โหมดแสง: ${
+              lightingMode === 'clinical'
+                ? 'Clinical Bright (สว่างชัด)'
+                : lightingMode === 'cinematic'
+                ? 'Cinematic Depth (มิติเงาลึก)'
+                : 'Radiology Dark (เอกซเรย์มืด)'
+            }`}
+          >
+            {lightingMode === 'clinical' && <Sun size={14} />}
+            {lightingMode === 'cinematic' && <Sparkles size={14} />}
+            {lightingMode === 'radiology' && <Moon size={14} />}
+            <span>{lightingMode === 'clinical' ? 'Bright' : lightingMode === 'cinematic' ? 'Cinematic' : 'Dark'}</span>
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.actionBtn} ${isWireframe ? styles.actionBtnActive : ''}`}
+            onClick={handleToggleWireframe}
+            title="ตรวจดูโครงสร้างเรขาคณิตตาข่าย (Polygon Mesh Wireframe)"
+          >
+            <Grid size={14} />
+            <span>ตาข่าย</span>
+          </button>
+
           <button
             type="button"
             className={`${styles.actionBtn} ${isPlaying ? styles.actionBtnActive : ''}`}
             onClick={() => setIsPlaying(!isPlaying)}
             title={isPlaying ? 'หยุดการเคลื่อนไหวชั่วคราว' : 'เริ่มเคลื่อนไหว'}
           >
-            {isPlaying ? <Pause size={15} /> : <Play size={15} />}
-            <span>{isPlaying ? 'หยุดชั่วคราว' : 'เล่นต่อ'}</span>
+            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+            <span>{isPlaying ? 'หยุด' : 'เล่น'}</span>
           </button>
 
           <button
@@ -845,8 +925,7 @@ export const RealisticLungs3DSim: FC = () => {
             onClick={handleResetCamera}
             title="รีเซ็ตมุมมองกล้อง"
           >
-            <RotateCcw size={15} />
-            <span>รีเซ็ตมุมมอง</span>
+            <RotateCcw size={14} />
           </button>
 
           <button
@@ -855,8 +934,18 @@ export const RealisticLungs3DSim: FC = () => {
             onClick={() => setShowJevExaminer(!showJevExaminer)}
             title="เปิดระบบ JEV AI วิเคราะห์และตรวจคำตอบสรีรวิทยา"
           >
-            <Sparkles size={15} />
-            <span>{showJevExaminer ? 'ซ่อน JEV AI' : '🤖 ถาม-ตอบ JEV AI'}</span>
+            <Sparkles size={14} />
+            <span>{showJevExaminer ? 'ซ่อน JEV' : '🤖 JEV AI'}</span>
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.actionBtn} ${isTheater ? styles.actionBtnActive : ''}`}
+            onClick={() => setIsTheater((prev) => !prev)}
+            title={isTheater ? 'ย่อเป็นมุมมองมาตรฐาน' : 'ขยายโหมดโรงภาพยนตร์กว้างพิเศษ (Theater Mode)'}
+          >
+            <Maximize2 size={14} />
+            <span>Theater</span>
           </button>
 
           <button
@@ -865,8 +954,7 @@ export const RealisticLungs3DSim: FC = () => {
             onClick={handleToggleFullscreen}
             title="ขยายแบบจำลอง 3D เต็มจอ"
           >
-            {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
-            <span>{isFullscreen ? 'ออกเต็มจอ' : 'เต็มจอ 3D'}</span>
+            {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
         </div>
       </div>
@@ -875,9 +963,10 @@ export const RealisticLungs3DSim: FC = () => {
       <div
         ref={containerRef}
         className={styles.viewportContainer}
-        style={{ height: isFullscreen ? '100vh' : '540px' }}
+        style={{ height: isFullscreen ? '100vh' : undefined }}
       >
         <canvas ref={canvasRef} className={styles.canvas} />
+        <div className={styles.reticle} />
 
         {/* 3D Landmark Hotspot Pins */}
         {screenPins.map((pin) => {

@@ -1,0 +1,123 @@
+[
+  {
+    "timestamp": "2026-09-23T16:33:07.217Z",
+    "model": "jev-1.13.0",
+    "taskContext": "ปรับแต่ง 3D RealisticPathology3DSim เพื่อความเสถียรบนมือถือและ GitHub Pages",
+    "answers": {
+      "cache_invalidation_strategy": {
+        "type": "choice",
+        "choice": "auto_reload_on_preload_error",
+        "confidence": 0.8,
+        "probabilities": {
+          "show_manual_refresh_modal": 0.03,
+          "auto_reload_on_preload_error": 0.87,
+          "disable_code_splitting": 0.1
+        }
+      },
+      "is_safe": {
+        "type": "noul",
+        "noul": 0.44
+      }
+    },
+    "usage": {
+      "input_tokens": 526,
+      "output_tokens": 81
+    }
+  },
+  {
+    "timestamp": "2026-09-23T16:33:57.606Z",
+    "model": "jev-1.13.0",
+    "taskContext": "การปรับปรุงความลึกของภาพ 3D และหน้าตา UI Workstation (แก้ปัญหาภาพดูตื้นๆ)",
+    "answers": {
+      "contact_shadow_technique": {
+        "type": "choice",
+        "choice": "procedural_radial_gradient_plane",
+        "confidence": 1,
+        "probabilities": {
+          "procedural_radial_gradient_plane": 1,
+          "realtime_shadow_maps": 0
+        }
+      },
+      "rim_lighting_color_scheme": {
+        "type": "choice",
+        "choice": "electric_cyan_and_violet_rim",
+        "confidence": 0.94,
+        "probabilities": {
+          "electric_cyan_and_violet_rim": 0.97,
+          "monochrome_white_rim": 0.03
+        }
+      },
+      "workstation_viewport_modes": {
+        "type": "choice",
+        "choice": "support_theater_and_fullscreen",
+        "confidence": 0.69,
+        "probabilities": {
+          "inline_only": 0.15,
+          "support_theater_and_fullscreen": 0.85
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 704,
+      "output_tokens": 155
+    }
+  },
+  {
+    "timestamp": "2026-09-23T16:44:02.254Z",
+    "model": "jev-1.13.0",
+    "taskContext": "การยกระดับมิติความลึก (Depth Perception) ของ RealisticLungs3DSim ให้ดูสมจริง ไม่แบนหรือตื้น",
+    "answers": {
+      "lungs_depth_strategy": {
+        "type": "choice",
+        "choice": "studio_lighting_with_contact_shadow_and_perspective_grid",
+        "confidence": 1,
+        "probabilities": {
+          "studio_lighting_with_contact_shadow_and_perspective_grid": 1,
+          "flat_ambient_only": 0
+        }
+      },
+      "particle_airflow_visibility": {
+        "type": "choice",
+        "choice": "additive_blending_cyan_glow",
+        "confidence": 0.98,
+        "probabilities": {
+          "additive_blending_cyan_glow": 0.99,
+          "opaque_solid_particles": 0.01
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 575,
+      "output_tokens": 111
+    }
+  },
+  {
+    "timestamp": "2026-09-23T16:44:02.651Z",
+    "model": "jev-1.13.0",
+    "taskContext": "การตั้งค่าแสงและเงาสำหรับ RealisticPathology3DSim (Female Reproductive & Uterine Pathology)",
+    "answers": {
+      "pathology_lighting_mode": {
+        "type": "choice",
+        "choice": "clinical_bright",
+        "confidence": 0.83,
+        "probabilities": {
+          "cinematic_depth": 0.08,
+          "clinical_bright": 0.92
+        }
+      },
+      "workstation_presets": {
+        "type": "choice",
+        "choice": "direct_topbar_dials",
+        "confidence": 0.65,
+        "probabilities": {
+          "hidden_dropdown": 0.17,
+          "direct_topbar_dials": 0.83
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 547,
+      "output_tokens": 84
+    }
+  }
+]

@@ -1,19 +1,28 @@
-/**
- * JEV Developer Decision Assistant (TypeSafe AI System One)
- * Used by Antigravity during coding & modeling to make 80% of technical & architectural decisions.
- */
+import fs from 'node:fs';
+import path from 'node:path';
 
-const API_KEY =
-  process.env.TYPESAFE_API_KEY ||
-  'apikey_28345c62ffaf10a44a883c246715378d01d_8582639a9b081494530c69271b8a748170d65cee47c34572c08065896f5089a7';
+const VALID_KEY = 'apikey_28345c62ffaf10a44a883c246715378d01d_8582639a9b081494530c69271b8a748170d65cee47c34572c08065896f5089a7';
+const API_KEY = process.env.TYPESAFE_API_KEY && process.env.TYPESAFE_API_KEY.startsWith('apikey_28345')
+  ? process.env.TYPESAFE_API_KEY
+  : VALID_KEY;
 
 export async function askJevDecision(taskContext, questions) {
   const endpoint = 'https://api.typesafe.ai/v1/systemone';
 
+  // Ensure all questions adhere strictly to TypeSafe specification
+  const sanitizedQuestions = {};
+  for (const [key, q] of Object.entries(questions)) {
+    sanitizedQuestions[key] = {
+      type: q.type || 'choice',
+      instructions: q.instructions || `Select optimal decision for ${key}`,
+      ...(q.criteria ? { criteria: q.criteria } : {}),
+    };
+  }
+
   const body = {
     state: `โจทย์การตัดสินใจทางเทคนิคและการเขียนโค้ดของ Developer:\n${taskContext}`,
     model: 'jev-latest',
-    questions,
+    questions: sanitizedQuestions,
   };
 
   try {
@@ -28,6 +37,26 @@ export async function askJevDecision(taskContext, questions) {
 
     if (res.ok) {
       const data = await res.json();
+      
+      // Save decision audit trail for transparency
+      try {
+        const logFile = path.resolve(process.cwd(), 'scripts/jev-decision-log.json');
+        let logs = [];
+        if (fs.existsSync(logFile)) {
+          logs = JSON.parse(fs.readFileSync(logFile, 'utf8'));
+        }
+        logs.push({
+          timestamp: new Date().toISOString(),
+          model: data.model,
+          taskContext,
+          answers: data.answers,
+          usage: data.usage,
+        });
+        fs.writeFileSync(logFile, JSON.stringify(logs, null, 2), 'utf8');
+      } catch (logErr) {
+        console.warn('[JEV System One] Could not write audit log:', logErr.message);
+      }
+
       return data.answers;
     }
     const txt = await res.text();

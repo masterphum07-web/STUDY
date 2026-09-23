@@ -11,7 +11,22 @@ import {
   Sparkles,
   Layers,
   Microscope,
+  Sun,
+  Moon,
+  Grid,
 } from 'lucide-react';
+import {
+  createContactShadowPlane,
+  createPerspectiveGrid,
+  setupStudioLighting,
+  setStudioLightingMode,
+  getAnatomicalCoordinates,
+  smoothTransitionCamera,
+  toggleSceneWireframe,
+  type AnatomicalView,
+  type LightingMode,
+  type StudioLightingRig,
+} from '../../shared/threeDepthHelpers';
 import styles from './RealisticPathology3DSim.module.css';
 
 interface PathologyLandmark {
@@ -95,11 +110,19 @@ export const RealisticPathology3DSim: FC = () => {
   const [selectedPin, setSelectedPin] = useState<PathologyLandmark | null>(null);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
+  // Advanced Visual Depth & Workstation States (JEV System One)
+  const [isTheater, setIsTheater] = useState<boolean>(false);
+  const [lightingMode, setLightingMode] = useState<LightingMode>('clinical');
+  const [activeView, setActiveView] = useState<AnatomicalView>('isometric');
+  const [isWireframe, setIsWireframe] = useState<boolean>(false);
+
   // Three.js internal references
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
+  const lightingRigRef = useRef<StudioLightingRig | null>(null);
+  const anatomyRootRef = useRef<THREE.Group | null>(null);
   const reqIdRef = useRef<number | null>(null);
 
   // Meshes references for interactive toggling
@@ -185,42 +208,23 @@ export const RealisticPathology3DSim: FC = () => {
     controls.maxPolarAngle = Math.PI / 2 + 0.15; // prevent going below floor
     controlsRef.current = controls;
 
-    // 5. Studio Lighting
-    const ambientLight = new THREE.AmbientLight(0xfff1f2, 1.2);
-    scene.add(ambientLight);
+    // 5. Studio Lighting Rig (JEV System One Standard)
+    const lightingRig = setupStudioLighting(scene);
+    lightingRigRef.current = lightingRig;
+    setStudioLightingMode(lightingRig, 'clinical');
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
-    keyLight.position.set(4, 5, 5);
-    scene.add(keyLight);
+    // 6. Contact Shadow Plane & Spatial Perspective Grid Floor
+    const shadowPlane = createContactShadowPlane(4.4, -2.18, 0.85);
+    scene.add(shadowPlane);
 
-    const fillLight = new THREE.DirectionalLight(0xfda4af, 1.4);
-    fillLight.position.set(-5, 2, -3);
-    scene.add(fillLight);
-
-    const bottomRimLight = new THREE.DirectionalLight(0x7c3aed, 0.8);
-    bottomRimLight.position.set(0, -4, 2);
-    scene.add(bottomRimLight);
-
-    // 6. Medical Showroom Pedestal
-    const pedestalGeo = new THREE.CylinderGeometry(3.5, 3.8, 0.15, 64);
-    const pedestalMat = new THREE.MeshStandardMaterial({
-      color: 0x18101a,
-      roughness: 0.4,
-      metalness: 0.6,
-    });
-    const pedestal = new THREE.Mesh(pedestalGeo, pedestalMat);
-    pedestal.position.y = -2.2;
-    scene.add(pedestal);
-
-    // Grid on pedestal
-    const grid = new THREE.GridHelper(7, 24, 0xe11d48, 0x2f152b);
-    grid.position.y = -2.12;
+    const grid = createPerspectiveGrid(9.5, 24, -2.19, 0xe11d48, 0x2f152b);
     scene.add(grid);
 
     // -------------------------------------------------------------
     // 7. Procedural Anatomy Construction (img2threejs methodology)
     // -------------------------------------------------------------
     const anatomyRoot = new THREE.Group();
+    anatomyRootRef.current = anatomyRoot;
     scene.add(anatomyRoot);
 
     // Common organic uterine materials
@@ -613,8 +617,35 @@ export const RealisticPathology3DSim: FC = () => {
     }
   }, [activeFilter]);
 
+  // View and Camera Transitions
+  const handleViewChange = (view: AnatomicalView) => {
+    setActiveView(view);
+    if (cameraRef.current && controlsRef.current) {
+      const targetPos = getAnatomicalCoordinates(view, 6.2, 0.4);
+      smoothTransitionCamera(cameraRef.current, controlsRef.current, targetPos, new THREE.Vector3(0, 0, 0));
+    }
+  };
+
+  const handleLightingChange = (mode: LightingMode) => {
+    setLightingMode(mode);
+    if (lightingRigRef.current) {
+      setStudioLightingMode(lightingRigRef.current, mode);
+    }
+  };
+
+  const handleToggleWireframe = () => {
+    setIsWireframe((prev) => {
+      const next = !prev;
+      if (anatomyRootRef.current) {
+        toggleSceneWireframe(anatomyRootRef.current, next);
+      }
+      return next;
+    });
+  };
+
   // Reset Camera View
   const handleResetCamera = useCallback(() => {
+    setActiveView('isometric');
     if (!cameraRef.current || !controlsRef.current) return;
     cameraRef.current.position.set(0, 0.8, 6.2);
     controlsRef.current.target.set(0, 0, 0);
@@ -635,46 +666,125 @@ export const RealisticPathology3DSim: FC = () => {
   };
 
   return (
-    <div ref={containerRef} className={styles.container}>
+    <div ref={containerRef} className={`${styles.container} ${isTheater ? styles.theater : ''}`}>
       <canvas ref={canvasRef} className={styles.canvasWrapper} />
+      <div className={styles.reticle} />
 
       {/* Top Bar Header */}
       <div className={styles.topBar}>
         <div className={styles.badgeGroup}>
           <div className={styles.titleBadge}>
+            <span className={styles.liveLed} />
             <Microscope size={16} />
             <span>3D Female Reproductive Pathology Studio</span>
           </div>
-          <div className={styles.engineBadge}>
-            <Sparkles size={12} />
-            <span>Procedural Three.js Model</span>
-          </div>
+          <div className={styles.engineTag}>img2threejs Procedural</div>
+        </div>
+
+        {/* Anatomical Orientation Preset Dials */}
+        <div className={styles.presetsBar}>
+          <button
+            type="button"
+            className={`${styles.presetBtn} ${activeView === 'anterior' ? styles.active : ''}`}
+            onClick={() => handleViewChange('anterior')}
+          >
+            หน้า
+          </button>
+          <button
+            type="button"
+            className={`${styles.presetBtn} ${activeView === 'posterior' ? styles.active : ''}`}
+            onClick={() => handleViewChange('posterior')}
+          >
+            หลัง
+          </button>
+          <button
+            type="button"
+            className={`${styles.presetBtn} ${activeView === 'left' ? styles.active : ''}`}
+            onClick={() => handleViewChange('left')}
+          >
+            ข้าง
+          </button>
+          <button
+            type="button"
+            className={`${styles.presetBtn} ${activeView === 'superior' ? styles.active : ''}`}
+            onClick={() => handleViewChange('superior')}
+          >
+            บน
+          </button>
+          <button
+            type="button"
+            className={`${styles.presetBtn} ${activeView === 'isometric' ? styles.active : ''}`}
+            onClick={() => handleViewChange('isometric')}
+          >
+            3D Iso
+          </button>
         </div>
 
         <div className={styles.topRightActions}>
           <button
             type="button"
-            className={styles.iconBtn}
+            className={`${styles.iconBtn} ${lightingMode === 'cinematic' ? styles.active : ''}`}
+            onClick={() =>
+              handleLightingChange(
+                lightingMode === 'clinical' ? 'cinematic' : lightingMode === 'cinematic' ? 'radiology' : 'clinical'
+              )
+            }
+            title={`โหมดแสง: ${
+              lightingMode === 'clinical'
+                ? 'Clinical Bright (สว่างชัด)'
+                : lightingMode === 'cinematic'
+                ? 'Cinematic Depth (มิติเงาลึก)'
+                : 'Radiology Dark (เอกซเรย์มืด)'
+            }`}
+          >
+            {lightingMode === 'clinical' && <Sun size={16} />}
+            {lightingMode === 'cinematic' && <Sparkles size={16} />}
+            {lightingMode === 'radiology' && <Moon size={16} />}
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.iconBtn} ${isWireframe ? styles.active : ''}`}
+            onClick={handleToggleWireframe}
+            title="ตรวจดูโครงสร้างตาข่ายเรขาคณิต (Polygon Mesh Wireframe)"
+          >
+            <Grid size={16} />
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.iconBtn} ${isAutoRotate ? styles.active : ''}`}
             onClick={() => setIsAutoRotate(!isAutoRotate)}
             title={isAutoRotate ? 'หยุดหมุนอัตโนมัติ' : 'หมุนอัตโนมัติ'}
           >
-            {isAutoRotate ? <Pause size={18} /> : <Play size={18} />}
+            {isAutoRotate ? <Pause size={16} /> : <Play size={16} />}
           </button>
+
           <button
             type="button"
             className={styles.iconBtn}
             onClick={handleResetCamera}
             title="รีเซ็ตมุมกล้อง"
           >
-            <RotateCcw size={18} />
+            <RotateCcw size={16} />
           </button>
+
+          <button
+            type="button"
+            className={`${styles.iconBtn} ${isTheater ? styles.active : ''}`}
+            onClick={() => setIsTheater((prev) => !prev)}
+            title={isTheater ? 'ย่อเป็นมุมมองมาตรฐาน' : 'ขยายโหมดโรงภาพยนตร์กว้างพิเศษ (Theater Mode)'}
+          >
+            <Maximize2 size={16} />
+          </button>
+
           <button
             type="button"
             className={styles.iconBtn}
             onClick={handleToggleFullscreen}
             title={isFullscreen ? 'ออกจากเต็มจอ' : 'แสดงเต็มจอ'}
           >
-            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
         </div>
       </div>

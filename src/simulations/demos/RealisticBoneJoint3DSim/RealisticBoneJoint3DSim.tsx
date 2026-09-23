@@ -13,7 +13,24 @@ import {
   AlertTriangle,
   Bone,
   Sliders,
+  Sun,
+  Sparkles,
+  Moon,
+  Grid,
+  Maximize,
 } from 'lucide-react';
+import {
+  createContactShadowPlane,
+  createPerspectiveGrid,
+  setupStudioLighting,
+  setStudioLightingMode,
+  toggleSceneWireframe,
+  getAnatomicalCoordinates,
+  smoothTransitionCamera,
+  type LightingMode,
+  type AnatomicalView,
+  type StudioLightingRig,
+} from '../../shared/threeDepthHelpers';
 import styles from './RealisticBoneJoint3DSim.module.css';
 
 interface BonePin {
@@ -166,10 +183,18 @@ export const RealisticBoneJoint3DSim: FC = () => {
   // Interactive DXA T-Score Slider (-4.0 to +1.0)
   const [tScore, setTScore] = useState<number>(-1.0);
 
+  // Advanced Visual Depth & Workstation States
+  const [isTheater, setIsTheater] = useState<boolean>(false);
+  const [lightingMode, setLightingMode] = useState<LightingMode>('cinematic');
+  const [activeView, setActiveView] = useState<AnatomicalView>('isometric');
+  const [isWireframe, setIsWireframe] = useState<boolean>(false);
+
   // Three.js internal references
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
+  const lightingRigRef = useRef<StudioLightingRig | null>(null);
   const anatomyGroupRef = useRef<THREE.Group | null>(null);
   const pinSpritesRef = useRef<THREE.Sprite[]>([]);
   const reqIdRef = useRef<number | null>(null);
@@ -182,6 +207,29 @@ export const RealisticBoneJoint3DSim: FC = () => {
   const normalCartilageRef = useRef<THREE.Mesh | null>(null);
 
   const clipPlaneRef = useRef<THREE.Plane>(new THREE.Plane(new THREE.Vector3(0, 0, -1), 0));
+
+  const handleViewChange = (view: AnatomicalView) => {
+    setActiveView(view);
+    if (cameraRef.current && controlsRef.current) {
+      const targetPos = getAnatomicalCoordinates(view, 5.2, 0.3);
+      smoothTransitionCamera(cameraRef.current, controlsRef.current, targetPos, new THREE.Vector3(0, 0, 0), 650);
+    }
+  };
+
+  const handleLightingChange = (mode: LightingMode) => {
+    setLightingMode(mode);
+    if (lightingRigRef.current) {
+      setStudioLightingMode(lightingRigRef.current, mode);
+    }
+  };
+
+  const handleToggleWireframe = () => {
+    const nextVal = !isWireframe;
+    setIsWireframe(nextVal);
+    if (anatomyGroupRef.current) {
+      toggleSceneWireframe(anatomyGroupRef.current, nextVal);
+    }
+  };
 
   // Compute Bone Mineral Density Status
   let bmdStatus = 'NORMAL BMD';
@@ -214,7 +262,7 @@ export const RealisticBoneJoint3DSim: FC = () => {
       0.1,
       100
     );
-    camera.position.set(0, 0.5, 4.6);
+    camera.position.set(3.6, 2.0, 3.6);
     cameraRef.current = camera;
 
     // 3. Renderer setup
@@ -233,40 +281,22 @@ export const RealisticBoneJoint3DSim: FC = () => {
 
     // 4. Orbit Controls
     const controls = new OrbitControls(camera, canvas);
+    controlsRef.current = controls;
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.minDistance = 2.0;
     controls.maxDistance = 8.5;
 
-    // 5. Lighting Setup (Medical Studio Lighting)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.3);
-    scene.add(ambientLight);
+    // 5. Studio 3-Point Depth Lighting with Dual Rim Lights
+    const rig = setupStudioLighting(scene);
+    lightingRigRef.current = rig;
+    setStudioLightingMode(rig, 'cinematic');
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
-    keyLight.position.set(4, 5, 5);
-    scene.add(keyLight);
+    // 6. Ground Contact Shadow & Spatial Perspective Floor Grid
+    const shadowDisc = createContactShadowPlane(4.4, -2.25, 0.85);
+    scene.add(shadowDisc);
 
-    const fillLight = new THREE.DirectionalLight(0xfef08a, 1.2);
-    fillLight.position.set(-5, 2, -3);
-    scene.add(fillLight);
-
-    const bottomRimLight = new THREE.DirectionalLight(0x38bdf8, 1.0);
-    bottomRimLight.position.set(0, -4, 2);
-    scene.add(bottomRimLight);
-
-    // 6. Pedestal
-    const pedestalGeo = new THREE.CylinderGeometry(3.5, 3.8, 0.15, 64);
-    const pedestalMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      roughness: 0.35,
-      metalness: 0.7,
-    });
-    const pedestal = new THREE.Mesh(pedestalGeo, pedestalMat);
-    pedestal.position.y = -2.1;
-    scene.add(pedestal);
-
-    const grid = new THREE.GridHelper(7, 24, 0xf59e0b, 0x1e293b);
-    grid.position.y = -2.02;
+    const grid = createPerspectiveGrid(9.5, 24, -2.26, 0xf59e0b, 0x1e293b);
     scene.add(grid);
 
     // -------------------------------------------------------------
@@ -637,56 +667,138 @@ export const RealisticBoneJoint3DSim: FC = () => {
   }, []);
 
   const resetCamera = useCallback(() => {
-    if (!cameraRef.current) return;
-    cameraRef.current.position.set(0, 0.5, 4.6);
-    cameraRef.current.lookAt(0, 0, 0);
+    setActiveView('isometric');
+    if (cameraRef.current && controlsRef.current) {
+      const targetPos = getAnatomicalCoordinates('isometric', 5.2, 0.3);
+      smoothTransitionCamera(cameraRef.current, controlsRef.current, targetPos, new THREE.Vector3(0, 0, 0), 650);
+    }
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className={`${styles.simContainer} ${isFullscreen ? styles.fullscreen : ''}`}
+      className={`${styles.simContainer} ${isFullscreen ? styles.fullscreen : ''} ${isTheater ? styles.theater : ''}`}
     >
       <div className={styles.canvasWrapper}>
         <canvas ref={canvasRef} />
+        <div className={styles.reticle} title="Anatomical Focus Center" />
       </div>
 
       {/* Top Header & Toolbar */}
       <div className={styles.topBar}>
         <div className={styles.titleBadge}>
+          <div className={styles.liveLed} title="Renderer Active (60 FPS PBR)" />
           <Bone size={18} color="#fbbf24" />
           <div>
-            <h3>3D Realistic Bone & Joint Pathology Model</h3>
-            <span>img2threejs Procedural Engine</span>
+            <h3>3D Musculoskeletal Workstation</h3>
+            <span className={styles.engineTag}>WebGL 2.0 PBR</span>
           </div>
+        </div>
+
+        {/* Anatomical Presets Dial Bar */}
+        <div className={styles.presetsBar}>
+          <button
+            className={`${styles.presetBtn} ${activeView === 'anterior' ? styles.active : ''}`}
+            onClick={() => handleViewChange('anterior')}
+            title="มุมมองด้านหน้า (Anterior View)"
+          >
+            หน้า
+          </button>
+          <button
+            className={`${styles.presetBtn} ${activeView === 'posterior' ? styles.active : ''}`}
+            onClick={() => handleViewChange('posterior')}
+            title="มุมมองด้านหลัง (Posterior View)"
+          >
+            หลัง
+          </button>
+          <button
+            className={`${styles.presetBtn} ${activeView === 'left' ? styles.active : ''}`}
+            onClick={() => handleViewChange('left')}
+            title="มุมมองด้านข้าง (Lateral View)"
+          >
+            ข้าง
+          </button>
+          <button
+            className={`${styles.presetBtn} ${activeView === 'superior' ? styles.active : ''}`}
+            onClick={() => handleViewChange('superior')}
+            title="มุมมองด้านบน (Superior View)"
+          >
+            บน
+          </button>
+          <button
+            className={`${styles.presetBtn} ${activeView === 'isometric' ? styles.active : ''}`}
+            onClick={() => handleViewChange('isometric')}
+            title="มุมมอง 3 มิติ (3D Isometric)"
+          >
+            3D Iso
+          </button>
+          <button
+            className={styles.presetBtn}
+            onClick={resetCamera}
+            title="รีเซ็ตมุมมองกล้อง (Reset Camera)"
+          >
+            <RotateCcw size={12} />
+          </button>
         </div>
 
         <div className={styles.toolActions}>
           <button
+            className={`${styles.btnAction} ${lightingMode === 'cinematic' ? styles.active : ''}`}
+            onClick={() =>
+              handleLightingChange(
+                lightingMode === 'clinical' ? 'cinematic' : lightingMode === 'cinematic' ? 'radiology' : 'clinical'
+              )
+            }
+            title={`โหมดแสง: ${
+              lightingMode === 'clinical'
+                ? 'Clinical Bright (สว่างชัด)'
+                : lightingMode === 'cinematic'
+                ? 'Cinematic Depth (มิติลึกเงาเด่น)'
+                : 'Radiology Dark (เอกซเรย์มืด)'
+            }`}
+          >
+            {lightingMode === 'clinical' && <Sun size={14} />}
+            {lightingMode === 'cinematic' && <Sparkles size={14} />}
+            {lightingMode === 'radiology' && <Moon size={14} />}
+          </button>
+
+          <button
+            className={`${styles.btnAction} ${isWireframe ? styles.active : ''}`}
+            onClick={handleToggleWireframe}
+            title="เปิด/ปิดการตรวจดูโครงสร้างตาข่ายรูปทรงเรขาคณิต (Polygon Mesh Wireframe)"
+          >
+            <Grid size={14} />
+          </button>
+
+          <button
             className={`${styles.btnAction} ${isCrossSection ? styles.active : ''}`}
             onClick={() => setIsCrossSection((prev) => !prev)}
-            title="ผ่าตัดขวางเพื่อตรวจดูเนื้อกระดูกพรุนและโพรงไขกระดูก"
+            title="ผ่าตัดขวางเพื่อตรวจดูเนื้อกระดูกพรุนและโพรงไขกระดูก (Sagittal Cutaway)"
           >
             <Layers size={14} />
-            {isCrossSection ? 'Full Bone' : 'Cutaway'}
+            {isCrossSection ? 'Full' : 'Cutaway'}
           </button>
 
           <button
             className={`${styles.btnAction} ${isAutoRotate ? styles.active : ''}`}
             onClick={() => setIsAutoRotate((prev) => !prev)}
-            title="เปิด/ปิดการหมุนจำลองอัตโนมัติ"
+            title="เปิด/ปิดการหมุนแท่นวางจำลองอัตโนมัติ (Turntable Orbit)"
           >
             {isAutoRotate ? <Pause size={14} /> : <Play size={14} />}
           </button>
 
-          <button className={styles.btnAction} onClick={resetCamera} title="รีเซ็ตมุมมองกล้อง">
-            <RotateCcw size={14} />
+          <button
+            className={`${styles.btnAction} ${isTheater ? styles.active : ''}`}
+            onClick={() => setIsTheater((prev) => !prev)}
+            title={isTheater ? 'ย่อเป็นมุมมองมาตรฐาน' : 'ขยายเป็นโหมดโรงภาพยนตร์กว้างพิเศษ (Theater Mode)'}
+          >
+            <Maximize size={14} />
           </button>
 
           <button
             className={styles.btnAction}
             onClick={toggleFullscreen}
-            title={isFullscreen ? 'ย่อหน้าจอ' : 'ขยายเต็มหน้าจอ'}
+            title={isFullscreen ? 'ย่อหน้าจอ' : 'ขยายเต็มหน้าจอ (Fullscreen)'}
           >
             {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
