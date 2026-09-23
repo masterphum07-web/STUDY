@@ -183,6 +183,18 @@ export const RealisticBoneJoint3DSim: FC = () => {
   // Interactive DXA T-Score Slider (-4.0 to +1.0)
   const [tScore, setTScore] = useState<number>(-1.0);
 
+  // Sync refs to decouple WebGL scene lifecycle
+  const isAutoRotateRef = useRef<boolean>(isAutoRotate);
+  const tScoreRef = useRef<number>(tScore);
+
+  useEffect(() => {
+    isAutoRotateRef.current = isAutoRotate;
+  }, [isAutoRotate]);
+
+  useEffect(() => {
+    tScoreRef.current = tScore;
+  }, [tScore]);
+
   // Advanced Visual Depth & Workstation States
   const [isTheater, setIsTheater] = useState<boolean>(false);
   const [lightingMode, setLightingMode] = useState<LightingMode>('cinematic');
@@ -311,7 +323,7 @@ export const RealisticBoneJoint3DSim: FC = () => {
       color: 0xfaf5ef,
       roughness: 0.28,
       metalness: 0.08,
-      clippingPlanes: isCrossSection ? [clipPlaneRef.current] : [],
+      clippingPlanes: [],
       clipShadows: true,
     });
 
@@ -322,7 +334,7 @@ export const RealisticBoneJoint3DSim: FC = () => {
       metalness: 0.15,
       transparent: true,
       opacity: 0.88,
-      clippingPlanes: isCrossSection ? [clipPlaneRef.current] : [],
+      clippingPlanes: [],
     });
 
     // Spongy Trabecular Interior (Visible in cutaway)
@@ -331,7 +343,7 @@ export const RealisticBoneJoint3DSim: FC = () => {
       roughness: 0.75,
       metalness: 0.05,
       wireframe: true,
-      clippingPlanes: isCrossSection ? [clipPlaneRef.current] : [],
+      clippingPlanes: [],
     });
 
     // 7.1 Femur Shaft (Diaphysis)
@@ -562,7 +574,7 @@ export const RealisticBoneJoint3DSim: FC = () => {
       reqIdRef.current = requestAnimationFrame(animate);
       const elapsed = clock.getElapsedTime();
 
-      if (isAutoRotate) {
+      if (isAutoRotateRef.current && anatomyRoot) {
         anatomyRoot.rotation.y += 0.0035;
       }
 
@@ -574,7 +586,7 @@ export const RealisticBoneJoint3DSim: FC = () => {
 
       // Dynamically scale osteoporosis pores according to T-score
       if (osteoporosisGroupRef.current) {
-        const severityScale = Math.max(0.2, (Math.abs(tScore) / 4.0) * 1.5);
+        const severityScale = Math.max(0.2, (Math.abs(tScoreRef.current) / 4.0) * 1.5);
         osteoporosisGroupRef.current.scale.set(severityScale, severityScale, severityScale);
       }
 
@@ -602,7 +614,22 @@ export const RealisticBoneJoint3DSim: FC = () => {
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [isAutoRotate, isCrossSection, tScore]);
+  }, []);
+
+  // Update Bone Cutaway Clipping Planes dynamically without remounting scene
+  useEffect(() => {
+    if (anatomyGroupRef.current) {
+      anatomyGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.material) {
+          const mat = child.material as THREE.MeshStandardMaterial;
+          if ('clippingPlanes' in mat) {
+            mat.clippingPlanes = isCrossSection ? [clipPlaneRef.current] : [];
+            mat.needsUpdate = true;
+          }
+        }
+      });
+    }
+  }, [isCrossSection]);
 
   // Handle Pathology Filter Visibility
   useEffect(() => {

@@ -219,6 +219,19 @@ export const RealisticNeuropathology3DSim: FC = () => {
   // Monro-Kellie Interactive Simulation State
   const [lesionVolume, setLesionVolume] = useState<number>(0); // 0 to 120 mL
 
+  // Sync refs to prevent WebGL scene destruction on state changes
+  const isAutoRotateRef = useRef<boolean>(isAutoRotate);
+  const lesionVolumeRef = useRef<number>(lesionVolume);
+  const cortexMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
+
+  useEffect(() => {
+    isAutoRotateRef.current = isAutoRotate;
+  }, [isAutoRotate]);
+
+  useEffect(() => {
+    lesionVolumeRef.current = lesionVolume;
+  }, [lesionVolume]);
+
   // Advanced Visual Depth & Workstation States
   const [isTheater, setIsTheater] = useState<boolean>(false);
   const [lightingMode, setLightingMode] = useState<LightingMode>('cinematic');
@@ -365,9 +378,10 @@ export const RealisticNeuropathology3DSim: FC = () => {
       metalness: 0.06,
       bumpMap: brainBump,
       bumpScale: 0.05,
-      clippingPlanes: isCrossSection ? [clipPlaneRef.current] : [],
+      clippingPlanes: [],
       clipShadows: true,
     });
+    cortexMaterialRef.current = cortexMaterial;
 
 
     // 7.1 Left Cerebral Hemisphere
@@ -402,7 +416,7 @@ export const RealisticNeuropathology3DSim: FC = () => {
       metalness: 0.05,
       bumpMap: brainBump,
       bumpScale: 0.08,
-      clippingPlanes: isCrossSection ? [clipPlaneRef.current] : [],
+      clippingPlanes: [],
     });
     const leftCerebellumGeo = new THREE.SphereGeometry(0.55, 32, 32);
     leftCerebellumGeo.scale(1.0, 0.75, 0.85);
@@ -420,7 +434,7 @@ export const RealisticNeuropathology3DSim: FC = () => {
     const brainstemMat = new THREE.MeshStandardMaterial({
       color: 0xf1d0c5,
       roughness: 0.35,
-      clippingPlanes: isCrossSection ? [clipPlaneRef.current] : [],
+      clippingPlanes: [],
     });
 
     // Pons (bulbous curve)
@@ -672,7 +686,7 @@ export const RealisticNeuropathology3DSim: FC = () => {
       const elapsed = clock.getElapsedTime();
 
       // Auto rotation
-      if (isAutoRotate) {
+      if (isAutoRotateRef.current && anatomyRoot) {
         anatomyRoot.rotation.y += 0.0035;
       }
 
@@ -683,14 +697,15 @@ export const RealisticNeuropathology3DSim: FC = () => {
       }
 
       // Dynamic lesion deformation based on Monro-Kellie slider
-      const scaleFactor = 1 + (lesionVolume / 120) * 0.6;
+      const vol = lesionVolumeRef.current;
+      const scaleFactor = 1 + (vol / 120) * 0.6;
       if (edhGroupRef.current) {
         edhGroupRef.current.scale.set(scaleFactor, scaleFactor, scaleFactor);
       }
 
       // CSF Ventricle compression in high ICP
       if (ventriclesRef.current) {
-        const csfCompression = Math.max(0.4, 1 - (lesionVolume / 120) * 0.5);
+        const csfCompression = Math.max(0.4, 1 - (vol / 120) * 0.5);
         ventriclesRef.current.scale.set(csfCompression, csfCompression, csfCompression);
       }
 
@@ -720,7 +735,22 @@ export const RealisticNeuropathology3DSim: FC = () => {
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [isAutoRotate, isCrossSection, lesionVolume]);
+  }, []);
+
+  // Update Coronal Cutaway Clipping Planes dynamically without remounting scene
+  useEffect(() => {
+    if (anatomyGroupRef.current) {
+      anatomyGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.material) {
+          const mat = child.material as THREE.MeshStandardMaterial;
+          if ('clippingPlanes' in mat) {
+            mat.clippingPlanes = isCrossSection ? [clipPlaneRef.current] : [];
+            mat.needsUpdate = true;
+          }
+        }
+      });
+    }
+  }, [isCrossSection]);
 
   // Handle Pathology Filter Visibility Changes
   useEffect(() => {

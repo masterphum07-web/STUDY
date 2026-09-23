@@ -119,5 +119,43 @@
       "input_tokens": 547,
       "output_tokens": 84
     }
+  },
+  {
+    "timestamp": "2026-09-23T17:20:43.380Z",
+    "model": "jev-1.13.0",
+    "taskContext": "แก้ไขปัญหาการ Dispose และ Re-render ซ้ำซ้อนของ Three.js WebGL Scene เมื่อผู้ใช้ลาก Slider หรือกดปุ่ม",
+    "answers": {
+      "threejs_lifecycle_pattern": {
+        "type": "choice",
+        "choice": "mount_once_with_refs",
+        "confidence": 1,
+        "probabilities": {
+          "recreate_on_each_state_change": 0,
+          "mount_once_with_refs": 1
+        }
+      },
+      "telemetry_update_strategy": {
+        "type": "choice",
+        "choice": "throttle_or_ref_sync",
+        "confidence": 1,
+        "probabilities": {
+          "throttle_or_ref_sync": 1,
+          "set_state_every_frame": 0
+        }
+      },
+      "renal_3d_simulation": {
+        "type": "choice",
+        "choice": "skip_renal",
+        "confidence": 0.88,
+        "probabilities": {
+          "skip_renal": 0.94,
+          "create_procedural_renal_sim": 0.06
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 760,
+      "output_tokens": 139
+    }
   }
 ]

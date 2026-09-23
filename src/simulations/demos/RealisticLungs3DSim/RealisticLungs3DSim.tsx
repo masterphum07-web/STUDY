@@ -182,6 +182,18 @@ export const RealisticLungs3DSim: FC = () => {
   // Cycle animation reference time
   const cycleTimeRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
+  const isPlayingRef = useRef<boolean>(isPlaying);
+  const bpmRef = useRef<number>(bpm);
+  const lastTelemetryUpdateRef = useRef<number>(0);
+  const lastPinsUpdateRef = useRef<number>(0);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
+    bpmRef.current = bpm;
+  }, [bpm]);
 
   // Setup Three.js Scene
   useEffect(() => {
@@ -604,8 +616,8 @@ export const RealisticLungs3DSim: FC = () => {
       let breathFactor = 0;
       let cycleProgress = 0;
 
-      if (isPlaying) {
-        const cycleDuration = 60 / bpm;
+      if (isPlayingRef.current) {
+        const cycleDuration = 60 / bpmRef.current;
         cycleTimeRef.current = (cycleTimeRef.current + deltaSec) % cycleDuration;
         cycleProgress = cycleTimeRef.current / cycleDuration;
 
@@ -638,16 +650,19 @@ export const RealisticLungs3DSim: FC = () => {
           diaphragmMeshRef.current.position.y = -2.1 - breathFactor * 0.38;
         }
 
-        // Update telemetry
-        setTelemetry({
-          phase: isInsp ? 'Inspiration (หายใจเข้า)' : 'Expiration (หายใจออก)',
-          phasePercent: Math.round(cycleProgress * 100),
-          volumeMl: Math.round(2500 + breathFactor * 500),
-          tidalVolumeMl: Math.round(breathFactor * 500),
-          alveolarPressure: parseFloat(palv.toFixed(1)),
-          intrapleuralPressure: parseFloat(pip.toFixed(1)),
-          transpulmonaryPressure: parseFloat((palv - pip).toFixed(1)),
-        });
+        // Throttled telemetry update (10Hz / ~100ms) to eliminate 60fps React component thrashing
+        if (now - lastTelemetryUpdateRef.current > 100) {
+          lastTelemetryUpdateRef.current = now;
+          setTelemetry({
+            phase: isInsp ? 'Inspiration (หายใจเข้า)' : 'Expiration (หายใจออก)',
+            phasePercent: Math.round(cycleProgress * 100),
+            volumeMl: Math.round(2500 + breathFactor * 500),
+            tidalVolumeMl: Math.round(breathFactor * 500),
+            alveolarPressure: parseFloat(palv.toFixed(1)),
+            intrapleuralPressure: parseFloat(pip.toFixed(1)),
+            transpulmonaryPressure: parseFloat((palv - pip).toFixed(1)),
+          });
+        }
       }
 
       // Update Airflow Particles
@@ -697,8 +712,9 @@ export const RealisticLungs3DSim: FC = () => {
       controls.update();
       renderer.render(scene, camera);
 
-      // Project 3D landmark pins
-      if (camera && canvas) {
+      // Throttled 2D projection for landmark pins (~100ms)
+      if (now - lastPinsUpdateRef.current > 100 && camera && canvas) {
+        lastPinsUpdateRef.current = now;
         const rect = canvas.getBoundingClientRect();
         const pins = LANDMARKS.map((landmark) => {
           const v = landmark.position.clone();
@@ -739,7 +755,7 @@ export const RealisticLungs3DSim: FC = () => {
       controls.dispose();
       renderer.dispose();
     };
-  }, [bpm, isPlaying]);
+  }, []);
 
   // Sync tissue opacity
   useEffect(() => {

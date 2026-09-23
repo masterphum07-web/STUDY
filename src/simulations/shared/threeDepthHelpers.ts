@@ -222,3 +222,4 @@ export function smoothTransitionCamera(
   animId = requestAnimationFrame(animate);
   return () => cancelAnimationFrame(animId);
 }
+

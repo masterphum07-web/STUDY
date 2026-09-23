@@ -110,6 +110,12 @@ export const RealisticPathology3DSim: FC = () => {
   const [selectedPin, setSelectedPin] = useState<PathologyLandmark | null>(null);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
+  // Sync isAutoRotate with ref so render loop doesn't re-mount WebGL scene
+  const isAutoRotateRef = useRef<boolean>(isAutoRotate);
+  useEffect(() => {
+    isAutoRotateRef.current = isAutoRotate;
+  }, [isAutoRotate]);
+
   // Advanced Visual Depth & Workstation States (JEV System One)
   const [isTheater, setIsTheater] = useState<boolean>(false);
   const [lightingMode, setLightingMode] = useState<LightingMode>('clinical');
@@ -537,7 +543,7 @@ export const RealisticPathology3DSim: FC = () => {
       const elapsed = clock.getElapsedTime();
 
       // Auto rotation when enabled
-      if (isAutoRotate) {
+      if (isAutoRotateRef.current) {
         anatomyRoot.rotation.y += 0.004;
       }
 
@@ -575,7 +581,7 @@ export const RealisticPathology3DSim: FC = () => {
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [isAutoRotate]);
+  }, []);
 
   // Handle Pathology Filter Changes
   useEffect(() => {

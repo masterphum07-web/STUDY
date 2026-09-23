@@ -212,6 +212,16 @@ export const RealisticHepatobiliary3DSim: FC = () => {
   // Interactive Jaundice Simulator Slider
   const [obstructionLevel, setObstructionLevel] = useState<number>(0); // 0 to 100%
 
+  const isAutoRotateRef = useRef<boolean>(isAutoRotate);
+  useEffect(() => {
+    isAutoRotateRef.current = isAutoRotate;
+  }, [isAutoRotate]);
+
+  const obstructionLevelRef = useRef<number>(obstructionLevel);
+  useEffect(() => {
+    obstructionLevelRef.current = obstructionLevel;
+  }, [obstructionLevel]);
+
   // Advanced Visual Depth & Workstation States
   const [isTheater, setIsTheater] = useState<boolean>(false);
   const [lightingMode, setLightingMode] = useState<LightingMode>('cinematic');
@@ -343,7 +353,7 @@ export const RealisticHepatobiliary3DSim: FC = () => {
       color: 0x8a2c22, // Rich reddish-brown hepatic parenchyma
       roughness: 0.35,
       metalness: 0.1,
-      clippingPlanes: isCrossSection ? [clipPlaneRef.current] : [],
+      clippingPlanes: [],
       clipShadows: true,
     });
 
@@ -600,13 +610,13 @@ export const RealisticHepatobiliary3DSim: FC = () => {
       reqIdRef.current = requestAnimationFrame(animate);
       const elapsed = clock.getElapsedTime();
 
-      if (isAutoRotate) {
+      if (isAutoRotateRef.current) {
         anatomyRoot.rotation.y += 0.0035;
       }
 
       // Gallbladder dilation in high obstruction
       if (gallbladderRef.current) {
-        const gbDilation = 1 + (obstructionLevel / 100) * 0.45;
+        const gbDilation = 1 + (obstructionLevelRef.current / 100) * 0.45;
         gallbladderRef.current.scale.set(0.8 * gbDilation, 1.5 * gbDilation, 0.8 * gbDilation);
       }
 
@@ -640,7 +650,27 @@ export const RealisticHepatobiliary3DSim: FC = () => {
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [isAutoRotate, isCrossSection, obstructionLevel]);
+  }, []);
+
+  // Dynamic Cross-Section toggle without remounting WebGL scene
+  useEffect(() => {
+    if (!anatomyGroupRef.current) return;
+    anatomyGroupRef.current.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        const mat = mesh.material;
+        if (mat instanceof THREE.Material) {
+          mat.clippingPlanes = isCrossSection ? [clipPlaneRef.current] : [];
+          mat.needsUpdate = true;
+        } else if (Array.isArray(mat)) {
+          mat.forEach((m) => {
+            m.clippingPlanes = isCrossSection ? [clipPlaneRef.current] : [];
+            m.needsUpdate = true;
+          });
+        }
+      }
+    });
+  }, [isCrossSection]);
 
   // Handle Pathology Filter Visibility
   useEffect(() => {
